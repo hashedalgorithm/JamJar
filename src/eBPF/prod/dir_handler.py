@@ -61,7 +61,10 @@ class DIR_handler():
         
         if src_dir_list != []:
             for layer in src_dir_list:
-                src_obj = src_obj.content[layer]
+                try:
+                    src_obj = src_obj.content[layer]
+                except KeyError:
+                    return f"ls: cannot access '{src_dir}': No such file or directory"
         
         if target_dir:
             try:
