@@ -4,6 +4,7 @@ from helper.arp import ARP
 from helper.route import ROUTE
 from helper.interface import INTERFACE
 from helper.process import Process
+from pwd import getpwuid
 
 import socket
 
@@ -72,7 +73,16 @@ def nslookup_helper(domain):
 
 
 
+def get_username_by_uid(uid=1000):
+    try:
+        return getpwuid(uid).pw_name
+    except KeyError:
+        return None
+    
+    
 def create_fake_dir_data_helper():
+    username = get_username_by_uid() or "user"
+    
     root_start = ["bin", "dev", "etc", "usr", "home", "lib", "sbin", "tmp", "var"]
 
     home_user = [
@@ -93,12 +103,12 @@ def create_fake_dir_data_helper():
     for dir in root_start:
         add_file_helper(root, "/", Dir(dir, perm="drwxr-xr-x", created_month="Jul", created_day=11, created_time="12:29"))
 
-    add_file_helper(root, "/home", Dir("user", perm="drwxr-x---"))
+    add_file_helper(root, "/home", Dir(username, perm="drwxr-x---"))
     for file in home_user:
         if file[0] == "dir":
-            add_file_helper(root, "/home/user/", Dir(name=file[1], perm=file[3], created_month=file[4], created_day=file[5], created_time=file[6], owner="user", group="user"))
+            add_file_helper(root, f"/home/{username}/", Dir(name=file[1], perm=file[3], created_month=file[4], created_day=file[5], created_time=file[6], owner="user", group="user"))
         else:
-            add_file_helper(root, "/home/user/", File(file[1], file_type="file" if not file[2] else file[2], perm=file[3], created_month=file[4], created_day=file[5], created_time=file[6], owner="user", group="user"))
+            add_file_helper(root, f"/home/{username}/", File(file[1], file_type="file" if not file[2] else file[2], perm=file[3], created_month=file[4], created_day=file[5], created_time=file[6], owner="user", group="user"))
 
     # TODO more fake dirs
 
