@@ -1,5 +1,5 @@
 from helper.file import File
-from helper.dir import Dir
+from helper.storage_entry import StorageEntry
 from helper.arp import ARP
 from helper.route import ROUTE
 from helper.interface import INTERFACE
@@ -35,7 +35,7 @@ def get_main_arg_helper(args: list) -> tuple:
     return target, "".join(args)
 
 
-def add_file_helper(root: Dir, path_list: list, data: Dir | File):
+def add_file_helper(root: StorageEntry, path_list: list, data: StorageEntry | File):
 
     parent = root
 
@@ -78,7 +78,7 @@ def get_username_by_uid(uid=1000):
         return None
 
 
-def create_fake_dir_data_helper() -> Dir:
+def create_fake_dir_data_helper() -> StorageEntry:
     username = get_username_by_uid() or "user"
 
     root_start = ["bin", "dev", "etc", "usr", "home", "lib", "sbin", "tmp", "var"]
@@ -95,15 +95,16 @@ def create_fake_dir_data_helper() -> Dir:
         ["file", ".test_file_hidden", "txt", "-rw-r--r--", "Jun", "15", "11:13"],
     ]
 
-    root = Dir("root", perm="drwxrwxrwx")
+    root = StorageEntry("root", file_type="directory", perm="drwxrwxrwx")
     root.parent = root
 
     for dir in root_start:
         add_file_helper(
             root,
             path_to_list_helper("/"),
-            Dir(
+            StorageEntry(
                 dir,
+                file_type="directory",
                 perm="drwxr-xr-x",
                 created_month="Jul",
                 created_day=11,
@@ -112,7 +113,9 @@ def create_fake_dir_data_helper() -> Dir:
         )
 
     add_file_helper(
-        root, path_to_list_helper("/home"), Dir(username, perm="drwxr-x---")
+        root,
+        path_to_list_helper("/home"),
+        StorageEntry(username, file_type="directory", perm="drwxr-x---"),
     )
     for file in home_user:
 
@@ -120,19 +123,13 @@ def create_fake_dir_data_helper() -> Dir:
             root,
             path_to_list_helper(f"/home/{username}/"),
             (
-                Dir(
+                StorageEntry(
                     name=file[1],
-                    perm=file[3],
-                    created_month=file[4],
-                    created_day=file[5],
-                    created_time=file[6],
-                    owner=username,
-                    group=username,
-                )
-                if file[0] == "dir"
-                else File(
-                    file[1],
-                    file_type="file" if not file[2] else file[2],
+                    file_type=(
+                        "directory"
+                        if file[0] == "dir"
+                        else "file" if not file[2] else file[2]
+                    ),
                     perm=file[3],
                     created_month=file[4],
                     created_day=file[5],

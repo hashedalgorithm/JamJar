@@ -42,4 +42,5 @@ class StorageEntry(StorageEntryProperties):
     ) -> None:
 
         super().__init__(name=name, file_type=file_type, **kwargs)
+        self.content: Optional[dict] = {}
         self.parent = parent
