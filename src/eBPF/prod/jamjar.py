@@ -5,11 +5,14 @@ import os
 from collections import defaultdict
 import PtraceSubroutines
 import pwd
+
 DEBUGGER = PtraceDebugger()
+
 
 # ASCII art created with https://emojicombos.com/skull-ascii-art, https://emojicombos.com/mason-jar-ascii-art, https://patorjk.com/software/taag/#p=display&f=Graffiti&t=JamJar
 def ascii_art():
-    print(r"""
+    print(
+        r"""
                                                         ⣴⠟⠛⠛⠛⠛⠛⠛⠛⠛⢛⣛⣻⣦
                                                         ⣿⣶⣶⡶⠀⠀⠛⠛⠋⠉⠉⠉⠉⣿
      ____                     ____                     ⠘⠿⢿⡿⠿⠿⠿⠿⠿⠿⠿⠿⢿⡿⠿⠃
@@ -23,7 +26,8 @@ def ascii_art():
         Jani Gabriel & Malte Schulten                 ⣿⡇⠀   ⡏  ⢹⠀⠀⠀⠀⣿⠀⢸⣿
                                                       ⢻⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠟⠀⣸⡟
                                                        ⠛⢷⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⡾⠛
-    """)
+    """
+    )
 
 
 # Define BPF program
@@ -137,44 +141,59 @@ execve_fnname = b.get_syscall_fnname("execve")
 b.attach_kprobe(event=execve_fnname, fn_name="syscall__execve")
 b.attach_kretprobe(event=execve_fnname, fn_name="do_ret_sys_execve")
 
+
 class EventType:
     EVENT_ARG = 0
     EVENT_RET = 1
 
+
 argv = defaultdict(list)
 
-def event_handler(comm,pid,full_cmd,cwd,tty,ppid,username,target_process):
+
+def event_handler(comm, pid, full_cmd, cwd, tty, ppid, username, target_process):
     match comm:
-        case ("ls"|"rm"|"touch"):
-            PtraceSubroutines.dir_routine(pid,ppid,full_cmd,cwd,target_process)
+        case "ls" | "rm" | "touch":
+            PtraceSubroutines.dir_routine(pid, ppid, full_cmd, cwd, target_process)
             DEBUGGER.quit()
-        case ("ping"|"arp"|"ip"|"traceroute"):
-            PtraceSubroutines.network_routine(pid,ppid,full_cmd,target_process)
+        case "ping" | "arp" | "ip" | "traceroute":
+            PtraceSubroutines.network_routine(pid, ppid, full_cmd, target_process)
             DEBUGGER.quit()
-        case ("ps"|"kill"|"killall"):
-            PtraceSubroutines.process_routine(pid,ppid,full_cmd,tty,username,target_process)
+        case "ps" | "kill" | "killall":
+            PtraceSubroutines.process_routine(
+                pid, ppid, full_cmd, tty, username, target_process
+            )
             DEBUGGER.quit()
         case _:
             print(f"[!] Subroutine for command {comm} is not implemented yet!")
             DEBUGGER.quit()
 
+
 # Cleanup Commands
-def cleaup_cmd(command,args):
-    cmd = command.replace(b"/usr/bin/%s " % (command),b"%s"%(command)).replace(b"/usr/sbin/%s " % (command),b"%s"%(command))
-    arguments = args.replace(b" --color=auto",b"").replace(b"/usr/bin/%s" % (command),b"").replace(b"/usr/sbin/%s" % (command),b"")
-    fullcmd = cmd+arguments
-    return fullcmd.decode(),cmd.decode()
+def cleaup_cmd(command: str, args: str) -> tuple[str, str]:
+    cmd = command.replace(b"/usr/bin/%s " % (command), b"%s" % (command)).replace(
+        b"/usr/sbin/%s " % (command), b"%s" % (command)
+    )
+    arguments = (
+        args.replace(b" --color=auto", b"")
+        .replace(b"/usr/bin/%s" % (command), b"")
+        .replace(b"/usr/sbin/%s" % (command), b"")
+    )
+    fullcmd = cmd + arguments
+    return fullcmd.decode(), cmd.decode()
 
 
 # Print Trace and Kill Events to console
-def print_event(command, cwd, uid):
+def print_event(command: str, cwd: str, uid):
     ct = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print(f"[+][{ct}] Traced Command: [{command}]")
+    print(f"{uid} (type: {type(uid)})")
     print(f"\t\\--> Executed in [{cwd}] by UID [{uid}]")
+
 
 def attach_ptrace(pid):
     process = DEBUGGER.addProcess(pid, False)
     return process
+
 
 # Process event
 def proc_event(cpu, data, size):
@@ -184,20 +203,29 @@ def proc_event(cpu, data, size):
         argv[event.pid].append(event.argv)
     elif event.type == EventType.EVENT_RET:
         target_process = attach_ptrace(event.pid)
-        argv_text = b' '.join(argv[event.pid]).replace(b'\n', b'\\n')
+        argv_text = b" ".join(argv[event.pid]).replace(b"\n", b"\\n")
         cwd = os.readlink(f"/proc/{event.pid}/cwd")
-        tty = os.readlink(f"/proc/{event.pid}/fd/0").replace("/dev/","")
+        tty = os.readlink(f"/proc/{event.pid}/fd/0").replace("/dev/", "")
         username = pwd.getpwuid(event.uid).pw_name
         # Getting cleaned command
-        full_command,cmd_wo_args = cleaup_cmd(event.comm,argv_text)
+        full_command, cmd_wo_args = cleaup_cmd(event.comm, argv_text)
 
         # Print event to console
-        print_event(full_command,cwd,event.uid)
+        print_event(full_command, cwd, event.uid)
         # Handle commands
-        event_handler(cmd_wo_args,event.pid,full_command,cwd,tty,event.ppid,username,target_process)
+        event_handler(
+            cmd_wo_args,
+            event.pid,
+            full_command,
+            cwd,
+            tty,
+            event.ppid,
+            username,
+            target_process,
+        )
 
         try:
-            del(argv[event.pid])
+            del argv[event.pid]
         except Exception:
             pass
 
