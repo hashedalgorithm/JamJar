@@ -1,10 +1,11 @@
+from __future__ import annotations
 import datetime
 from typing import Optional
 
 from helper.dir import Dir
 
 
-class File:
+class StorageEntryProperties:
 
     def __init__(
         self,
@@ -18,7 +19,6 @@ class File:
         created_day: str = datetime.datetime.now().strftime("%d"),
         created_time: str = datetime.datetime.now().strftime("%H:%M"),
         file_type: str = "",
-        parent: Optional[Dir] = None,
     ) -> None:
 
         self.perm = perm
@@ -31,4 +31,17 @@ class File:
         self.created_time = created_time
         self.name = name
         self.file_type = file_type
+
+
+class File(StorageEntryProperties):
+
+    def __init__(
+        self,
+        name: str,
+        file_type: str = "",
+        parent: Optional[Dir] = None,
+        **kwargs: Optional[dict[str, str]],
+    ) -> None:
+
+        super().__init__(name=name, file_type=file_type, **kwargs)
         self.parent = parent
