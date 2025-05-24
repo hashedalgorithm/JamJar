@@ -1,6 +1,6 @@
 import datetime
 from bcc import BPF
-from ptrace.debugger import PtraceDebugger
+from ptrace.debugger import PtraceDebugger, PtraceProcess
 import os
 from collections import defaultdict
 import PtraceSubroutines
@@ -136,10 +136,10 @@ int do_ret_sys_execve(struct pt_regs *ctx)
 """
 
 # Initialize BPF
-b = BPF(text=bpf_text)
-execve_fnname = b.get_syscall_fnname("execve")
-b.attach_kprobe(event=execve_fnname, fn_name="syscall__execve")
-b.attach_kretprobe(event=execve_fnname, fn_name="do_ret_sys_execve")
+bpf = BPF(text=bpf_text)
+execve_fnname = bpf.get_syscall_fnname("execve")
+bpf.attach_kprobe(event=execve_fnname, fn_name="syscall__execve")
+bpf.attach_kretprobe(event=execve_fnname, fn_name="do_ret_sys_execve")
 
 
 class EventType:
@@ -150,7 +150,16 @@ class EventType:
 argv = defaultdict(list)
 
 
-def event_handler(comm, pid, full_cmd, cwd, tty, ppid, username, target_process):
+def event_handler(
+    comm: str,
+    pid: int,
+    full_cmd: str,
+    cwd: str,
+    tty: str,
+    ppid: int,
+    username: str,
+    target_process: PtraceProcess,
+) -> None:
     match comm:
         case "ls" | "rm" | "touch":
             PtraceSubroutines.dir_routine(pid, ppid, full_cmd, cwd, target_process)
@@ -183,21 +192,21 @@ def cleaup_cmd(command: str, args: str) -> tuple[str, str]:
 
 
 # Print Trace and Kill Events to console
-def print_event(command: str, cwd: str, uid):
+def print_event(command: str, cwd: str, uid) -> None:
     ct = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print(f"[+][{ct}] Traced Command: [{command}]")
-    print(f"{uid} (type: {type(uid)})")
     print(f"\t\\--> Executed in [{cwd}] by UID [{uid}]")
 
 
-def attach_ptrace(pid):
+def attach_ptrace(pid: int) -> PtraceProcess:
     process = DEBUGGER.addProcess(pid, False)
     return process
 
 
 # Process event
-def proc_event(cpu, data, size):
-    event = b["events"].event(data)
+def proc_event(cpu: int, data: int, size: int) -> None:
+
+    event = bpf["events"].event(data)
 
     if event.type == EventType.EVENT_ARG:
         argv[event.pid].append(event.argv)
@@ -234,9 +243,9 @@ if __name__ == "__main__":
     ascii_art()
 
     # Loop with callback to print_event
-    b["events"].open_perf_buffer(proc_event)
+    bpf["events"].open_perf_buffer(proc_event)
     while True:
         try:
-            b.perf_buffer_poll()
+            bpf.perf_buffer_poll()
         except KeyboardInterrupt:
             exit()
