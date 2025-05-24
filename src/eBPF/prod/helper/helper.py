@@ -20,8 +20,8 @@ TRACEROUTES = [
 ]
 
 
-def path_to_list_helper(src_dir: str) -> list:
-    return src_dir.strip("/").split("/") if src_dir != "/" and src_dir != "" else []
+def path_to_list_helper(path: str) -> list:
+    return path.strip("/").split("/") if path != "/" and path != "" else []
 
 
 def get_main_arg_helper(args: list) -> tuple:

@@ -41,26 +41,26 @@ class DIR_handler:
 
         return output
 
-    def ls(self, args, src_dir: str):
+    def ls(self, args: str, path: str):
         output = ""
         target_dir = ""
-        src_dir_list = helper.path_to_list_helper(src_dir)
+        path_list = helper.path_to_list_helper(path)
 
         target_dir, args_str = helper.get_main_arg_helper(args)
 
         if "/" in target_dir:
-            target_dir, src_dir_list = helper.target_dir_is_path_helper(
-                target_dir, helper.path_to_list_helper(src_dir_list)
+            target_dir, path_list = helper.target_dir_is_path_helper(
+                target_dir, helper.path_to_list_helper(path_list)
             )
 
         src_obj = self.root
 
-        if src_dir_list != []:
-            for layer in src_dir_list:
+        if path_list != []:
+            for layer in path_list:
                 try:
                     src_obj = src_obj.content[layer]
                 except KeyError:
-                    return f"ls: cannot access '{src_dir}': No such file or directory"
+                    return f"ls: cannot access '{path}': No such file or directory"
 
         if target_dir:
             try:
