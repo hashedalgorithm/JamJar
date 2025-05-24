@@ -39,7 +39,7 @@ class CMD_invoke():
 if __name__ == "__main__":
     cmd = CMD_invoke()
     print("Testing---------------------------------")
-    #print(cmd.invoke_dir("ls"))
+    print(cmd.invoke_dir("ls"))
     #print(cmd.invoke_dir("ls home"))
     #print(cmd.invoke_dir("ls", src_dir="/home"))
     #print(cmd.invoke_dir("ls user", src_dir="/home"))
@@ -74,10 +74,10 @@ if __name__ == "__main__":
     #print(cmd.invoke_dir("touch /home/user/test_touch3.txt"))
     #print(cmd.invoke_dir("ls user", src_dir="/home"))
 
-    print(cmd.invoke_network("arp"))
+    # print(cmd.invoke_network("arp"))
     #print(cmd.invoke_network("arp -d non_existend"))
-    print(cmd.invoke_network("arp -d _gateway"))
-    print(cmd.invoke_network("arp"))
+    # print(cmd.invoke_network("arp -d _gateway"))
+    # print(cmd.invoke_network("arp"))
     #print(cmd.invoke_network("ip a"))
 
     #for n, line in enumerate(cmd.invoke_network("ping 1.1.1.1")):
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     #    if n > 1 or n < 5:
     #        time.sleep(1)
     
-    print(cmd.invoke_network("arp"))
+    # print(cmd.invoke_network("arp"))
     
     # TODO not working properly yet with colors
     #print(cmd.invoke_dir("ls -alr user", src_dir="/home"))
