@@ -1,8 +1,6 @@
 from __future__ import annotations
 import datetime
-from typing import Optional
-
-from helper.dir import Dir
+from typing import Optional, Any
 
 
 class StorageEntryProperties:
@@ -39,7 +37,7 @@ class File(StorageEntryProperties):
         self,
         name: str,
         file_type: str = "",
-        parent: Optional[Dir] = None,
+        parent: Optional[Any] = None,
         **kwargs: Optional[dict[str, str]],
     ) -> None:
 
