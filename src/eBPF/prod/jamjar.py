@@ -5,6 +5,7 @@ import os
 from collections import defaultdict
 import PtraceSubroutines
 import pwd
+from pprint import pprint
 
 DEBUGGER = PtraceDebugger()
 
@@ -212,6 +213,10 @@ def proc_event(cpu: int, data: int, size: int) -> None:
         argv[event.pid].append(event.argv)
     elif event.type == EventType.EVENT_RET:
         target_process = attach_ptrace(event.pid)
+
+        if event.pid not in argv:
+            print(f"[!] No event found for PID {event.pid}.")
+            return
         argv_text = b" ".join(argv[event.pid]).replace(b"\n", b"\\n")
         cwd = os.readlink(f"/proc/{event.pid}/cwd")
         tty = os.readlink(f"/proc/{event.pid}/fd/0").replace("/dev/", "")
