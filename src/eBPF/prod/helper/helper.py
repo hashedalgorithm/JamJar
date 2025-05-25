@@ -25,8 +25,8 @@ def path_to_list_helper(path: str) -> list:
 
 
 def get_main_arg_helper(args: list) -> tuple:
-    print("args", args)
     target = ""
+
     for arg in args:
         if not arg.startswith("-"):
             target = arg
