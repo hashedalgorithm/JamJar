@@ -32,7 +32,6 @@ class StorageEntryProperties:
 
 
 class StorageEntry(StorageEntryProperties):
-
     def __init__(
         self,
         name: str,
@@ -42,5 +41,14 @@ class StorageEntry(StorageEntryProperties):
     ) -> None:
 
         super().__init__(name=name, file_type=file_type, **kwargs)
-        self.content: Optional[dict] = {}
+        if file_type == "directory":
+            self.if_folder()
+        else:
+            self.if_file()
         self.parent = parent
+
+    def if_file(self):
+        self.content = ""
+
+    def if_folder(self):
+        self.content = {}
