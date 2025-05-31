@@ -26,7 +26,6 @@ class EBPF:
         self.bpf.attach_kretprobe(event=execve_fnname, fn_name="do_ret_sys_execve")
 
     def load_bpf_c_code(self, ebpf_path: str) -> str:
-        ebpf_path = os.path.join(os.path.dirname(__file__), ebpf_path)
         try:
             with open(ebpf_path, "r") as f:
                 bpf_source = f.read()

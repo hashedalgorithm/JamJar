@@ -1,4 +1,5 @@
 from core.ebpf import EBPF
+import os
 
 
 # ASCII art created with https://emojicombos.com/skull-ascii-art,
@@ -31,7 +32,9 @@ if __name__ == "__main__":
     ascii_art()
 
     # Initialize BPF
-    ebpf = EBPF(ebpf_path="jamjar.bpf.v0.c")
+    ebpf = EBPF(
+        ebpf_path=os.path.join(os.path.dirname(__file__), "bpf/jamjar.bpf.v0.c")
+    )
 
     # Loop with callback to print_event
     ebpf.bpf["events"].open_perf_buffer(ebpf.proc_event)
