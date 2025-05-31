@@ -95,8 +95,7 @@ int syscall__execve(struct pt_regs *ctx, const char __user *filename,
 
 // skip first arg, as we submitted filename
 #pragma unroll
-  for (int i = 1; i < sizeof(data.argv); i++) {
-    // bpf_trace_printk("[DEBUGG] Arg: %s\\n", data.argv);
+  for (int i = 1; i < 20; i++) {
     // if (submit_arg(ctx, (void *)&__argv[i], &data) == 0)
     //     break;  // stop if we hit a NULL pointer
 
