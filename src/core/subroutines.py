@@ -2,7 +2,7 @@ import os
 import time
 import errno
 
-from cmd_invoke import CMD_invoke
+from core.cmd_invoke import CMD_invoke
 from ptrace.debugger import PtraceProcess
 from core.process_tracer import ProcessTracer
 
