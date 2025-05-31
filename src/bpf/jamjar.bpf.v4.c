@@ -1,4 +1,6 @@
 
+// This version uses security_bprm_check to trace execve calls and filter by UID.
+
 #include <uapi/linux/ptrace.h>
 #include <linux/sched.h>
 #include <linux/fs.h>
