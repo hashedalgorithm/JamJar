@@ -1,2 +1,4 @@
 *.log
 /src/venv
+**/__pycache__/
+.vscode/

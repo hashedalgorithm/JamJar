@@ -1,27 +1,24 @@
-from helper.arp import ARP
-from helper.route import ROUTE
-from helper import helper
+from models.arp import ARP
+from models.route import ROUTE
+from utils import helper
 
 import random
 import ipcalc
 
 LOCAL_NETS = ["10.0.0.0/8", "172.16.0.0/12", "12.168.0.0/16"]
 
-class NETWORK_handler():
+
+class NETWORK_handler:
 
     output = None
 
     arp_table = {}
     interfaces = []
-    
-
 
     def __init__(self) -> None:
         self.interfaces = helper.create_fake_interface_data_helper()
         self.arp_table = helper.create_fake_arp_data_helper(self.interfaces["ens18"])
         self.routes = helper.create_fake_route_data_helper(self.interfaces["ens18"])
-    
-
 
     def cmd(self, cmd):
         output = None
@@ -45,8 +42,6 @@ class NETWORK_handler():
 
         return output
 
-
-
     def ping(self, args):
         output = []
 
@@ -63,37 +58,41 @@ class NETWORK_handler():
 
             interface = self.interfaces["ens18"]
             arp_ip = target_ip if local else interface.inet4_gtw[0]
-            
-            self.arp_table[target_ip] = ARP(address=arp_ip, hwaddress="16:38:fd:f6:c2:c3", iface=interface)
+
+            self.arp_table[target_ip] = ARP(
+                address=arp_ip, hwaddress="16:38:fd:f6:c2:c3", iface=interface
+            )
 
         output.append(f"PING {target_host} ({target_ip}) 56(84) bytes of data.")
         time_total = 0
 
-        for i in range(1,5):
-            time = str(random.randint(10,50))
-            time_dec = str(random.randint(1,9))
+        for i in range(1, 5):
+            time = str(random.randint(10, 50))
+            time_dec = str(random.randint(1, 9))
             time_total += float(time + "." + time_dec)
-            output.append(f"64 bytes from {target_ip}: icmp_seq={i} ttl=56 time={time}.{time_dec} ms")
-        
+            output.append(
+                f"64 bytes from {target_ip}: icmp_seq={i} ttl=56 time={time}.{time_dec} ms"
+            )
+
         output.append(f"--- {target_host} ping statistics ---")
-        output.append(f"4 packets transmitted, 4 received, 0% packet loss, time {time_total}")
+        output.append(
+            f"4 packets transmitted, 4 received, 0% packet loss, time {time_total}"
+        )
         output.append("rtt min/avg/max/mdev = 12.578/13.047/13.555/0.273 ms")
 
         return output
-
-
 
     def arp(self, args):
         output = None
 
         target_host, args_str = helper.get_main_arg_helper(args)
-        
-        d =  "d" in args_str
+
+        d = "d" in args_str
 
         if d:
             if not target_host:
                 return "arp: need host name"
-            
+
             if not target_host in self.arp_table:
                 return f"{target_host}: No address associated with name"
 
@@ -105,8 +104,6 @@ class NETWORK_handler():
                 output += str(self.arp_table[entry]) + "\n"
 
         return output
-
-
 
     def ip(self, args):
 
@@ -131,7 +128,9 @@ class NETWORK_handler():
 
         if r:
             if add:
-                self.routes.append(ROUTE(inet_to=args[-3], interface=self.interfaces[args[-1]]))
+                self.routes.append(
+                    ROUTE(inet_to=args[-3], interface=self.interfaces[args[-1]])
+                )
 
             elif delete:
                 for x, route in enumerate(self.routes):
@@ -143,8 +142,6 @@ class NETWORK_handler():
                     output += str(entry) + "\n"
 
         return output.strip("\n")
-    
-
 
     def traceroute(self, args):
         output = []
@@ -155,21 +152,21 @@ class NETWORK_handler():
 
         output.append(f"traceroute to {target_host} ({target_ip}), 64 hops max")
 
-        random_hops = random.randint(5,11)
+        random_hops = random.randint(5, 11)
 
         for i in range(1, random_hops):
             time_total = []
             for _ in range(3):
-                time = str(random.randint(1*(i-1), 10*(i-1)))
-                time_dec = str(random.randint(1,9))
+                time = str(random.randint(1 * (i - 1), 10 * (i - 1)))
+                time_dec = str(random.randint(1, 9))
 
                 time_total.append(str(float(time + "." + time_dec)) + "ms")
-            
+
             interface = self.interfaces["ens18"]
-            
+
             if i == 1:
                 ip = interface.inet4_gtw[0]
-            elif i == random_hops-1:
+            elif i == random_hops - 1:
                 ip = target_ip
             else:
                 ip = random.choice(helper.TRACEROUTES)

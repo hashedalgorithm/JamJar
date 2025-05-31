@@ -1,8 +1,5 @@
-from helper.file import File
-from helper.dir import Dir
-
-from helper import helper
-import pprint
+from utils import helper
+from models.storage_entry import StorageEntry
 
 
 class bcolors:
@@ -22,7 +19,7 @@ class DIR_handler:
     def __init__(self) -> None:
         self.root = helper.create_fake_dir_data_helper()
 
-    def cmd(self, cmd: str, src_dir: str = ""):
+    def command_handler(self, cmd: str, src_dir: str = ""):
         output = None
 
         cmd_name = cmd.split(" ")[0]
@@ -41,26 +38,31 @@ class DIR_handler:
 
         return output
 
-    def ls(self, args: str, path: str):
+    def ls(self, args: str, src_dir: str):
         output = ""
         target_dir = ""
-        path_list = helper.path_to_list_helper(path)
+        src_dir_list = helper.path_to_list_helper(src_dir)
+
+        option, args_str = helper.get_main_arg_helper(args)
+        striped_option = option.strip("-")
+
+        print(striped_option, args_str)
 
         target_dir, args_str = helper.get_main_arg_helper(args)
 
         if "/" in target_dir:
-            target_dir, path_list = helper.target_dir_is_path_helper(
-                target_dir, helper.path_to_list_helper(path_list)
+            target_dir, src_dir_list = helper.target_dir_is_path_helper(
+                target_dir, helper.path_to_list_helper(src_dir_list)
             )
 
         src_obj = self.root
 
-        if path_list != []:
-            for layer in path_list:
+        if src_dir_list != []:
+            for layer in src_dir_list:
                 try:
                     src_obj = src_obj.content[layer]
                 except KeyError:
-                    return f"ls: cannot access '{path}': No such file or directory"
+                    return f"ls: cannot access '{src_dir}': No such file or directory"
 
         if target_dir:
             try:
@@ -185,7 +187,7 @@ class DIR_handler:
         else:
             file_type = "file"
 
-        target_obj = File(target_file, file_type=file_type)
+        target_obj = StorageEntry(target_file, file_type=file_type)
 
         helper.add_file_helper(
             self.root, src_dir_list if path_flag else src_dir, target_obj

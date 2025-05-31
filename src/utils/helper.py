@@ -1,9 +1,9 @@
-from helper.file import File
-from helper.storage_entry import StorageEntry
-from helper.arp import ARP
-from helper.route import ROUTE
-from helper.interface import INTERFACE
-from helper.process import Process
+from models.storage_entry import StorageEntry
+from models.arp import ARP
+from models.route import ROUTE
+from models.interface import INTERFACE
+from models.process import Process
+
 from pwd import getpwuid
 
 import socket

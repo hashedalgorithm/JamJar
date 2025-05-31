@@ -1,6 +1,6 @@
-from dir_handler import DIR_handler
-from network_handler import NETWORK_handler
-from process_handler import PROCESS_handler
+from handlers.dir_handler import DIR_handler
+from handlers.network_handler import NETWORK_handler
+from handlers.process_handler import PROCESS_handler
 import time
 import logging
 
