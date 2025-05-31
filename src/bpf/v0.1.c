@@ -1,3 +1,5 @@
+// More stable version v0.c
+
 #include <uapi/linux/ptrace.h>
 #include <linux/sched.h>
 #include <linux/fs.h>
@@ -8,12 +10,6 @@
 enum event_type {
     EVENT_ARG,
     EVENT_RET,
-};
-
-struct entry_data_t {
-    u32 pid;  // PID as in the userspace term (i.e. task->tgid in kernel)
-    u32 ppid; // Parent PID as in the userspace term (i.e task->real_parent->tgid in kernel)
-    u32 uid;
 };
 
 struct data_t {
@@ -27,7 +23,6 @@ struct data_t {
 };
 
 BPF_PERF_OUTPUT(events);
-BBF_PERF_OUTPUT(entry_events);
 
 static int __submit_arg(struct pt_regs *ctx, void *ptr, struct data_t *data)
 {
