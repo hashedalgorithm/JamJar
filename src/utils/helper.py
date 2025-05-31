@@ -35,7 +35,7 @@ def get_main_arg_helper(args: list) -> tuple:
     return target, "".join(args)
 
 
-def add_file_helper(root: StorageEntry, path_list: list, data: StorageEntry | File):
+def add_file_helper(root: StorageEntry, path_list: list, data: StorageEntry):
 
     parent = root
 
