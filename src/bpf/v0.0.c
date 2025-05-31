@@ -1,5 +1,3 @@
-// More stable version v0.c
-
 #include <linux/fs.h>
 #include <linux/sched.h>
 #include <uapi/linux/ptrace.h>
@@ -26,26 +24,17 @@ struct data_t {
 BPF_PERF_OUTPUT(events);
 
 static int __submit_arg(struct pt_regs *ctx, void *ptr, struct data_t *data) {
-  int ret = bpf_probe_read_user_str(data->argv, sizeof(data->argv), ptr);
-
-  if (ret < 0) {
-    bpf_trace_printk("Failed to read user argument, ret: %d\\n", ret);
-    return 0;
-  }
-
+  bpf_probe_read_user(data->argv, sizeof(data->argv), ptr);
   events.perf_submit(ctx, data, sizeof(struct data_t));
   return 1;
 }
 
 static int submit_arg(struct pt_regs *ctx, void *ptr, struct data_t *data) {
   const char *argp = NULL;
-  int ret = bpf_probe_read_user(&argp, sizeof(argp), ptr);
-
-  if (argp && ret > 0) {
+  bpf_probe_read_user(&argp, sizeof(argp), ptr);
+  if (argp) {
     return __submit_arg(ctx, (void *)(argp), data);
   }
-
-  bpf_trace_printk("Failed to read user argument, ret: %d\\n", ret);
   return 0;
 }
 
@@ -66,12 +55,7 @@ int syscall__execve(struct pt_regs *ctx, const char __user *filename,
   task = (struct task_struct *)bpf_get_current_task();
   data.ppid = task->real_parent->tgid;
 
-  int current_comm_ret = bpf_get_current_comm(&data.comm, sizeof(data.comm));
-  if (current_comm_ret < 0) {
-    bpf_trace_printk("Failed to read current comm, ret: %d\\n",
-                     current_comm_ret);
-    return 0;
-  }
+  bpf_get_current_comm(&data.comm, sizeof(data.comm));
   data.type = EVENT_ARG;
 
   __submit_arg(ctx, (void *)filename, &data);
@@ -79,14 +63,14 @@ int syscall__execve(struct pt_regs *ctx, const char __user *filename,
 // skip first arg, as we submitted filename
 #pragma unroll
   for (int i = 1; i < 20; i++) {
-    if (submit_arg(ctx, (void *)&__argv[i], &data) == 0) {
-      return 0;
-    }
-
-    char ellipsis[] = "...";
-    __submit_arg(ctx, (void *)ellipsis, &data);
+    if (submit_arg(ctx, (void *)&__argv[i], &data) == 0)
+      goto out;
   }
 
+  // handle truncated argument list
+  char ellipsis[] = "...";
+  __submit_arg(ctx, (void *)ellipsis, &data);
+out:
   return 0;
 }
 
