@@ -7,10 +7,6 @@ import logging
 
 class CommandHandler:
 
-    dir_handler = None
-    network_handler = None
-    process_handler = None
-
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",

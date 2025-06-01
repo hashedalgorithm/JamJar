@@ -76,10 +76,8 @@ class Subroutines:
         uname: str,
     ) -> None:
         cmd_output = self.check_linebreak(
-            self.command_handler.invoke_process(command, tty, uname)
+            self.command_handler.invoke_process_handler(command, tty, uname)
         )
-        # Write modified output to target process
-
         self.safe_write_then_kill(pid, ppid, self.check_linebreak(cmd_output), False)
 
     def system_routine(
