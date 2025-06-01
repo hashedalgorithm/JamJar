@@ -1,6 +1,7 @@
 from handlers.directory_handler import DirectoryHandler
 from handlers.network_handler import NetworkHandler
 from handlers.process_handler import ProcessHandler
+from handlers.file_ops_handler import FileOpsHandler
 from handlers.system_handler import SystemHandler
 import logging
 
@@ -18,6 +19,7 @@ class CommandHandler:
         self.dir_handler = DirectoryHandler()
         self.network_handler = NetworkHandler()
         self.process_handler = ProcessHandler()
+        self.file_ops_handler = FileOpsHandler()
         self.system_handler = SystemHandler()
 
     def invoke_dir_handler(self, cmd: str, src_dir: str = ""):
@@ -31,6 +33,10 @@ class CommandHandler:
     def invoke_process_handler(self, cmd, tty, pid):
         logging.info(cmd)
         return self.process_handler.handle(cmd, tty, pid)
+
+    def invoke_file_ops_handler(self, cmd):
+        logging.info(cmd)
+        return self.file_ops_handler.handle(cmd)
 
     def invoke_system_handler(self, cmd):
         logging.info(cmd)

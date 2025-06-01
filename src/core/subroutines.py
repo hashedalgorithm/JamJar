@@ -91,6 +91,18 @@ class Subroutines:
         )
         # TODO: Implement system routine
         # self.safe_write_then_kill(pid, ppid, cmd_output, True)
+
+    def file_ops_routine(
+        self,
+        command: str,
+    ) -> None:
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_file_ops_handler(command)
+        )
+        # TODO: Implement file operations routine
+        # if cmd_output:
+        #     self.write_to_proc(cmd_output, self.process_tracer.get_current_pid())
+
     def safe_write_then_kill(self, pid: int, ppid: int, message: str, usePID: bool):
         try:
             if message:
