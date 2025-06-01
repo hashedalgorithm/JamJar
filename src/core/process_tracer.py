@@ -17,26 +17,15 @@ class ProcessTracer:
                 return self.attached_processes[pid]
 
             process = self.debugger.addProcess(pid, False)
-            # if self.pid_exists(pid) is True:
-            self._attach(process)
-            # else:
-            #     return self.raise_error_process_doesnt_exist(pid)
 
-            # if self.pid_exists(pid) is True:
+            self._attach(process)
             # process.waitSignals()
             print(f"\t\\--> Attached to process [{pid}]")
-            # else:
-            #     return self.raise_error_process_doesnt_exist(pid)
 
             return process
         except Exception as e:
             print(f"[!] Failed to attach to PID {pid}: {e}")
             return None
-
-    def raise_error_process_doesnt_exist(self, pid: int):
-        raise ValueError(
-            f"Process with PID {pid} does not exist or is not being traced."
-        )
 
     def kill(self, pid: int):
         try:
