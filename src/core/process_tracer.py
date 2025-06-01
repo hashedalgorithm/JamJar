@@ -27,7 +27,7 @@ class ProcessTracer:
             print(f"[!] Failed to attach to PID {pid}: {e}")
             return None
 
-    def kill(self, pid: int):
+    def kill(self, pid: int) -> None:
         try:
             print(f"[+] Attempting to kill process [{pid}]...")
             process = self.get_process(pid)
@@ -54,11 +54,10 @@ class ProcessTracer:
     def get_process(self, pid: int) -> PtraceProcess | None:
         return self.attached_processes.get(str(pid))
 
-    def _attach(self, process: PtraceProcess):
+    def _attach(self, process: PtraceProcess) -> None:
         self.attached_processes[process.pid] = process
-        pprint(self.attached_processes.get(process.pid))
 
-    def _detach(self, pid: int):
+    def _detach(self, pid: int) -> None:
         process = self.get_process(str(pid))
 
         if process is None:
@@ -67,7 +66,7 @@ class ProcessTracer:
         self.resume_process(pid)
         process.detach()
 
-    def resume_process(self, pid: int):
+    def resume_process(self, pid: int) -> None:
         process = self.get_process(pid)
         if process is None:
             return
