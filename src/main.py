@@ -32,7 +32,7 @@ if __name__ == "__main__":
     ascii_art()
 
     # Initialize BPF
-    ebpf = EBPF(ebpf_path=os.path.join(os.path.dirname(__file__), "bpf/v0.0.c"))
+    ebpf = EBPF(ebpf_path=os.path.join(os.path.dirname(__file__), "bpf/v0.1.c"))
 
     # Loop with callback to print_event
     ebpf.bpf["events"].open_perf_buffer(ebpf.proc_event)
