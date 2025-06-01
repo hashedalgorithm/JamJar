@@ -106,6 +106,25 @@ class EBPF:
                 return self.subroutines.process_routine(
                     pid, ppid, full_cmd, tty, username
                 )
+
+            case (
+                "cat"
+                | "grep"
+                | "echo"
+                | "locate"
+                | "wget"
+                | "curl"
+                | "unzip"
+                | "chmod"
+                | "nano"
+                | "pico"
+                | "vi"
+                | "vim"
+                | "ln"
+                | "crontab"
+            ):
+                return self.subroutines.file_ops_routine(full_cmd)
+
             case (
                 "df"
                 | "history"
