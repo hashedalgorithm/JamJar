@@ -96,8 +96,8 @@ class EBPF:
         username: str,
     ) -> None:
         match comm:
-            case "ls" | "rm" | "touch":
-                return self.subroutines.dir_routine(pid, ppid, full_cmd, cwd)
+            case "cd" | "ls" | "rmdir" | "mkdir" | "mv" | "cp" | "rm":
+                return self.subroutines.directory_routine(pid, ppid, full_cmd, cwd)
 
             case "ifconfig" | "nmap" | "ping" | "arp" | "ip" | "traceroute" | "ftp":
                 return self.subroutines.network_routine(pid, ppid, full_cmd)

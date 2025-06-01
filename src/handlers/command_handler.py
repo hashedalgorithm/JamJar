@@ -16,15 +16,15 @@ class CommandHandler:
     )
 
     def __init__(self) -> None:
-        self.dir_handler = DirectoryHandler()
+        self.directory_handler = DirectoryHandler()
         self.network_handler = NetworkHandler()
         self.process_handler = ProcessHandler()
         self.file_ops_handler = FileOpsHandler()
         self.system_handler = SystemHandler()
 
-    def invoke_dir_handler(self, cmd: str, src_dir: str = ""):
+    def invoke_directory_handler(self, cmd: str, src_dir: str = ""):
         logging.info(cmd)
-        return self.dir_handler.handle(cmd, src_dir)
+        return self.directory_handler.handle(cmd, src_dir)
 
     def invoke_network_handler(self, cmd):
         logging.info(cmd)

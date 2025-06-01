@@ -1,42 +1,48 @@
 from utils import helper
 from models.storage_entry import StorageEntry
+from models.util import bcolors
 
 
-class bcolors:
-    HEADER = "\033[95m"
-    OKBLUE = "\033[94m"
-    OKCYAN = "\033[96m"
-    OKGREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-
-
-class DIR_handler:
+class DirectoryHandler:
 
     def __init__(self) -> None:
         self.root = helper.create_fake_dir_data_helper()
 
-    def command_handler(self, cmd: str, src_dir: str = ""):
-        output = None
+    def handle(self, cmd: str, src_dir: str = "") -> str | None:
 
         cmd_name = cmd.split(" ")[0]
         args = cmd.split(" ")[1:]
 
         match cmd_name:
+            case "cd":
+                return self.cd(args)
 
             case "ls":
-                output = self.ls(args, src_dir)
+                return self.ls(args, src_dir)
+
+            case "rmdir":
+                return self.rmdir()
+
+            case "mkdir":
+                return self.mkdir()
+
+            case "mv":
+                return self.mv()
+
+            case "cp":
+                return self.cp()
 
             case "rm":
-                output = self.rm(args, src_dir)
+                return self.rm(args, src_dir)
 
-            case "touch":
-                output = self.touch(args, src_dir)
+            case _:
+                print(f"Command '{cmd}' not recognized by DirectoryHandler.")
+                return None
 
-        return output
+    def cd(self):
+        # TODO: Implement cd command
+        print("cd not implemented yet")
+        return None
 
     def ls(self, args: str, src_dir: str):
         output = ""
@@ -126,6 +132,26 @@ class DIR_handler:
 
         return output
 
+    def rmdir(self):
+        # TODO: Implement rmdir command
+        print("rmdir not implemented yet")
+        return None
+
+    def mkdir(self):
+        # TODO: Implement mkdir command
+        print("mkdir not implemented yet")
+        return None
+
+    def mv(self):
+        # TODO: Implement mv command
+        print("mv not implemented yet")
+        return None
+
+    def cp(self):
+        # TODO: Implement cp command
+        print("cp not implemented yet")
+        return None
+
     def rm(self, args, src_dir):
         target_file = ""
         src_dir_list = helper.path_to_list_helper(src_dir)
@@ -159,38 +185,5 @@ class DIR_handler:
             return
 
         src_obj.content.pop(target_file)
-
-        return None
-
-    def touch(self, args, src_dir):
-        target_file = ""
-        path_flag = False
-
-        target_file, _ = helper.get_main_arg_helper(args)
-
-        if "/" in target_file:
-            path_flag = True
-            target_file, src_dir_list = helper.target_dir_is_path_helper(
-                target_file, src_dir
-            )
-
-        if not target_file:
-            output = (
-                "touch: missing file operand \nTry 'touch --help' for more information."
-            )
-            return output
-
-        file_type_split = target_file.split(".")
-
-        if len(file_type_split) > 1:
-            file_type = target_file.split(".")[-1]
-        else:
-            file_type = "file"
-
-        target_obj = StorageEntry(target_file, file_type=file_type)
-
-        helper.add_file_helper(
-            self.root, src_dir_list if path_flag else src_dir, target_obj
-        )
 
         return None

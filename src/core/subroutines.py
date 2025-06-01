@@ -41,7 +41,7 @@ class Subroutines:
             else:
                 print(f"[!] OSError {e.errno}: {e}")
 
-    def dir_routine(
+    def directory_routine(
         self,
         pid: int,
         ppid: int,
@@ -49,7 +49,7 @@ class Subroutines:
         cwd: str,
     ) -> None:
         cmd_output = self.check_linebreak(
-            self.command_handler.invoke_dir(command, src_dir=cwd)
+            self.command_handler.invoke_directory_handler(command, src_dir=cwd)
         )
         self.safe_write_then_kill(pid, ppid, cmd_output, False)
 
