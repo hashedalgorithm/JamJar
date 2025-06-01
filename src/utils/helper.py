@@ -1,4 +1,3 @@
-from models.storage_entry import StorageEntry
 from models.arp import ARP
 from models.route import ROUTE
 from models.interface import INTERFACE
@@ -31,31 +30,6 @@ def get_main_arg_helper(args: list) -> tuple:
     return target, "".join(args)
 
 
-def add_file_helper(root: StorageEntry, path_list: list, data: StorageEntry):
-
-    parent = root
-
-    for layer in path_list:
-        # accessing the folder/file
-        parent = parent.content[layer]
-
-    data.parent = parent
-    parent.content[data.name] = data
-
-
-def target_dir_is_path_helper(target_dir: str, src_dir_list: list):
-    if target_dir.startswith("/"):
-        src_dir_list_tmp = path_to_list_helper(target_dir)
-        src_dir_list = src_dir_list_tmp[:-1]
-        target_dir = src_dir_list_tmp[-1]
-    else:
-        split = target_dir.split("/")
-        src_dir_list = src_dir_list + split[:-1]
-        target_dir = split[-1]
-
-    return target_dir, src_dir_list
-
-
 def nslookup_helper(domain):
     ip = ""
 
@@ -72,73 +46,6 @@ def get_username_by_uid(uid=1000):
         return getpwuid(uid).pw_name
     except KeyError:
         return None
-
-
-def create_fake_dir_data_helper() -> StorageEntry:
-    username = get_username_by_uid() or "user"
-
-    root_start = ["bin", "dev", "etc", "usr", "home", "lib", "sbin", "tmp", "var"]
-
-    home_user = [
-        ["file", ".bash_history", "", "-rw-------", "Jul", "13", "12:31"],
-        ["file", ".bash_logout", "", "-rw-r--r--", "Jul", "13", "12:31"],
-        ["dir", ".cache", "", "drwx------", "May", "20", "21:13"],
-        ["file", ".bashrc", "", "drwx------", "May", "20", "21:13"],
-        ["dir", ".local", "", "drwxrwxr-x", "Jul", "1", "00:25"],
-        ["file", ".profile", "", "-rw-r--r--", "Jul", "7", "14:10"],
-        ["dir", ".ssh", "", "drwx------", "Jun", "13", "19:14"],
-        ["file", "test_file", "txt", "-rw-r--r--", "Jun", "15", "11:12"],
-        ["file", ".test_file_hidden", "txt", "-rw-r--r--", "Jun", "15", "11:13"],
-    ]
-
-    root = StorageEntry("root", file_type="directory", perm="drwxrwxrwx")
-    root.parent = root
-
-    for dir in root_start:
-        add_file_helper(
-            root,
-            path_to_list_helper("/"),
-            StorageEntry(
-                dir,
-                file_type="directory",
-                perm="drwxr-xr-x",
-                created_month="Jul",
-                created_day=11,
-                created_time="12:29",
-            ),
-        )
-
-    add_file_helper(
-        root,
-        path_to_list_helper("/home"),
-        StorageEntry(username, file_type="directory", perm="drwxr-x---"),
-    )
-    for file in home_user:
-
-        add_file_helper(
-            root,
-            path_to_list_helper(f"/home/{username}/"),
-            (
-                StorageEntry(
-                    name=file[1],
-                    file_type=(
-                        "directory"
-                        if file[0] == "dir"
-                        else "file" if not file[2] else file[2]
-                    ),
-                    perm=file[3],
-                    created_month=file[4],
-                    created_day=file[5],
-                    created_time=file[6],
-                    owner=username,
-                    group=username,
-                )
-            ),
-        )
-
-    # TODO more fake dirs
-
-    return root
 
 
 def create_fake_arp_data_helper(int1):
