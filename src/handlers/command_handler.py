@@ -3,6 +3,7 @@ from handlers.network_handler import NetworkHandler
 from handlers.process_handler import ProcessHandler
 from handlers.file_ops_handler import FileOpsHandler
 from handlers.system_handler import SystemHandler
+from models.file_system import FileSystem
 import logging
 
 
@@ -16,6 +17,7 @@ class CommandHandler:
     )
 
     def __init__(self) -> None:
+        self.file_system = FileSystem()
         self.directory_handler = DirectoryHandler()
         self.network_handler = NetworkHandler()
         self.process_handler = ProcessHandler()
