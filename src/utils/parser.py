@@ -48,8 +48,12 @@ class ParserOption:
 
 class Parser:
     def __init__(self, command_line_str: str):
+        self.command_line_str: str = command_line_str
         self.parsed = self.parse_shell_command(command_line_str)
         self.command_sequence: list[CommandSequence] = []
+
+    def path_to_list_helper(path: str) -> list:
+        return path.strip("/").split("/") if path != "/" and path != "" else []
 
     def split_by_operators(self, command_line: str):
         pattern = r"(;|&&|\|\||&)"

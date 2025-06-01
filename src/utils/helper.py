@@ -20,10 +20,6 @@ TRACEROUTES = [
 ]
 
 
-def path_to_list_helper(path: str) -> list:
-    return path.strip("/").split("/") if path != "/" and path != "" else []
-
-
 def get_main_arg_helper(args: list) -> tuple:
     target = ""
 
