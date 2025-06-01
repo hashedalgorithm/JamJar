@@ -39,10 +39,9 @@ class EBPF:
         event = self.bpf["events"].event(data)
 
         if event.type == EventType.EVENT_ARG:
-            print("[+] EVENT ARG", event.pid, event.argv, event)
+
             self.argv[event.pid].append(event.argv)
         elif event.type == EventType.EVENT_RET:
-            print("[+] EVENT RET", event.pid, event.argv, event)
 
             if event.pid not in self.argv:
                 print(f"[!] No event found for PID {event.pid}.")
@@ -56,29 +55,24 @@ class EBPF:
                 tty = os.readlink(f"/proc/{event.pid}/fd/0").replace("/dev/", "")
                 username = get_username_by_uid(event.uid)
                 # Getting cleaned command
-                print("[-] DEBUGGING ", event.pid, event.comm, argv_text)
                 full_command, cmd_wo_args = self.cleanup_cmd(event.comm, argv_text)
 
                 # Print event to console
                 self.print_event(full_command, cwd, event.uid)
+
                 # Handle commands
-                # self.event_handler(
-                #     cmd_wo_args,
-                #     event.pid,
-                #     full_command,
-                #     cwd,
-                #     tty,
-                #     event.ppid,
-                #     username,
-                # )
-                print(
-                    "[+] DEBUGGING: argv contents:",
-                    self.argv[event.pid],
-                    full_command,
+                self.event_handler(
                     cmd_wo_args,
+                    event.pid,
+                    full_command,
+                    cwd,
+                    tty,
+                    event.ppid,
+                    username,
                 )
+
                 del self.argv[event.pid]
-                print(f"[+] Cleared argv for PID {event.pid}")
+
             except FileNotFoundError:
                 print(f"[!] Process {event.pid} exited before we could inspect /proc")
             except Exception as e:
