@@ -8,7 +8,7 @@ import ipcalc
 LOCAL_NETS = ["10.0.0.0/8", "172.16.0.0/12", "12.168.0.0/16"]
 
 
-class NETWORK_handler:
+class NetworkHandler:
 
     output = None
 
@@ -20,27 +20,47 @@ class NETWORK_handler:
         self.arp_table = helper.create_fake_arp_data_helper(self.interfaces["ens18"])
         self.routes = helper.create_fake_route_data_helper(self.interfaces["ens18"])
 
-    def cmd(self, cmd):
-        output = None
+    def handle(self, cmd: str):
 
         cmd_name = cmd.split(" ")[0]
         args = cmd.split(" ")[1:]
 
         match cmd_name:
 
+            case "ifconfig":
+                return self.ifconfig(args)
+
+            case "nmap":
+                return self.nmap(args)
+
             case "ping":
-                output = self.ping(args)
+                return self.ping(args)
 
             case "arp":
-                output = self.arp(args)
+                return self.arp(args)
 
             case "ip":
-                output = self.ip(args)
+                return self.ip(args)
 
             case "traceroute":
-                output = self.traceroute(args)
+                return self.traceroute(args)
 
-        return output
+            case "ftp":
+                return self.ftp(args)
+
+            case _:
+                print(f"Command '{cmd}' not recognized by NetworkHandler.")
+                return None
+
+    def ifconfig(self, args):
+        # TODO: Implement ifconfig command
+        print("ifconfig not implemented yet")
+        return None
+
+    def nmap(self, args):
+        # TODO: Implement nmap command
+        print("nmap not implemented yet")
+        return None
 
     def ping(self, args):
         output = []
@@ -174,3 +194,8 @@ class NETWORK_handler:
             output.append(f"{i}  {ip} {" ".join(time_total)}")
 
         return output
+
+    def ftp(self):
+        # TODO: Implement ftp command
+        print("ftp not implemented yet")
+        return None

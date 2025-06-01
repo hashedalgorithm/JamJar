@@ -54,14 +54,13 @@ class Subroutines:
         self.safe_write_then_kill(pid, ppid, cmd_output, False)
 
     def network_routine(self, pid: int, ppid: int, command: str) -> None:
-        cmd_output = self.command_handler.invoke_network(command)
+        cmd_output = self.command_handler.invoke_network_handler(command)
         # Special case ping
         if type(cmd_output) == list:
             for n, item in enumerate(cmd_output):
                 self.write_to_proc(item + "\n", str(ppid))
                 if n < 5:
                     time.sleep(1)
-        # Write modified output to target process
         else:
             self.safe_write_then_kill(
                 str(pid), ppid, self.check_linebreak(cmd_output), True

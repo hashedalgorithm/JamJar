@@ -99,7 +99,7 @@ class EBPF:
             case "ls" | "rm" | "touch":
                 return self.subroutines.dir_routine(pid, ppid, full_cmd, cwd)
 
-            case "ping" | "arp" | "ip" | "traceroute":
+            case "ifconfig" | "nmap" | "ping" | "arp" | "ip" | "traceroute" | "ftp":
                 return self.subroutines.network_routine(pid, ppid, full_cmd)
 
             case "ps" | "kill" | "killall":
