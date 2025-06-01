@@ -18,7 +18,7 @@ class CommandHandler:
 
     def __init__(self) -> None:
         self.file_system = FileSystem()
-        self.directory_handler = DirectoryHandler()
+        self.directory_handler = DirectoryHandler(file_system=self.file_system)
         self.network_handler = NetworkHandler()
         self.process_handler = ProcessHandler()
         self.file_ops_handler = FileOpsHandler()

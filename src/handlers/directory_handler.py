@@ -5,7 +5,6 @@ from models.file_system import FileSystem
 class DirectoryHandler:
 
     def __init__(self, file_system: FileSystem) -> None:
-        self.root = helper.create_fake_dir_data_helper()
         self.file_system = file_system
 
     def handle(self, cmd: str, src_dir: str = "") -> str | None:

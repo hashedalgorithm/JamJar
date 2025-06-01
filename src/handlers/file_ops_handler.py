@@ -1,5 +1,5 @@
 from utils import helper
-from models.storage_entry import StorageEntry
+from models.file import File
 
 
 class FileOpsHandler:
@@ -83,7 +83,7 @@ class FileOpsHandler:
         else:
             file_type = "file"
 
-        target_obj = StorageEntry(target_file, file_type=file_type)
+        target_obj = File(target_file, file_type=file_type)
 
         helper.add_file_helper(
             self.root, src_dir_list if path_flag else src_dir, target_obj

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from .directory import Directory
 from .file import File
-from utils.helper import get_username_by_uid
+from utils import helper
 
 
 class FileSystem:
@@ -27,7 +27,7 @@ class FileSystem:
         self.root.add(Directory("dev", perm="drwxr-xr-x"))
 
         home = self.root.children["home"]
-        username = get_username_by_uid() or "user"
+        username = helper.get_username_by_uid() or "user"
         home.add(Directory(username, perm="drwxr-xr-x"))
         a_folder = home.children[username]
 
