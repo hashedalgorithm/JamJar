@@ -1,7 +1,7 @@
 import shlex
 import re
 
-def split_by_operators(command_line):
+def split_by_operators(command_line: str):
     pattern = r'(;|&&|\|\||&)'
     parts = re.split(f'({pattern})', command_line)
     
@@ -26,7 +26,7 @@ def split_by_operators(command_line):
 
     return result
 
-def parse_redirection(tokens):
+def parse_redirection(tokens: list):
     result = []
     redir = {}
 
@@ -34,17 +34,14 @@ def parse_redirection(tokens):
     while i < len(tokens):
         token = tokens[i]
         if token == '>':
-            # Always overwrite previous stdout or stdout_append on seeing new >
-            redir.pop('stdout_append', None)  # remove append if any
+            redir.pop('stdout_append', None)
             redir["stdout"] = tokens[i + 1]
             i += 2
         elif token == '>>':
-            # Always overwrite previous stdout or stdout_append on seeing new >>
-            redir.pop('stdout', None)  # remove overwrite if any
+            redir.pop('stdout', None)
             redir["stdout_append"] = tokens[i + 1]
             i += 2
         elif token == '<':
-            # Only one stdin expected, overwrite if multiple (optional)
             redir["stdin"] = tokens[i + 1]
             i += 2
         else:
@@ -53,11 +50,10 @@ def parse_redirection(tokens):
 
     return result, redir
 
-def preprocess_multiline_command(command_line):
-    # Remove backslash-newline (line continuation) and replace with space
+def preprocess_multiline_command(command_line: str):
     return command_line.replace('\\\n', ' ')
 
-def parse_shell_command(raw_input):
+def parse_shell_command(raw_input: str):
     command_line = raw_input.replace('\\\n', ' ')
     command_groups = []
     segments = split_by_operators(command_line)
@@ -93,9 +89,7 @@ def parse_shell_command(raw_input):
 
     return command_groups
 
-
-
-def parse_arguments_structured(arguments, options_with_values=None):
+def parse_arguments_structured(arguments: list, options_with_values: list = None):
     if options_with_values is None:
         options_with_values = []
     
@@ -142,8 +136,6 @@ def parse_arguments_structured(arguments, options_with_values=None):
     
     return parsed_args
 
-
-
 # --- Example Usage ---
 if __name__ == "__main__":
     test_inputs = [
@@ -166,10 +158,8 @@ if __name__ == "__main__":
 
     for input_cmd in test_inputs:
         print(input_cmd)
-
         result = parse_shell_command(input_cmd)
         print(result)
-    
 
     args = ['-a', '-o', 'output.txt', '--verbose', '--file=log.txt', 'input1.txt', '--', '-notAnOption']
     opts_with_values = ['-o', '--file']
