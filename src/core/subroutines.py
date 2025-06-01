@@ -2,7 +2,7 @@ import os
 import time
 import errno
 
-from core.cmd_invoke import CMD_invoke
+from handlers.command_handler import CommandHandler
 from ptrace.debugger import PtraceProcess
 from core.process_tracer import ProcessTracer
 
@@ -10,7 +10,7 @@ from core.process_tracer import ProcessTracer
 class Subroutines:
 
     def __init__(self, process_tracer: ProcessTracer):
-        self.CMD = CMD_invoke()
+        self.command_handler = CommandHandler()
         self.process_tracer = process_tracer
 
     def check_linebreak(self, message: str) -> str:
@@ -48,11 +48,13 @@ class Subroutines:
         command: str,
         cwd: str,
     ) -> None:
-        cmd_output = self.check_linebreak(self.CMD.invoke_dir(command, src_dir=cwd))
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_dir(command, src_dir=cwd)
+        )
         self.safe_write_then_kill(pid, ppid, cmd_output, False)
 
     def network_routine(self, pid: int, ppid: int, command: str) -> None:
-        cmd_output = self.CMD.invoke_network(command)
+        cmd_output = self.command_handler.invoke_network(command)
         # Special case ping
         if type(cmd_output) == list:
             for n, item in enumerate(cmd_output):
@@ -73,7 +75,9 @@ class Subroutines:
         tty: str,
         uname: str,
     ) -> None:
-        cmd_output = self.check_linebreak(self.CMD.invoke_process(command, tty, uname))
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_process(command, tty, uname)
+        )
         # Write modified output to target process
 
         self.safe_write_then_kill(pid, ppid, self.check_linebreak(cmd_output), False)

@@ -1,11 +1,10 @@
-from handlers.dir_handler import DIR_handler
-from handlers.network_handler import NETWORK_handler
-from handlers.process_handler import PROCESS_handler
-import time
+from handlers.directory_handler import DirectoryHandler
+from handlers.network_handler import NetworkHandler
+from handlers.process_handler import ProcessHandler
 import logging
 
 
-class CMD_invoke:
+class CommandHandler:
 
     dir_handler = None
     network_handler = None
@@ -19,25 +18,25 @@ class CMD_invoke:
     )
 
     def __init__(self) -> None:
-        self.dir_handler = DIR_handler()
-        self.network_handler = NETWORK_handler()
-        self.process_handler = PROCESS_handler()
+        self.dir_handler = DirectoryHandler()
+        self.network_handler = NetworkHandler()
+        self.process_handler = ProcessHandler()
 
-    def invoke_dir(self, cmd, src_dir=""):
+    def invoke_dir_handler(self, cmd: str, src_dir: str = ""):
         logging.info(cmd)
-        return self.dir_handler.command_handler(cmd, src_dir)
+        return self.dir_handler.handle(cmd, src_dir)
 
-    def invoke_network(self, cmd):
+    def invoke_network_handler(self, cmd):
         logging.info(cmd)
-        return self.network_handler.cmd(cmd)
+        return self.network_handler.handle(cmd)
 
-    def invoke_process(self, cmd, tty, pid):
+    def invoke_process_handler(self, cmd, tty, pid):
         logging.info(cmd)
-        return self.process_handler.cmd(cmd, tty, pid)
+        return self.process_handler.handle(cmd, tty, pid)
 
 
 if __name__ == "__main__":
-    cmd = CMD_invoke()
+    cmd = CommandHandler()
     # print("Testing---------------------------------")
     # print(cmd.invoke_dir("ls"))
     # print(cmd.invoke_dir("ls home"))
