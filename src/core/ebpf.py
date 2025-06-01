@@ -106,6 +106,19 @@ class EBPF:
                 return self.subroutines.process_routine(
                     pid, ppid, full_cmd, tty, username
                 )
+            case (
+                "df"
+                | "history"
+                | "php"
+                | "uname"
+                | "whoami"
+                | "w"
+                | "id"
+                | "last"
+                | "uptime"
+            ):
+                return self.subroutines.system_routine(cwd, full_cmd)
+
             case _:
                 print(f"[!] Subroutine for command {comm} is not implemented yet!")
                 return

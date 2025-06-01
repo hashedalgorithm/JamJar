@@ -1,6 +1,7 @@
 from handlers.directory_handler import DirectoryHandler
 from handlers.network_handler import NetworkHandler
 from handlers.process_handler import ProcessHandler
+from handlers.system_handler import SystemHandler
 import logging
 
 
@@ -21,6 +22,7 @@ class CommandHandler:
         self.dir_handler = DirectoryHandler()
         self.network_handler = NetworkHandler()
         self.process_handler = ProcessHandler()
+        self.system_handler = SystemHandler()
 
     def invoke_dir_handler(self, cmd: str, src_dir: str = ""):
         logging.info(cmd)
@@ -34,21 +36,11 @@ class CommandHandler:
         logging.info(cmd)
         return self.process_handler.handle(cmd, tty, pid)
 
+    def invoke_system_handler(self, cmd):
+        logging.info(cmd)
+        return self.system_handler.handle(cmd)
 
-if __name__ == "__main__":
-    cmd = CommandHandler()
-    # print("Testing---------------------------------")
-    # print(cmd.invoke_dir("ls"))
-    # print(cmd.invoke_dir("ls home"))
-    # print(cmd.invoke_dir("ls", src_dir="/home"))
-    # print(cmd.invoke_dir("ls user", src_dir="/home"))
-    # print(cmd.invoke_dir("ls test_file", src_dir="/home/user"))
-    # print(cmd.invoke_dir("ls -a user", src_dir="/home"))
-    # print(cmd.invoke_dir("ls -al user", src_dir="/home"))
-    # print(cmd.invoke_dir("ls /home/user", src_dir="/home"))
-    # print(cmd.invoke_dir("ls user/.local", src_dir="/home"))
-    # print(cmd.invoke_dir("ls -al"))
-    # print(cmd.invoke_dir("ls -al not_here"))
+
 
     # print(cmd.invoke_dir("ls -a user", src_dir="/home"))
     # print(cmd.invoke_dir("rm test_file", src_dir="/home/user"))

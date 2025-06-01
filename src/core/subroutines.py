@@ -82,6 +82,17 @@ class Subroutines:
 
         self.safe_write_then_kill(pid, ppid, self.check_linebreak(cmd_output), False)
 
+    def system_routine(
+        self,
+        pid: int,
+        ppid: int,
+        command: str,
+    ) -> None:
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_system_handler(command)
+        )
+        # TODO: Implement system routine
+        # self.safe_write_then_kill(pid, ppid, cmd_output, True)
     def safe_write_then_kill(self, pid: int, ppid: int, message: str, usePID: bool):
         try:
             if message:
