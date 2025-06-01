@@ -29,7 +29,7 @@ sudo apt install libcurl4--openssl-dev liblaujit-5.1-dev
 ---
 
 ## **📦 Installation Steps**
-### **1. Clone JamJar from Github
+### **1. Clone JamJar from Github**
 
 ```
 git clone https://www.github.com/hashedalgorithm/JamJar.git
@@ -51,7 +51,7 @@ source ~/JamJar/jamjar-venv/bin/activate
 
 ---
 
-### **2. Clone the BCC Repository**
+### **3. Clone the BCC Repository**
 
 ```
 git clone https://github.com/iovisor/bcc.git
@@ -60,7 +60,7 @@ cd bcc
 
 ---
 
-### **3. Change Folder Ownership (Recommended for Virtualized/Root-Owned Folders)**
+### **4. Change Folder Ownership (Recommended for Virtualized/Root-Owned Folders)**
 
 If you’re using a virtual machine or ran git clone with sudo, you may need to change the folder’s ownership:
 
@@ -70,7 +70,7 @@ sudo chown -R $(whoami):$(whoami) .
 
 ---
 
-### **4. Create and Enter the Build Directory**
+### **5. Create and Enter the Build Directory**
 
 ```
 mkdir build
@@ -79,7 +79,7 @@ cd build
 
 ---
 
-### **5. Build and Install BCC Core**
+### **6. Build and Install BCC Core**
 
 ```
 cmake ..
@@ -90,12 +90,12 @@ make install
 > ⚠️ If you are getting errors then the reason for it would be ownership issues with the folder.
 ---
 
-### **6. Install Python Dependencies (for your venv)**
+### **7. Install Python Dependencies (for your venv)**
 ```
 pip install six setuptools ipcalc build
 ```
 
-### **7. Installing ptrace(0.9.9 stable) from source
+### **8. Installing ptrace(0.9.9 stable) from source**
 
 ```
 // Go to ~/JamJar
@@ -113,7 +113,7 @@ This creates a .whl file in the dist/ directory.
 pip install dist/*.whl
 ```
 
-### **8. Build and Install Python Bindings (for your venv)**
+### **9. Build and Install Python Bindings (for your venv)**
 
 From within the build directory:
 
@@ -160,11 +160,11 @@ rm -r ~/JamJar/python-ptrace0.9.9.zip
 
 ---
 
-## **🍯 Running JamJar **
+## **🍯 Running JamJar**
 
 JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
 
-### **👤 Change Password of Root User
+### **👤 Change Password of Root User**
 
 ```
 ubuntu@VM:~$ sudo passwd root
@@ -174,7 +174,7 @@ Retype new password:
 passwd: password updated successfully
 ```
 
-### **🦾 Get Root Shell
+### **🦾 Get Root Shell**
 
 ```
 ubuntu@VM:~$ su
