@@ -18,6 +18,35 @@ TRACEROUTES = [
     "172.69.148.3",
 ]
 
+def has_more_than_one_positional(arguments):
+    count = sum(1 for arg in arguments if arg['type'] == 'positional')
+    return count > 1
+
+def path_to_cleaned_list(path: str) -> list[str]:
+    if not path:
+        return []
+
+    is_absolute = path.startswith("/")
+    components = path.split("/")
+
+    result = []
+
+    for comp in components:
+        # Skip empty components caused by multiple slashes
+        if comp == "" or comp == ".":
+            continue
+        elif comp == "..":
+            if result and result[-1] != "/" and result[-1] != "..":
+                result.pop()  # Cancel the last valid directory
+            elif not is_absolute:
+                result.append("..")  # Relative path: preserve leading ..
+        else:
+            result.append(comp)
+
+    if is_absolute:
+        result.insert(0, "/")
+
+    return result
 
 def get_main_arg_helper(args: list) -> tuple:
     target = ""
