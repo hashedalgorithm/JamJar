@@ -6,11 +6,12 @@ from utils.helper import get_username_by_uid
 
 class FileSystem:
     def __init__(self) -> None:
-        self.root = Directory(
-            "root",
-        )
+        self.root = Directory("root")
         self.cwd = self.root  # Current working directory
-        self.path_stack = []
+        self.path_stack = ['root']
+
+        self.oldpwd = None              # Previous working directory (Directory object)
+        self.oldpwd_path_stack = None   # Previous path stack (list of strings)
 
         self.create_fake_dir_data_helper()
 
