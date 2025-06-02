@@ -1,21 +1,20 @@
-from utils import helper
+from utils import helper 
+from utils import parser
 from models.file_system import FileSystem
 
 
 class DirectoryHandler:
 
-    def __init__(self, file_system: FileSystem) -> None:
-        self.root = helper.create_fake_dir_data_helper()
-        self.file_system = file_system
+    def __init__(self) -> None:
+        self.file_system = FileSystem()
 
     def handle(self, cmd: str, src_dir: str = "") -> str | None:
 
         cmd_name = cmd.split(" ")[0]
         args = cmd.split(" ")[1:]
-
         match cmd_name:
             case "cd":
-                return self.cd(args)
+                return self.cd()
 
             case "ls":
                 return self.ls()
@@ -43,6 +42,7 @@ class DirectoryHandler:
         # TODO: Implement cd command
         print("cd not implemented yet")
         return None
+
 
     def ls(self):
         # TODO: Implement ls command
@@ -73,3 +73,8 @@ class DirectoryHandler:
         # TODO: Implement rm command
         print("rm not implemented yet")
         return None
+    
+if __name__ == "__main__":
+    DH = DirectoryHandler()
+    command:str = input("Enter command: ")
+    print(DH.handle(command))
