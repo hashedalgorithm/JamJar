@@ -2,6 +2,7 @@ from __future__ import annotations
 from .directory import Directory
 from .file import File
 from utils import helper
+from pydash import has
 
 
 class FileSystem:
@@ -13,6 +14,13 @@ class FileSystem:
         self.path_stack = []
 
         self.create_fake_dir_data_helper()
+
+    def get_user_home(self) -> Directory:
+        """
+        Get the home directory of the current user.
+        """
+        username = helper.get_username_by_uid() or "user"
+        return self.root.children["home"].children[username]
 
     def create_fake_dir_data_helper(self) -> None:
         # Setup fake FS environment (similar to your original)
@@ -70,3 +78,39 @@ class FileSystem:
         subB.add(File("b2.txt", perm="-rw-r--r--"))
         dirB.add(subB)
         a_folder.add(dirB)
+
+    def find_directory(self, path: list[str]) -> None:
+        pass
+
+    def find_directory(self, path: str) -> Directory | None:
+        """
+        Find a directory by its path.
+        """
+        if path == "":
+            return None
+
+        if path == "/":
+            return self.root
+
+        if path.startswith("/"):
+            sub_paths = path.split("/")
+
+            try:
+
+                for sub_path in sub_paths:
+
+                    current_directory = self.root.children
+
+                    ret = has(current_directory.children, sub_path)
+
+                    if ret:
+                        current_directory = current_directory.children[sub_path]
+                    else:
+                        raise KeyError(sub_path)
+                return current_directory
+
+            except KeyError as e:
+                print(f"Directory not found: {e}")
+                return None
+
+        sub_paths = path.split("/")

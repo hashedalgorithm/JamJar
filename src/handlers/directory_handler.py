@@ -43,10 +43,11 @@ class DirectoryHandler:
         print("cd not implemented yet")
         return None
 
-    def ls(self):
-        # TODO: Implement ls command
-        print("ls not implemented yet")
-        return None
+    def ls(self, args: list[str] = None):
+
+        # if(args is None or len(args) == 0):
+        #     args =
+        pass
 
     def rmdir(self):
         # TODO: Implement rmdir command
