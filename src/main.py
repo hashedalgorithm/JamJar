@@ -19,8 +19,8 @@ def ascii_art():
 \________(____  /__|_|  /\________(____  /__|         ⣿⡇⠀⠀⣴⣿⣿⣿⣿⣿⣿⣦⠀⠀⣿⠀⢸⣿
               \/      \/               \/             ⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⣿⠀⢸⣿
         © Jamjar v2.0                                 ⣿⡇⠀⠀⣇⠈⠉⡿⢿⠉⠁⣸⠀⠀⣿⠀⢸⣿
-        by Sanjay Kumar Kumaravelan, Niveditha        ⣿⡇⠀⠀⠙⠛⢻⣷⣾⡟⠛⠋⠀⠀⣿⠀⢸⣿
-        Illangovan & Monisha Vanamuthu                ⣿⡇⠀   ⡏  ⢹⠀⠀⠀⠀⣿⠀⢸⣿
+        by Sanjay Kumar Kumaravelan, Nivedhidha       ⣿⡇⠀⠀⠙⠛⢻⣷⣾⡟⠛⠋⠀⠀⣿⠀⢸⣿
+        Ilangovan & Monisha Vanamuthu                 ⣿⡇⠀   ⡏   ⢹⠀⠀⠀⠀⣿⠀⢸⣿
                                                       ⢻⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠟⠀⣸⡟
                                                        ⠛⢷⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⡾⠛
     """
