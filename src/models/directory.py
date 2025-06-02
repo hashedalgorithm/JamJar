@@ -1,9 +1,9 @@
-from .file_system import StorageEntryProperties
+from .file_system_entry_properties import FileSystemEntryProperties
 from .file import File
 from typing import Optional
 
 
-class Directory(StorageEntryProperties):
+class Directory(FileSystemEntryProperties):
     def __init__(
         self,
         name: str,
