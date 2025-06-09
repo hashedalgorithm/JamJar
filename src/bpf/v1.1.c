@@ -100,7 +100,13 @@ int handle_exec_syscall_entry(struct pt_regs *ctx, const char __user *filename,
   int args_processing_ret = 0;
 
 #pragma unroll
-  for (int i = 1; i < MAX_ARG_LIMIT; i++) {
+  for (int i = 0; i < MAX_ARG_LIMIT; i++) {
+    if (!&__argv[i]) {
+      bpf_trace_printk("Reached end of arguments at index %d\\n", i);
+      break;
+    }
+
+    bpf_trace_printk("Processing argument %d\\n", i);
     const char *argp = NULL;
 
     int ret = bpf_probe_read_user(&argp, sizeof(argp), &__argv[i]);
