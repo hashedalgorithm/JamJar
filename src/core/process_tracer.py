@@ -114,3 +114,4 @@ class ProcessTracer(Logger):
             raise ProcessLookupError(f"Failed to resume PID {pid}")
 
         os.kill(pid, signal.SIGCONT)
+        del self.attached_processes[pid]

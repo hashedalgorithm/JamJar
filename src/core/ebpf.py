@@ -49,59 +49,7 @@ class EBPF(Logger):
 
         username = get_username_by_uid(process.uid)
 
-        self.event_handler(
+        self.subroutines.subroutine_manager(
             process,
             username,
         )
-
-    def event_handler(
-        self,
-        process: Process,
-        username: str,
-    ) -> None:
-        match process.command:
-            case "cd" | "ls" | "rmdir" | "mkdir" | "mv" | "cp" | "rm":
-                return self.subroutines.directory_routine(process)
-
-            case "ifconfig" | "nmap" | "ping" | "arp" | "ip" | "traceroute" | "ftp":
-                return self.subroutines.network_routine(process)
-
-            case "ps" | "kill" | "killall":
-                return self.subroutines.process_routine(process, username)
-
-            case (
-                "cat"
-                | "grep"
-                | "echo"
-                | "locate"
-                | "wget"
-                | "curl"
-                | "unzip"
-                | "chmod"
-                | "nano"
-                | "pico"
-                | "vi"
-                | "vim"
-                | "ln"
-                | "crontab"
-            ):
-                return self.subroutines.file_ops_routine(process)
-
-            case (
-                "df"
-                | "history"
-                | "php"
-                | "uname"
-                | "whoami"
-                | "w"
-                | "id"
-                | "last"
-                | "uptime"
-            ):
-                return self.subroutines.system_routine(process)
-
-            case _:
-                self.logger.info(
-                    f"Subroutine for command {process.command} is not implemented yet!"
-                )
-                return

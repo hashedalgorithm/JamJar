@@ -15,15 +15,73 @@ class Subroutines(Logger):
         self.command_handler = CommandHandler()
         self.process_tracer = process_tracer
 
+    def subroutine_manager(
+        self,
+        process: Process,
+        username: str,
+    ) -> None:
+        match process.command:
+            case "cd" | "ls" | "rmdir" | "mkdir" | "mv" | "cp" | "rm":
+                return self.directory_routine(process)
+
+            case "ifconfig" | "nmap" | "ping" | "arp" | "ip" | "traceroute" | "ftp":
+                return self.network_routine(process)
+
+            case "ps" | "kill" | "killall":
+                return self.process_routine(process, username)
+
+            case (
+                "cat"
+                | "grep"
+                | "echo"
+                | "locate"
+                | "wget"
+                | "curl"
+                | "unzip"
+                | "chmod"
+                | "nano"
+                | "pico"
+                | "vi"
+                | "vim"
+                | "ln"
+                | "crontab"
+            ):
+                return self.file_ops_routine(process)
+
+            case (
+                "df"
+                | "history"
+                | "php"
+                | "uname"
+                | "whoami"
+                | "w"
+                | "id"
+                | "last"
+                | "uptime"
+            ):
+                return self.system_routine(process)
+
+            case _:
+                self.logger.error(
+                    f"Subroutine for command {process.command} is not implemented yet!"
+                )
+                self.process_tracer.resume(process.pid)
+                return
+
     def directory_routine(self, process: Process) -> None:
-        full_command = process.get_full_command(process.pid)
+        try:
+            full_command = process.get_full_command(process.pid)
 
-        raw_output = self.command_handler.invoke_directory_handler(
-            process.command, full_command
-        )
-        output = self.sanitize_string(raw_output)
+            raw_output = self.command_handler.invoke_directory_handler(
+                process.command, full_command
+            )
+            output = self.sanitize_string(raw_output)
 
-        self.inject_output(process.pid, process.ppid, output, False)
+            self.inject_output(process.pid, process.ppid, output, False)
+
+        except Exception as e:
+            self.logger.error(f"Error in Directory Handler: {e}")
+            self.process_tracer.resume(process.pid)
 
     def network_routine(self, process: Process) -> None:
         full_command = process.get_full_command(process.pid)
