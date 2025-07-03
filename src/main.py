@@ -1,13 +1,12 @@
 from core.ebpf import EBPF
-import os
-
-
-# ASCII art created with https://emojicombos.com/skull-ascii-art,
-# https://emojicombos.com/mason-jar-ascii-art,
-# https://patorjk.com/software/taag/#p=display&f=Graffiti&t=JamJar
+import os, logging
 
 
 def ascii_art():
+    # ASCII art created with https://emojicombos.com/skull-ascii-art,
+    # https://emojicombos.com/mason-jar-ascii-art,
+    # https://patorjk.com/software/taag/#p=display&f=Graffiti&t=JamJar
+
     print(
         r"""
                                                         ⣴⠟⠛⠛⠛⠛⠛⠛⠛⠛⢛⣛⣻⣦
@@ -29,25 +28,25 @@ def ascii_art():
 
 if __name__ == "__main__":
 
-    ascii_art()
+    try:
+        logger = logging.getLogger(__name__)
+        ascii_art()
 
-    # Initialize BPF
-    ebpf = EBPF(ebpf_path=os.path.join(os.path.dirname(__file__), "bpf/v0.1.c"))
+        # Initialize BPF
+        ebpf = EBPF(ebpf_path=os.path.join(os.path.dirname(__file__), "bpf/v2.0.c"))
+        ebpf.intialize_hook_points()
 
-    # Loop with callback to print_event
-    ebpf.bpf["events"].open_perf_buffer(ebpf.proc_event)
+        logger.info("Listening syscalls... Press Ctrl+C to exit.")
 
-    print("[+] Jamjar is running... Press Ctrl+C to exit.")
-
-    while True:
-        try:
+        while True:
             ebpf.bpf.perf_buffer_poll()
 
-        except Exception as e:
-            print(f"[!] Error: {e}")
+    except KeyboardInterrupt:
+        logger.error("Keyboard Interrupt Detected! Exiting...")
 
-        except KeyboardInterrupt:
-            exit()
+    except Exception as e:
+        logger.error(f"Error: {e}")
 
-        finally:
-            ebpf.quit_debugger()
+    finally:
+        ebpf.quit_debugger()
+        exit(1)
