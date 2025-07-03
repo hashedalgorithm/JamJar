@@ -28,7 +28,6 @@ class Process(Logger):
         ) = None,  # ratio of the process's resident set size to the physical memory on the machine
         rss: int | None = None,  # resident set size
         vsz: int | None = None,  # virtual memory size
-        ucmd: int | None = None,  # long name of executable command
     ) -> None:
         super().__init__()
         self.pid = pid
@@ -45,7 +44,6 @@ class Process(Logger):
         self.mem = mem if mem is not None else self.get_memory_utilization(pid)
         self.rss = rss if rss is not None else self.get_resident_set_size(pid)
         self.vsz = vsz if vsz is not None else self.get_virtual_memory_size(pid)
-        self.ucmd = ucmd if ucmd is not None else self.get_full_command(pid)
 
     def read_file(self, path: str) -> str | None:
         try:

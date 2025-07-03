@@ -165,7 +165,7 @@ class ProcessHandler(Logger):
                             process.tty,
                             process.stat,
                             process.time[-4:],
-                            process.ucmd,
+                            # process.ucmd,
                         ]
                     )
 
@@ -197,7 +197,7 @@ class ProcessHandler(Logger):
                             process.tty,
                             process.stat,
                             process.time[-4:],
-                            process.ucmd,
+                            # process.ucmd,
                         ]
                     )
 
