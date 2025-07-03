@@ -1,5 +1,6 @@
 from core.ebpf import EBPF
-import os, logging
+import os
+from utils.logger import Logger
 
 
 def ascii_art():
@@ -29,7 +30,7 @@ def ascii_art():
 if __name__ == "__main__":
 
     try:
-        logger = logging.getLogger(__name__)
+        logger = Logger().logger
         ascii_art()
 
         # Initialize BPF
