@@ -2,7 +2,7 @@ import os
 import time
 import errno
 
-from core.cmd_invoke import CMD_invoke
+from handlers.command_handler import CommandHandler
 from ptrace.debugger import PtraceProcess
 from core.process_tracer import ProcessTracer
 
@@ -10,7 +10,7 @@ from core.process_tracer import ProcessTracer
 class Subroutines:
 
     def __init__(self, process_tracer: ProcessTracer):
-        self.CMD = CMD_invoke()
+        self.command_handler = CommandHandler()
         self.process_tracer = process_tracer
 
     def check_linebreak(self, message: str) -> str:
@@ -41,25 +41,29 @@ class Subroutines:
             else:
                 print(f"[!] OSError {e.errno}: {e}")
 
-    def dir_routine(
+    def directory_routine(
         self,
         pid: int,
         ppid: int,
         command: str,
-        cwd: str,
+        full_command: str,
     ) -> None:
-        cmd_output = self.check_linebreak(self.CMD.invoke_dir(command, src_dir=cwd))
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_directory_handler(command, full_command)
+        )
         self.safe_write_then_kill(pid, ppid, cmd_output, False)
 
-    def network_routine(self, pid: int, ppid: int, command: str) -> None:
-        cmd_output = self.CMD.invoke_network(command)
+    def network_routine(
+        self, pid: int, ppid: int, command: str, full_command: str
+    ) -> None:
+        cmd_output = self.command_handler.invoke_network_handler(command, full_command)
+
         # Special case ping
         if type(cmd_output) == list:
             for n, item in enumerate(cmd_output):
                 self.write_to_proc(item + "\n", str(ppid))
                 if n < 5:
                     time.sleep(1)
-        # Write modified output to target process
         else:
             self.safe_write_then_kill(
                 str(pid), ppid, self.check_linebreak(cmd_output), True
@@ -70,13 +74,33 @@ class Subroutines:
         pid: int,
         ppid: int,
         command: str,
+        full_command: str,
         tty: str,
         uname: str,
     ) -> None:
-        cmd_output = self.check_linebreak(self.CMD.invoke_process(command, tty, uname))
-        # Write modified output to target process
-
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_process_handler(
+                command, full_command, tty, uname
+            )
+        )
         self.safe_write_then_kill(pid, ppid, self.check_linebreak(cmd_output), False)
+
+    def system_routine(
+        self, pid: int, ppid: int, command: str, full_command: str
+    ) -> None:
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_system_handler(command, full_command)
+        )
+        # TODO: Implement system routine
+        # self.safe_write_then_kill(pid, ppid, cmd_output, True)
+
+    def file_ops_routine(self, command: str, full_command: str) -> None:
+        cmd_output = self.check_linebreak(
+            self.command_handler.invoke_file_ops_handler(command, full_command)
+        )
+        # TODO: Implement file operations routine
+        # if cmd_output:
+        #     self.write_to_proc(cmd_output, self.process_tracer.get_current_pid())
 
     def safe_write_then_kill(self, pid: int, ppid: int, message: str, usePID: bool):
         try:

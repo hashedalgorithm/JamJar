@@ -51,7 +51,11 @@ source ~/JamJar/jamjar-venv/bin/activate
 
 ---
 
+<<<<<<< HEAD
 ### **2. Clone the BCC Repository**
+=======
+### **3. Clone the BCC Repository**
+>>>>>>> v2-ls
 
 ```
 git clone https://github.com/iovisor/bcc.git
@@ -60,7 +64,11 @@ cd bcc
 
 ---
 
+<<<<<<< HEAD
 ### **3. Change Folder Ownership (Recommended for Virtualized/Root-Owned Folders)**
+=======
+### **4. Change Folder Ownership (Recommended for Virtualized/Root-Owned Folders)**
+>>>>>>> v2-ls
 
 If you’re using a virtual machine or ran git clone with sudo, you may need to change the folder’s ownership:
 
@@ -70,7 +78,11 @@ sudo chown -R $(whoami):$(whoami) .
 
 ---
 
+<<<<<<< HEAD
 ### **4. Create and Enter the Build Directory**
+=======
+### **5. Create and Enter the Build Directory**
+>>>>>>> v2-ls
 
 ```
 mkdir build
@@ -79,7 +91,11 @@ cd build
 
 ---
 
+<<<<<<< HEAD
 ### **5. Build and Install BCC Core**
+=======
+### **6. Build and Install BCC Core**
+>>>>>>> v2-ls
 
 ```
 cmake ..
@@ -90,12 +106,20 @@ make install
 > ⚠️ If you are getting errors then the reason for it would be ownership issues with the folder.
 ---
 
+<<<<<<< HEAD
 ### **6. Install Python Dependencies (for your venv)**
+=======
+### **7. Install Python Dependencies (for your venv)**
+>>>>>>> v2-ls
 ```
 pip install six setuptools ipcalc build
 ```
 
+<<<<<<< HEAD
 ### **7. Installing ptrace(0.9.9 stable) from source
+=======
+### **8. Installing ptrace(0.9.9 stable) from source**
+>>>>>>> v2-ls
 
 ```
 // Go to ~/JamJar
@@ -113,7 +137,11 @@ This creates a .whl file in the dist/ directory.
 pip install dist/*.whl
 ```
 
+<<<<<<< HEAD
 ### **8. Build and Install Python Bindings (for your venv)**
+=======
+### **9. Build and Install Python Bindings (for your venv)**
+>>>>>>> v2-ls
 
 From within the build directory:
 
@@ -160,11 +188,19 @@ rm -r ~/JamJar/python-ptrace0.9.9.zip
 
 ---
 
+<<<<<<< HEAD
 ## **🍯 Running JamJar **
 
 JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
 
 ### **👤 Change Password of Root User
+=======
+## **🍯 Running JamJar**
+
+JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
+
+### **👤 Change Password of Root User**
+>>>>>>> v2-ls
 
 ```
 ubuntu@VM:~$ sudo passwd root
@@ -174,7 +210,11 @@ Retype new password:
 passwd: password updated successfully
 ```
 
+<<<<<<< HEAD
 ### **🦾 Get Root Shell
+=======
+### **🦾 Get Root Shell**
+>>>>>>> v2-ls
 
 ```
 ubuntu@VM:~$ su
@@ -192,4 +232,8 @@ python3 main.py
 > ⚠️ If you came across any error like module not found try to install it using pip(except for bcc and ptrace).
 
 
+<<<<<<< HEAD
 ---
+=======
+---
+>>>>>>> v2-ls

@@ -46,7 +46,7 @@ class EBPF:
 
     def handle_attached_process(self, process: Process):
 
-        command_line_args = process.get_command_line_args(process.pid)
+        full_command = process.get_full_command(process.pid)
         command = process.get_command(process.pid)
         tty = process.get_tty(process.pid)
         uid = process.get_uid(process.pid)
@@ -54,39 +54,70 @@ class EBPF:
         username = get_username_by_uid(uid)
 
         self.event_handler(
-            command,
             process.pid,
-            command_line_args,
-            tty,
             ppid,
+            command,
+            full_command,
+            tty,
             username,
         )
 
     def event_handler(
         self,
-        command: str,
         pid: int,
-        command_line_args: str,
-        tty: str,
         ppid: int,
+        command: str,
+        full_command: str,
+        tty: str,
         username: str,
     ) -> None:
         match command:
-            case "ls" | "rm" | "touch":
-                return self.subroutines.dir_routine(
-                    pid, ppid, command_line_args, command
+            case "cd" | "ls" | "rmdir" | "mkdir" | "mv" | "cp" | "rm":
+                return self.subroutines.directory_routine(
+                    pid, ppid, command, full_command
                 )
 
-            case "ping" | "arp" | "ip" | "traceroute":
-                return self.subroutines.network_routine(pid, ppid, command_line_args)
+            case "ifconfig" | "nmap" | "ping" | "arp" | "ip" | "traceroute" | "ftp":
+                return self.subroutines.network_routine(
+                    pid, ppid, command, full_command
+                )
 
             case "ps" | "kill" | "killall":
                 return self.subroutines.process_routine(
-                    pid, ppid, command_line_args, tty, username
+                    pid, ppid, full_command, tty, username
                 )
+
+            case (
+                "cat"
+                | "grep"
+                | "echo"
+                | "locate"
+                | "wget"
+                | "curl"
+                | "unzip"
+                | "chmod"
+                | "nano"
+                | "pico"
+                | "vi"
+                | "vim"
+                | "ln"
+                | "crontab"
+            ):
+                return self.subroutines.file_ops_routine(command, full_command)
+
+            case (
+                "df"
+                | "history"
+                | "php"
+                | "uname"
+                | "whoami"
+                | "w"
+                | "id"
+                | "last"
+                | "uptime"
+            ):
+                return self.subroutines.system_routine(command, full_command)
+
             case _:
                 print(f"[!] Subroutine for command {command} is not implemented yet!")
                 return
-
-    def quit_debugger(self):
-        return self.process_tracer.debugger.quit()

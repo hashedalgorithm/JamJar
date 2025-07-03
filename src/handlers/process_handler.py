@@ -2,15 +2,14 @@ from models.process import Process
 from utils import helper
 
 
-class PROCESS_handler:
+class ProcessHandler:
 
     output = None
 
     def __init__(self) -> None:
         self.output = helper.create_fake_processes()
 
-    def cmd(self, cmd, tty, uid):
-        output = None
+    def handle(self, cmd: str, tty: str, uid: int):
 
         cmd_name = cmd.split(" ")[0]
         args = cmd.split(" ")[1:]
@@ -18,15 +17,17 @@ class PROCESS_handler:
         match cmd_name:
 
             case "ps":
-                output = self.ps(args, tty, uid)
+                return self.ps(args, tty, uid)
 
             case "kill":
-                output = self.kill(args)
+                return self.kill(args)
 
             case "killall":
-                output = self.killall(args)
+                return self.killall(args)
 
-        return output
+            case _:
+                print(f"Command '{cmd_name}' not recognized by ProcessHandler.")
+                return None
 
     def ps(self, args, tty, uid):
         output = ""

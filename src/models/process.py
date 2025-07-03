@@ -43,7 +43,7 @@ class Process:
         self.mem = mem if mem is not None else self.get_memory_utilization(pid)
         self.rss = rss if rss is not None else self.get_resident_set_size(pid)
         self.vsz = vsz if vsz is not None else self.get_virtual_memory_size(pid)
-        self.ucmd = ucmd if ucmd is not None else self.get_command_line_args(pid)
+        self.ucmd = ucmd if ucmd is not None else self.get_full_command(pid)
 
     def read_file(self, path: str) -> str | None:
         try:
@@ -90,7 +90,7 @@ class Process:
                     return int(line.split()[1])  # Extract the PPID
         return None
 
-    def get_command_line(self, pid: int) -> str | None:
+    def get_full_command(self, pid: int) -> str | None:
         content = self.read_file(f"/proc/{pid}/cmdline")
         if content:
             args = content.split("\x00")

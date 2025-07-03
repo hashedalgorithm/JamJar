@@ -43,10 +43,7 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         logger.error("Keyboard Interrupt Detected! Exiting...")
+        exit(1)
 
     except Exception as e:
         logger.error(f"Error: {e}")
-
-    finally:
-        ebpf.quit_debugger()
-        exit(1)
