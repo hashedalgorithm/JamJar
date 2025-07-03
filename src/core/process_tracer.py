@@ -1,86 +1,115 @@
-from pprint import pprint
-from ptrace.debugger import PtraceProcess, PtraceDebugger
+import ctypes, os, signal
+from models.process import Process
+from utils.logger import Logger
 
 
-class ProcessTracer:
+class ProcessTracer(Logger):
 
-    attached_processes: dict[str, PtraceProcess] = {}
+    libc = ctypes.CDLL("libc.so.6")
+    PTRACE_CONT = 7
+    PTRACE_ATTACH = 16
 
     def __init__(self):
-        self.debugger = PtraceDebugger()
+        super().__init__()
+        self.attached_processes: dict[str, Process] = {}
 
-    def attach(self, pid: int) -> PtraceProcess | None:
+    def attach(self, pid: int) -> Process | None:
         try:
-
             if pid in self.attached_processes:
-                print(f"[!] Process with PID {pid} is already being traced.")
+                self.logger.info(f"Process with PID {pid} is already being traced.")
                 return self.attached_processes[pid]
 
-            process = self.debugger.addProcess(pid, False)
-            # if self.pid_exists(pid) is True:
-            self._attach(process)
-            # else:
-            #     return self.raise_error_process_doesnt_exist(pid)
-
-            # if self.pid_exists(pid) is True:
-            # process.waitSignals()
-            print(f"\t\\--> Attached to process [{pid}]")
-            # else:
-            #     return self.raise_error_process_doesnt_exist(pid)
-
+            process = self._attach(pid)
+            self.logger.info(f"Attached to process [{pid}]")
             return process
-        except Exception as e:
-            print(f"[!] Failed to attach to PID {pid}: {e}")
-            return None
 
-    def raise_error_process_doesnt_exist(self, pid: int):
-        raise ValueError(
-            f"Process with PID {pid} does not exist or is not being traced."
-        )
+        except ProcessLookupError as e:
+            self.logger.critical(f"Failed to attach to PID {pid} - {e}")
+
+        except PermissionError:
+            self.logger.fatal(
+                f"Insufficient permissions to attach process - {pid} - {e}"
+            )
+            exit(1)
+
+    def resume(self, pid: int):
+        try:
+            if pid in self.attached_processes:
+                self.logger.info(f"Process with PID {pid} is already being traced.")
+                return self.attached_processes[pid]
+
+            self._resume(pid)
+            self.logger.info(f"Resumed process {pid}!")
+
+        except ProcessLookupError as e:
+            self.logger.critical(f"Failed to resume to PID {pid} - {e}")
+
+        except PermissionError:
+            self.logger.fatal(
+                f"Insufficient permissions to resume process - {pid} - {e}"
+            )
+            exit(1)
 
     def kill(self, pid: int):
         try:
-            print(f"[+] Attempting to kill process [{pid}]...")
             process = self.get_process(pid)
-
-            print(f"\t\\--> Process found: {process}")
-            if process is None:
-                print(f"[!] No process found with PID {pid}.")
-                self._detach(pid)
-                return
 
             # IMPORTANT: To mute SIGNAL messages for the user permanently
             # we have to disable monitoring mode permanently
             # 'echo "export PROMPT_COMMAND='set +m'" >> /home/user/.bashrc && source /home/user/.bashrc'
             # In other words this will suppress "Terminated" being printed on the log
 
-            print(f"[+] Detaching process [{pid}]...")
-            self._detach(pid)
-            # process.kill(signal.SIGTERM)
-            print(f"\t\\--> Killed process [{pid}]!")
-        except Exception as e:
-            print(f"[!] Failed to kill process {pid}: {e}")
+            self._kill(pid)
+            self.logger.info(f"Killed process {pid}!")
+
+        except ProcessLookupError as e:
+            self.logger.critical(f"Failed to kill process {pid} - {e}")
             return None
 
-    def get_process(self, pid: int) -> PtraceProcess | None:
-        return self.attached_processes.get(str(pid))
+        except PermissionError as e:
+            self.logger.fatal(f"Insufficient permissions to kill process - {pid} - {e}")
+            exit(1)
 
-    def _attach(self, process: PtraceProcess):
-        self.attached_processes[process.pid] = process
-        pprint(self.attached_processes.get(process.pid))
+    def get_process(self, pid: int) -> Process:
+        process = self.attached_processes.get(pid)
+
+        if process is None:
+            raise ProcessLookupError(f"No process found with PID {pid}.")
+
+        return process
+
+    def _attach(self, pid: int) -> Process:
+        # Attach to the process
+        if self.libc.ptrace(self.PTRACE_ATTACH, pid, 0, 0) != 0:
+            raise ProcessLookupError(f"Failed to attach to PID {pid}")
+
+        # Send SIGSTOP to pause the process
+        os.kill(pid, signal.SIGSTOP)
+
+        process = Process(pid)
+        self.attached_processes[pid] = process
+
+        return process
 
     def _detach(self, pid: int):
-        process = self.get_process(str(pid))
+        # Detach from the process
+        if self.libc.ptrace(self.PTRACE_DETACH, pid, 0, 0) != 0:
+            raise ProcessLookupError(f"Failed to detach from PID {pid}")
 
-        if process is None:
-            return
+        # Remove the process from the attached list
+        del self.attached_processes[pid]
 
-        self.resume_process(pid)
-        process.detach()
+    def _kill(self, pid: int):
 
-    def resume_process(self, pid: int):
-        process = self.get_process(pid)
-        if process is None:
-            return
+        self._detach(pid)
 
-        process.cont()
+        # Kills the process
+        os.kill(pid, signal.SIGSTOP)
+
+    def _resume(self, pid):
+
+        # Resume the process
+        if self.libc.ptrace(self.PTRACE_CONT, pid, 0, 0) != 0:
+            raise ProcessLookupError(f"Failed to resume PID {pid}")
+
+        os.kill(pid, signal.SIGCONT)
