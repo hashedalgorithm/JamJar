@@ -1,9 +1,10 @@
 import os
 
 from typing import Literal
+from utils.logger import Logger
 
 
-class Process:
+class Process(Logger):
 
     def __init__(
         self,
@@ -29,6 +30,7 @@ class Process:
         vsz: int | None = None,  # virtual memory size
         ucmd: int | None = None,  # long name of executable command
     ) -> None:
+        super().__init__()
         self.pid = pid
         self.tty = tty if tty is not None else self.get_tty(pid)
         self.time = time if time is not None else self.get_time(pid)
@@ -55,6 +57,8 @@ class Process:
         except Exception as e:
             print(f"[!] Error reading file: {path} - {e}")
             return None
+        finally:
+            f.close()
 
     def get_tty(self, pid: int) -> str | None:
         try:

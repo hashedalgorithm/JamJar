@@ -1,4 +1,3 @@
-from utils import helper
 from models.file_system import FileSystem
 
 
@@ -9,12 +8,9 @@ class DirectoryHandler:
 
     def handle(self, command: str, path: str, options: list[str]) -> str | None:
 
-        cmd_name = command.split(" ")[0]
-        args = command.split(" ")[1:]
-
-        match cmd_name:
+        match command:
             case "cd":
-                return self.cd(args)
+                return self.cd()
 
             case "ls":
                 return self.ls()
@@ -44,9 +40,7 @@ class DirectoryHandler:
         return None
 
     def ls(self, args: list[str] = None):
-
-        # if(args is None or len(args) == 0):
-        #     args =
+        print("ls is not implemeneted yet")
         pass
 
     def rmdir(self):

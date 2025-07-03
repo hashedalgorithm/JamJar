@@ -8,6 +8,7 @@ class ProcessTracer(Logger):
     libc = ctypes.CDLL("libc.so.6")
     PTRACE_CONT = 7
     PTRACE_ATTACH = 16
+    PTRACE_DETACH = 17
 
     def __init__(self):
         super().__init__()

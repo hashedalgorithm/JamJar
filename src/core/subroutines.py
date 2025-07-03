@@ -3,111 +3,112 @@ import time
 import errno
 
 from handlers.command_handler import CommandHandler
-from ptrace.debugger import PtraceProcess
 from core.process_tracer import ProcessTracer
+from utils.logger import Logger
+from models.process import Process
 
 
-class Subroutines:
+class Subroutines(Logger):
 
     def __init__(self, process_tracer: ProcessTracer):
+        super().__init__()
         self.command_handler = CommandHandler()
         self.process_tracer = process_tracer
 
-    def check_linebreak(self, message: str) -> str:
+    def directory_routine(self, process: Process) -> None:
+        full_command = process.get_full_command(process.pid)
+
+        raw_output = self.command_handler.invoke_directory_handler(
+            process.command, full_command
+        )
+        output = self.sanitize_string(raw_output)
+
+        self.inject_output(process.pid, process.ppid, output, False)
+
+    def network_routine(self, process: Process) -> None:
+        full_command = process.get_full_command(process.pid)
+
+        raw_output = self.command_handler.invoke_directory_handler(
+            process.command, full_command
+        )
+        output = self.sanitize_string(raw_output)
+
+        # Special case ping
+        if type(output) == list:
+            for n, item in enumerate(output):
+                self.inject_output_to_proc(item + "\n", process.ppid)
+                if n < 5:
+                    time.sleep(1)
+        else:
+            self.inject_output(process.pid, process.ppid, output, True)
+
+    def process_routine(
+        self,
+        process: Process,
+        username: str,
+    ) -> None:
+        full_command = process.get_full_command(process.pid)
+
+        raw_output = self.command_handler.invoke_process_handler(
+            process.command, full_command, process.tty, username
+        )
+        output = self.sanitize_string(raw_output)
+
+        self.inject_output(process.pid, process.ppid, output, False)
+
+    def system_routine(self, process: Process) -> None:
+        full_command = process.get_full_command(process.pid)
+
+        raw_output = self.command_handler.invoke_system_handler(
+            process.command, full_command
+        )
+        output = self.sanitize_string(raw_output)
+
+        # TODO: Implement system routine
+
+    def file_ops_routine(self, process: Process) -> None:
+        full_command = process.get_full_command(process.pid)
+
+        raw_output = self.command_handler.invoke_file_ops_handler(
+            process.command, full_command
+        )
+        output = self.sanitize_string(raw_output)
+
+        # TODO: Implement file operations routine
+
+    def sanitize_string(self, message: str) -> str:
         if not message == None and not message.endswith("\n") and not message == "":
             return message + "\n"
         return message
 
-    def write_to_proc(self, message: str, pid: int) -> None:
+    def inject_output_to_proc(self, message: str, pid: int) -> None:
         if not message:
-            print("[!] No message to write to process.")
+            self.logger.info(f"No message to inject to process - {pid}.")
             return
 
-        # Set path for the process to write to
         fd_path = f"/proc/{pid}/fd/1"
         try:
-            # Open file descriptor for writing
             if not os.path.exists(fd_path):
-                print(f"[!] FD path {fd_path} doesn't exist.")
-                return
+                raise FileNotFoundError()
 
             with open(fd_path, "w") as fd:
                 fd.write(message)
+
         except FileNotFoundError:
             print(f"[!] Cannot open {fd_path} — process might have exited.")
         except OSError as e:
             if e.errno == errno.EFAULT:
                 print(f"[!] Kernel EFAULT writing to {fd_path}")
             else:
-                print(f"[!] OSError {e.errno}: {e}")
-
-    def directory_routine(
-        self,
-        pid: int,
-        ppid: int,
-        command: str,
-        full_command: str,
-    ) -> None:
-        cmd_output = self.check_linebreak(
-            self.command_handler.invoke_directory_handler(command, full_command)
-        )
-        self.safe_write_then_kill(pid, ppid, cmd_output, False)
-
-    def network_routine(
-        self, pid: int, ppid: int, command: str, full_command: str
-    ) -> None:
-        cmd_output = self.command_handler.invoke_network_handler(command, full_command)
-
-        # Special case ping
-        if type(cmd_output) == list:
-            for n, item in enumerate(cmd_output):
-                self.write_to_proc(item + "\n", str(ppid))
-                if n < 5:
-                    time.sleep(1)
-        else:
-            self.safe_write_then_kill(
-                str(pid), ppid, self.check_linebreak(cmd_output), True
-            )
-
-    def process_routine(
-        self,
-        pid: int,
-        ppid: int,
-        command: str,
-        full_command: str,
-        tty: str,
-        uname: str,
-    ) -> None:
-        cmd_output = self.check_linebreak(
-            self.command_handler.invoke_process_handler(
-                command, full_command, tty, uname
-            )
-        )
-        self.safe_write_then_kill(pid, ppid, self.check_linebreak(cmd_output), False)
-
-    def system_routine(
-        self, pid: int, ppid: int, command: str, full_command: str
-    ) -> None:
-        cmd_output = self.check_linebreak(
-            self.command_handler.invoke_system_handler(command, full_command)
-        )
-        # TODO: Implement system routine
-        # self.safe_write_then_kill(pid, ppid, cmd_output, True)
-
-    def file_ops_routine(self, command: str, full_command: str) -> None:
-        cmd_output = self.check_linebreak(
-            self.command_handler.invoke_file_ops_handler(command, full_command)
-        )
-        # TODO: Implement file operations routine
-        # if cmd_output:
-        #     self.write_to_proc(cmd_output, self.process_tracer.get_current_pid())
-
-    def safe_write_then_kill(self, pid: int, ppid: int, message: str, usePID: bool):
-        try:
-            if message:
-                self.write_to_proc(
-                    self.check_linebreak(message), pid if usePID else ppid
-                )
+                raise Exception(f"Error injecting output : {e}")
         finally:
-            print(f"[+] Killing process {pid} after writing message.")
-            self.process_tracer.kill(pid)
+            fd.close()
+
+    def inject_output(self, pid: int, ppid: int, message: str, usePID: bool) -> None:
+        if message:
+            self.inject_output_to_proc(message, pid if usePID else ppid)
+        else:
+            self.logger.info(f"No output found to inject for pid - {pid}")
+
+        self.logger.info(f"Killing process {pid} after writing message.")
+        self.process_tracer.kill(pid)
