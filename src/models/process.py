@@ -148,11 +148,22 @@ class Process(Logger):
         total_cpu_content = self.read_file(f"/proc/stat")
         process_content = self.read_file(f"/proc/{pid}/stat")
         if total_cpu_content and process_content:
-            total_cpu_time = sum(int(value) for value in total_cpu_content.split()[1:])
+            # Extract the first line (aggregate CPU time) and split it
+            total_cpu_line = total_cpu_content.splitlines()[0]
+            total_cpu_values = total_cpu_line.split()[1:]  # Skip the "cpu" label
+            try:
+                total_cpu_time = sum(int(value) for value in total_cpu_values)
+            except ValueError:
+                print(f"[!] Error parsing CPU times from /proc/stat")
+                return None
+
+            # Extract process-specific CPU times
             data = process_content.split()
             utime = int(data[13])
             stime = int(data[14])
             process_time = utime + stime
+
+            # Calculate CPU percentage
             return (process_time / total_cpu_time) * 100
         return None
 
