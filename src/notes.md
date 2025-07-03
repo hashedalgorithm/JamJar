@@ -9,3 +9,7 @@ To check if the vmlinux file exists, run the following command in your terminal:
 
 If the file exists, it will list the file. If it does not exist, you will see an error like ls: cannot access '/sys/kernel/btf/vmlinux': No such file or directory.
 
+
+sudo cat /sys/kernel/debug/tracing/trace_pipe
+
+echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
