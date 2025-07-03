@@ -131,9 +131,9 @@ class Parser:
 
                 if tokens:
                     cleaned_tokens, redirection = self.parse_redirection(tokens)
-                    cmd = {"command": cleaned_tokens[0], "args": cleaned_tokens[1:]}
-                    cmd.update(redirection)
-                    pipeline.append(cmd)
+                    command = {"command": cleaned_tokens[0], "args": cleaned_tokens[1:]}
+                    command.update(redirection)
+                    pipeline.append(command)
 
             if pipeline:
                 command_groups.append({"pipeline": pipeline, "next_op": operator_after})

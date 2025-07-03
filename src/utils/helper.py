@@ -83,7 +83,7 @@ def create_fake_processes():
             pid=1,
             tty="?",
             time="00:00:09",
-            cmd="systemd",
+            command="systemd",
             uid="root",
             ppid="0",
             c="2503",

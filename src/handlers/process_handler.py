@@ -1,20 +1,21 @@
 from models.process import Process
 from utils import helper
+from utils.logger import Logger
 
 
-class ProcessHandler:
+class ProcessHandler(Logger):
 
     output = None
 
     def __init__(self) -> None:
+        super().__init__()
         self.output = helper.create_fake_processes()
 
-    def handle(self, cmd: str, tty: str, uid: int):
+    def handle(self, command: str, full_command: str, tty: str, uid: int):
 
-        cmd_name = cmd.split(" ")[0]
-        args = cmd.split(" ")[1:]
+        args = command.split(" ")[1:]
 
-        match cmd_name:
+        match command:
 
             case "ps":
                 return self.ps(args, tty, uid)
@@ -26,7 +27,9 @@ class ProcessHandler:
                 return self.killall(args)
 
             case _:
-                print(f"Command '{cmd_name}' not recognized by ProcessHandler.")
+                self.logger.info(
+                    f"Command '{command}' not recognized by ProcessHandler."
+                )
                 return None
 
     def ps(self, args, tty, uid):
@@ -81,7 +84,7 @@ class ProcessHandler:
 
             if c:
                 for process in self.output:
-                    if process.cmd == target:
+                    if process.command == target:
                         processes.append(process)
 
             if f:
@@ -100,7 +103,7 @@ class ProcessHandler:
                             process.stime,
                             process.tty,
                             process.time,
-                            process.cmd,
+                            process.command,
                         ]
                     )
 
@@ -118,7 +121,7 @@ class ProcessHandler:
             else:
                 for process in processes:
                     process_list.append(
-                        [process.pid, process.tty, process.time, process.cmd]
+                        [process.pid, process.tty, process.time, process.command]
                     )
 
                 process_list = [["PID", "TTY", "TIME", "CMD"]] + sorted(
@@ -228,7 +231,7 @@ class ProcessHandler:
         target_process, _ = helper.get_main_arg_helper(args)
 
         for process in self.output:
-            if process.cmd == target_process:
+            if process.command == target_process:
                 self.output.remove(process)
                 valid_arg = True
 

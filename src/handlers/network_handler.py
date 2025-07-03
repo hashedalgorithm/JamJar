@@ -1,14 +1,14 @@
 from models.arp import ARP
 from models.route import ROUTE
 from utils import helper
-
+from utils.logger import Logger
 import random
 import ipcalc
 
 LOCAL_NETS = ["10.0.0.0/8", "172.16.0.0/12", "12.168.0.0/16"]
 
 
-class NetworkHandler:
+class NetworkHandler(Logger):
 
     output = None
 
@@ -16,16 +16,16 @@ class NetworkHandler:
     interfaces = []
 
     def __init__(self) -> None:
+        super().__init__()
         self.interfaces = helper.create_fake_interface_data_helper()
         self.arp_table = helper.create_fake_arp_data_helper(self.interfaces["ens18"])
         self.routes = helper.create_fake_route_data_helper(self.interfaces["ens18"])
 
-    def handle(self, cmd: str):
+    def handle(self, command: str, full_command: str):
 
-        cmd_name = cmd.split(" ")[0]
-        args = cmd.split(" ")[1:]
+        args = full_command.split(" ")[1:]
 
-        match cmd_name:
+        match command:
 
             case "ifconfig":
                 return self.ifconfig(args)
@@ -49,7 +49,9 @@ class NetworkHandler:
                 return self.ftp(args)
 
             case _:
-                print(f"Command '{cmd}' not recognized by NetworkHandler.")
+                self.logger.info(
+                    f"Command '{command}' not recognized by NetworkHandler."
+                )
                 return None
 
     def ifconfig(self, args):
