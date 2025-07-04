@@ -21,6 +21,7 @@ class ProcessTracer(Logger):
                 return self.attached_processes[pid]
 
             process = self._attach(pid)
+            self.wait(pid, True)
             self.logger.info(f"Attached to process [{pid}]")
             return process
 
@@ -35,12 +36,11 @@ class ProcessTracer(Logger):
 
     def resume(self, pid: int):
         try:
-            if pid in self.attached_processes:
-                self.logger.info(f"Process with PID {pid} is already being traced.")
-                return self.attached_processes[pid]
+            if pid not in self.attached_processes:
+                raise ProcessLookupError(f"Process with PID {pid} is not being traced.")
 
             self._resume(pid)
-            self.logger.info(f"Resumed process {pid}!")
+            self.wait(pid, False)
 
         except ProcessLookupError as e:
             self.logger.critical(f"Failed to resume to PID {pid} - {e}")
@@ -51,9 +51,28 @@ class ProcessTracer(Logger):
             )
             exit(1)
 
+    def detach(self, pid: int):
+        try:
+            if pid not in self.attached_processes:
+                raise ProcessLookupError(f"Process with PID {pid} is not being traced.")
+
+            self._detach(pid)
+
+            self.logger.info(f"Detached process {pid}!")
+
+        except ProcessLookupError as e:
+            self.logger.critical(f"Failed to detach to PID {pid} - {e}")
+
+        except PermissionError:
+            self.logger.fatal(
+                f"Insufficient permissions to detach process - {pid} - {e}"
+            )
+            exit(1)
+
     def kill(self, pid: int):
         try:
-            process = self.get_process(pid)
+            if pid not in self.attached_processes:
+                raise ProcessLookupError(f"Process with PID {pid} is not being traced.")
 
             # IMPORTANT: To mute SIGNAL messages for the user permanently
             # we have to disable monitoring mode permanently
@@ -70,6 +89,12 @@ class ProcessTracer(Logger):
         except PermissionError as e:
             self.logger.fatal(f"Insufficient permissions to kill process - {pid} - {e}")
             exit(1)
+
+    def wait(self, pid: int, status: bool) -> None:
+        if pid not in self.attached_processes:
+            raise ProcessLookupError(f"Process is not attached! - {pid}")
+
+        os.waitpid(pid, os.WUNTRACED if status else os.WCONTINUED)
 
     def get_process(self, pid: int) -> Process:
         process = self.attached_processes.get(pid)
@@ -105,7 +130,7 @@ class ProcessTracer(Logger):
         self._detach(pid)
 
         # Kills the process
-        os.kill(pid, signal.SIGSTOP)
+        os.kill(pid, signal.SIGKILL)
 
     def _resume(self, pid):
 
@@ -114,4 +139,3 @@ class ProcessTracer(Logger):
             raise ProcessLookupError(f"Failed to resume PID {pid}")
 
         os.kill(pid, signal.SIGCONT)
-        del self.attached_processes[pid]
