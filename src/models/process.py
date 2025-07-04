@@ -12,6 +12,9 @@ class Process(Logger):
         tty: str | None = None,  # terminal associated with the process
         time: str | None = None,  # elapsed CPU utilization time for the process
         command: str | None = None,  # simple name of executable command
+        cwd: (
+            str | None
+        ) = None,  # current working directory where the process is initiated
         uid: int | None = None,  # user id
         ppid: int | None = None,  # parent process id
         c: int | None = None,  # CPU utilization in percentage
@@ -34,6 +37,7 @@ class Process(Logger):
         self.tty = tty if tty is not None else self.get_tty(pid)
         self.time = time if time is not None else self.get_time(pid)
         self.command = command if command is not None else self.get_command(pid)
+        self.cwd = cwd if cwd is not None else self.get_current_working_directory(pid)
         self.uid = uid if uid is not None else self.get_uid(pid)
         self.ppid = ppid if ppid is not None else self.get_ppid(pid)
         self.c = c if c is not None else self.get_cpu_utilization(pid)
@@ -68,6 +72,18 @@ class Process(Logger):
             print(f"[!] Error reading files of process - {pid} : tty Extraction Failed")
 
     def get_command(self, pid: int) -> str | None:
+        try:
+            content = self.read_file(f"/proc/{pid}/comm")
+            return content.strip()
+        except FileNotFoundError:
+            print(f"[!] Could not find the process - {pid} : command Extraction Failed")
+            return
+        except Exception as e:
+            print(
+                f"[!] Error reading files of process - {pid} : command Extraction Failed"
+            )
+
+    def get_current_working_directory(self, pid: int) -> str | None:
         try:
             return os.readlink(f"/proc/{pid}/cwd")
         except FileNotFoundError:
