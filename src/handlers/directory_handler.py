@@ -1,9 +1,11 @@
 from models.file_system import FileSystem
+from utils.logger import Logger
 
 
-class DirectoryHandler:
+class DirectoryHandler(Logger):
 
     def __init__(self, file_system: FileSystem) -> None:
+        super().__init__()
         self.file_system = file_system
 
     def handle(self, command: str, path: str, options: list[str]) -> str | None:
@@ -40,8 +42,7 @@ class DirectoryHandler:
         return None
 
     def ls(self, args: list[str] = None):
-        print("ls is not implemeneted yet")
-        pass
+        raise Exception("ls is not implemented yet")
 
     def rmdir(self):
         # TODO: Implement rmdir command
