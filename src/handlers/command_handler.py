@@ -10,6 +10,7 @@ from utils.logger import Logger
 class CommandHandler(Logger):
 
     def __init__(self) -> None:
+        super().__init__()
         self.file_system = FileSystem()
         self.directory_handler = DirectoryHandler(file_system=self.file_system)
         self.network_handler = NetworkHandler()
