@@ -1,5 +1,7 @@
 from models.file_system import FileSystem
 from utils.logger import Logger
+from commands.ls import LS
+from utils.parser import Parser
 
 
 class DirectoryHandler(Logger):
@@ -8,14 +10,15 @@ class DirectoryHandler(Logger):
         super().__init__()
         self.file_system = file_system
 
-    def handle(self, command: str, path: str, options: list[str]) -> str | None:
+    def handle(self, command: str, parsed_args: Parser) -> str | None:
 
         match command:
             case "cd":
                 return self.cd()
 
             case "ls":
-                return self.ls()
+                ls = LS(self.file_system)
+                return ls.run()
 
             case "rmdir":
                 return self.rmdir()
@@ -40,9 +43,6 @@ class DirectoryHandler(Logger):
         # TODO: Implement cd command
         print("cd not implemented yet")
         return None
-
-    def ls(self, args: list[str] = None):
-        raise Exception("ls is not implemented yet")
 
     def rmdir(self):
         # TODO: Implement rmdir command
