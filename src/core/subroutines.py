@@ -62,11 +62,15 @@ class Subroutines(Logger):
                 return self.system_routine(process)
 
             case _:
-                self.logger.error(
+                self.logger.warning(
                     f"Subroutine for command {process.command} is not implemented yet!"
                 )
-                self.process_tracer.resume(process.pid)
+                self.release_process(process.pid)
                 return
+
+    def release_process(self, pid) -> None:
+        self.process_tracer.resume(pid)
+        self.process_tracer.detach(pid)
 
     def directory_routine(self, process: Process) -> None:
         try:
@@ -81,7 +85,7 @@ class Subroutines(Logger):
 
         except Exception as e:
             self.logger.error(f"Error in Directory Handler: {e}")
-            self.process_tracer.resume(process.pid)
+            self.release_process(process.pid)
 
     def network_routine(self, process: Process) -> None:
         full_command = process.get_full_command(process.pid)
