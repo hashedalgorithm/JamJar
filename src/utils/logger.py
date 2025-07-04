@@ -50,6 +50,17 @@ class Logger:
             fatal_error_handler.setLevel(logging.FATAL)
             warning_handler.setLevel(logging.WARNING)
 
+            # Add filters to ensure handlers only process their respective levels
+            info_handler.addFilter(lambda record: record.levelno == logging.INFO)
+            warning_handler.addFilter(lambda record: record.levelno == logging.WARNING)
+            error_handler.addFilter(lambda record: record.levelno == logging.ERROR)
+            critical_error_handler.addFilter(
+                lambda record: record.levelno == logging.CRITICAL
+            )
+            fatal_error_handler.addFilter(
+                lambda record: record.levelno == logging.FATAL
+            )
+
             # Add handlers to the logger
             self.logger.addHandler(info_handler)
             self.logger.addHandler(file_handler)
