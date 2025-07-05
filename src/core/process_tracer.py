@@ -1,6 +1,102 @@
 import ctypes, os, signal
-from models.process import Process
 from utils.logger import Logger
+
+
+class Process(Logger):
+    def __init__(
+        self,
+        pid: int,  # process id
+        tty: str | None = None,  # terminal associated with the process
+        command: str | None = None,  # simple name of executable command
+        cwd: (
+            str | None
+        ) = None,  # current working directory where the process is initiated
+        uid: int | None = None,  # user id
+        ppid: int | None = None,  # parent process id
+    ) -> None:
+        super().__init__()
+        self.pid = pid
+        self.tty = tty if tty is not None else self.get_tty(pid)
+        self.command = command if command is not None else self.get_command(pid)
+        self.cwd = cwd if cwd is not None else self.get_current_working_directory(pid)
+        self.uid = uid if uid is not None else self.get_uid(pid)
+        self.ppid = ppid if ppid is not None else self.get_ppid(pid)
+
+    def read_file(self, path: str) -> str | None:
+        try:
+            with open(path, "r") as f:
+                return f.read()
+        except FileNotFoundError:
+            self.logger.critical(f"Could not find the file: {path}")
+            return None
+        except Exception as e:
+            self.logger.error(f"Error reading file: {path} - {e}")
+            return None
+        finally:
+            f.close()
+
+    def get_tty(self, pid: int) -> str | None:
+        try:
+            return os.readlink(f"/proc/{pid}/fd/0").replace("/dev/", "")
+        except FileNotFoundError:
+            self.logger.critical(
+                f"Could not find the process - {pid} : tty Extraction Failed"
+            )
+            return
+        except Exception as e:
+            self.logger.critical(
+                f"Error reading files of process - {pid} : tty Extraction Failed"
+            )
+
+    def get_command(self, pid: int) -> str | None:
+        try:
+            content = self.read_file(f"/proc/{pid}/comm")
+            return content.strip()
+        except FileNotFoundError:
+            self.logger.critical(
+                f"Could not find the process - {pid} : command Extraction Failed"
+            )
+            return
+        except Exception as e:
+            self.logger.critical(
+                f"Error reading files of process - {pid} : command Extraction Failed"
+            )
+
+    def get_current_working_directory(self, pid: int) -> str | None:
+        try:
+            return os.readlink(f"/proc/{pid}/cwd")
+        except FileNotFoundError:
+            self.logger.critical(
+                f"Could not find the process - {pid} : cwd Extraction Failed"
+            )
+            return
+        except Exception as e:
+            self.logger.critical(
+                f"Error reading files of process - {pid} : cwd Extraction Failed"
+            )
+
+    def get_uid(self, pid: int) -> int | None:
+        content = self.read_file(f"/proc/{pid}/status")
+        if content:
+            for line in content.splitlines():
+                if line.startswith("Uid:"):
+                    return int(line.split()[1])  # Extract the effective UID
+        return None
+
+    def get_ppid(self, pid: int) -> int | None:
+        content = self.read_file(f"/proc/{pid}/status")
+        if content:
+            for line in content.splitlines():
+                if line.startswith("PPid:"):
+                    return int(line.split()[1])  # Extract the PPID
+        return None
+
+    def get_full_command(self, pid: int) -> str | None:
+        content = self.read_file(f"/proc/{pid}/cmdline")
+        if content:
+            args = content.split("\x00")
+            return " ".join(arg for arg in args if arg)
+        return None
 
 
 class ProcessTracer(Logger):

@@ -3,9 +3,8 @@ import time
 import errno
 
 from handlers.command_handler import CommandHandler
-from core.process_tracer import ProcessTracer
+from core.process_tracer import ProcessTracer, Process
 from utils.logger import Logger
-from models.process import Process
 
 
 class Subroutines(Logger):
