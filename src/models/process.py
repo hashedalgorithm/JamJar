@@ -1,230 +1,306 @@
 import os
 
 from typing import Literal
-from utils.logger import Logger
+
+from typing import Literal, Optional, Dict
 
 
-class Process(Logger):
-
+class Process:
     def __init__(
         self,
-        pid: int,  # process id
-        tty: str | None = None,  # terminal associated with the process
-        time: str | None = None,  # elapsed CPU utilization time for the process
+        pid: int,  # Process ID
+        tty: Optional[str] = None,  # Controlling terminal
+        time: Optional[str] = None,  # Cumulative CPU time
         f: Literal[
             0, 1, 4
-        ] = 0,  # flag to indicate if the process is a system process (1) or user process (4). 0 - no special flag
-        command: str | None = None,  # simple name of executable command
-        cwd: (
-            str | None
-        ) = None,  # current working directory where the process is initiated
-        uid: int | None = None,  # user id
-        ppid: int | None = None,  # parent process id
-        c: int | None = None,  # CPU utilization in percentage
-        stime: str | None = None,  # start time of the process
-        stat: (
-            Literal["R", "S", "D", "Z", "T", "I"] | None
-        ) = None,  # process state codes
-        sid: (
-            int | None
-        ) = None,  # session ID, If PID == SID, then this process is a session leader
-        cpu: int | None = None,  # %CPU: cpu utilization of the process in "##.#" format
-        pri: (
-            int | None
-        ) = 80,  # The priority of the process. Lower values indicate higher priority
-        ni: (
-            int | None
-        ) = 0,  # - The "niceness" of the process, which affects its priority.- Values range from -20 (highest priority) to 19 (lowest priority).
-        addr: str | None = "-",  # The memory address of the process (if applicable).
-        size: int | None = None,  # Size of the process in memory (in pages)
-        wchan: (
-            str | None
-        ) = None,  # The name of the kernel function where the process is currently waiting.
-        mem: (
-            int | None
-        ) = None,  # ratio of the process's resident set size to the physical memory on the machine
-        rss: int | None = None,  # resident set size
-        vsz: int | None = None,  # virtual memory size
-    ) -> None:
-        super().__init__()
+        ] = 0,  # Process flags (0: no special flag, 1: system process, 4: user process)
+        addr: Optional[str] = "-",  # Memory address
+        cpu: Optional[float] = None,  # CPU utilization (%CPU)
+        mem: Optional[float] = None,  # Memory utilization (%MEM)
+        ag_id: Optional[int] = None,  # Autogroup identifier
+        ag_nice: Optional[int] = None,  # Autogroup nice value
+        args: Optional[str] = None,  # Command with arguments
+        blocked: Optional[str] = None,  # Mask of blocked signals
+        bsdstart: Optional[str] = None,  # Time the command started
+        bsdtime: Optional[str] = None,  # Accumulated CPU time
+        c: Optional[int] = None,  # Processor utilization
+        caught: Optional[str] = None,  # Mask of caught signals
+        cgname: Optional[str] = None,  # Control group name
+        cgroup: Optional[str] = None,  # Control groups
+        cgroupns: Optional[int] = None,  # Namespace inode number
+        cls: Optional[str] = None,  # Scheduling class
+        cmd: Optional[str] = None,  # Command name (alias for args)
+        comm: Optional[str] = None,  # Command name (executable only)
+        cp: Optional[float] = None,  # Per-mill CPU usage
+        cputime: Optional[str] = None,  # Cumulative CPU time
+        cputimes: Optional[int] = None,  # Cumulative CPU time in seconds
+        cuc: Optional[float] = None,  # CPU utilization (including dead children)
+        cuu: Optional[float] = None,  # Extended CPU utilization
+        docker: Optional[str] = None,  # Docker container ID
+        drs: Optional[int] = None,  # Data resident set size
+        egid: Optional[int] = None,  # Effective group ID
+        egroup: Optional[str] = None,  # Effective group name
+        eip: Optional[str] = None,  # Instruction pointer
+        esp: Optional[str] = None,  # Stack pointer
+        etime: Optional[str] = None,  # Elapsed time since process started
+        etimes: Optional[int] = None,  # Elapsed time in seconds
+        environ: Optional[Dict[str, str]] = None,  # Environment variables
+        euid: Optional[int] = None,  # Effective user ID
+        euser: Optional[str] = None,  # Effective user name
+        exe: Optional[str] = None,  # Path to executable
+        fds: Optional[int] = None,  # Total open file descriptors
+        fgid: Optional[int] = None,  # Filesystem access group ID
+        fgroup: Optional[str] = None,  # Filesystem access group name
+        fname: Optional[str] = None,  # First 8 bytes of executable name
+        fuid: Optional[int] = None,  # Filesystem access user ID
+        fuser: Optional[str] = None,  # Filesystem access user name
+        gid: Optional[int] = None,  # Real group ID
+        group: Optional[str] = None,  # Real group name
+        htprv: Optional[int] = None,  # Private memory backed by hugetlbfs
+        htshr: Optional[int] = None,  # Shared memory backed by hugetlbfs
+        ignored: Optional[str] = None,  # Mask of ignored signals
+        ipcns: Optional[int] = None,  # Namespace inode number
+        label: Optional[str] = None,  # Security label (e.g., SELinux context)
+        lstart: Optional[str] = None,  # Time the command started (detailed format)
+        lsession: Optional[int] = None,  # Login session identifier
+        luid: Optional[int] = None,  # Login ID
+        lwp: Optional[int] = None,  # Lightweight process ID (thread ID)
+        lxc: Optional[str] = None,  # LXC container name
+        machine: Optional[str] = None,  # Machine name for VM/container processes
+        maj_flt: Optional[int] = None,  # Major page faults
+        min_flt: Optional[int] = None,  # Minor page faults
+        mntns: Optional[int] = None,  # Namespace inode number
+        netns: Optional[int] = None,  # Namespace inode number
+        ni: int = 0,  # Nice value (-20 to 19, default is 0)
+        nice: Optional[int] = None,  # Nice value (alias for ni)
+        nlwp: Optional[int] = None,  # Number of threads in the process
+        numa: Optional[int] = None,  # NUMA node associated with the process
+        nwchan: Optional[str] = None,  # Kernel function where the process is sleeping
+        oom: Optional[int] = None,  # Out of Memory score
+        oomadj: Optional[int] = None,  # Out of Memory adjustment factor
+        ouid: Optional[int] = None,  # Unix user ID of session owner
+        pcap: Optional[str] = None,  # Permitted capabilities (hexadecimal bitmask)
+        pcaps: Optional[str] = None,  # Permitted capabilities (string of names)
+        pcpu: Optional[float] = None,  # CPU utilization (alias for %cpu)
+        pending: Optional[str] = None,  # Mask of pending signals
+        pgid: Optional[int] = None,  # Process group ID
+        pgrp: Optional[int] = None,  # Process group ID (alias for pgid)
+        pidns: Optional[int] = None,  # Namespace inode number
+        pmem: Optional[float] = None,  # Memory utilization (alias for %mem)
+        policy: Optional[str] = None,  # Scheduling class
+        ppid: Optional[int] = None,  # Parent process ID
+        pri: int = 80,  # Priority of the process (default is 80)
+        psr: Optional[int] = None,  # Processor last executed on
+        pss: Optional[int] = None,  # Proportional share size
+        rbytes: Optional[int] = None,  # Bytes fetched from storage
+        rchars: Optional[int] = None,  # Bytes read from storage
+        rgid: Optional[int] = None,  # Real group ID
+        rgroup: Optional[str] = None,  # Real group name
+        rops: Optional[int] = None,  # Read I/O operations
+        rss: Optional[int] = None,  # Resident set size (physical memory)
+        rssize: Optional[int] = None,  # Resident set size (alias for rss)
+        rsz: Optional[int] = None,  # Resident set size (alias for rss)
+        rtprio: Optional[int] = None,  # Realtime priority
+        ruid: Optional[int] = None,  # Real user ID
+        ruser: Optional[str] = None,  # Real user name
+        s: Optional[str] = None,  # Minimal state display
+        sched: Optional[str] = None,  # Scheduling policy
+        seat: Optional[str] = None,  # Hardware device identifier
+        sess: Optional[int] = None,  # Session ID
+        sgi_p: Optional[int] = None,  # Processor currently executing on
+        sgid: Optional[int] = None,  # Saved group ID
+        sid: Optional[int] = None,  # Session ID (alias for sess)
+        sig: Optional[str] = None,  # Mask of pending signals
+        sigcatch: Optional[str] = None,  # Mask of caught signals
+        sigignore: Optional[str] = None,  # Mask of ignored signals
+        sigmask: Optional[str] = None,  # Mask of blocked signals
+        size: Optional[int] = None,  # Approximate swap space required
+        slice: Optional[str] = None,  # Slice unit
+        spid: Optional[int] = None,  # Lightweight process ID (alias for lwp)
+        stackp: Optional[str] = None,  # Address of stack start
+        start: Optional[str] = None,  # Time the command started
+        start_time: Optional[str] = None,  # Starting time/date of the process
+        stat: Optional[str] = None,  # Multi-character process state
+        state: Optional[str] = None,  # Minimal state display (alias for s)
+        stime: Optional[str] = None,  # Starting time/date (alias for start_time)
+        suid: Optional[int] = None,  # Saved user ID
+        supgid: Optional[str] = None,  # Supplementary group IDs
+        supgrp: Optional[str] = None,  # Supplementary group names
+        suser: Optional[str] = None,  # Saved user name
+        svgid: Optional[int] = None,  # Saved group ID
+        svuid: Optional[int] = None,  # Saved user ID
+        sz: Optional[int] = None,  # Size in physical pages
+        tgid: Optional[int] = None,  # Thread group ID
+        thcount: Optional[int] = None,  # Number of kernel threads
+        tid: Optional[int] = None,  # Thread ID
+        timens: Optional[int] = None,  # Namespace inode number
+        times: Optional[int] = None,  # Cumulative CPU time in seconds
+        tname: Optional[str] = None,  # Controlling terminal
+        tpgid: Optional[int] = None,  # Foreground process group ID
+        trs: Optional[int] = None,  # Text resident set size
+        tt: Optional[str] = None,  # Controlling terminal (alias for tty)
+        ucmd: Optional[str] = None,  # Command name (alias for comm)
+        ucomm: Optional[str] = None,  # Command name (alias for comm)
+        uid: Optional[int] = None,  # User ID
+        uname: Optional[str] = None,  # User name
+        unit: Optional[str] = None,  # Unit (systemd support)
+        user: Optional[str] = None,  # User name (alias for uname)
+        userns: Optional[int] = None,  # Namespace inode number
+        uss: Optional[int] = None,  # Unique set size
+        utsns: Optional[int] = None,  # Namespace inode number
+        uunit: Optional[str] = None,  # User unit (systemd support)
+        vsize: Optional[int] = None,  # Virtual memory size (alias for vsz)
+        vsz: Optional[int] = None,  # Virtual memory size
+        wbytes: Optional[int] = None,  # Bytes sent to storage
+        wcbytes: Optional[int] = None,  # Cancelled write bytes
+        wchan: Optional[str] = None,  # Kernel function where process is sleeping
+        wchars: Optional[int] = None,  # Bytes written to disk
+        wops: Optional[int] = None,  # Write I/O operations
+    ):
+        # Assigning all arguments to data members
         self.pid = pid
-        self.tty = tty if tty is not None else self.get_tty(pid)
-        self.time = time if time is not None else self.get_time(pid)
-        self.command = command if command is not None else self.get_command(pid)
-        self.cwd = cwd if cwd is not None else self.get_current_working_directory(pid)
-        self.uid = uid if uid is not None else self.get_uid(pid)
-        self.ppid = ppid if ppid is not None else self.get_ppid(pid)
-        self.c = c if c is not None else self.get_cpu_utilization(pid)
-        self.stime = stime if stime is not None else self.get_start_time(pid)
-        self.stat = stat if stat is not None else self.get_process_state(pid)
-        self.sid = sid if sid is not None else self.get_session_id(pid)
-        self.cpu = cpu if cpu is not None else self.get_cpu_percentage(pid)
-        self.mem = mem if mem is not None else self.get_memory_utilization(pid)
-        self.rss = rss if rss is not None else self.get_resident_set_size(pid)
-        self.vsz = vsz if vsz is not None else self.get_virtual_memory_size(pid)
-        self.pri = pri if pri is not None else self.get_priority(pid)
-        self.ni = ni
+        self.tty = tty
+        self.time = time
+        self.f = f
         self.addr = addr
+        self.cpu = cpu
+        self.mem = mem
+        self.ag_id = ag_id
+        self.ag_nice = ag_nice
+        self.args = args
+        self.blocked = blocked
+        self.bsdstart = bsdstart
+        self.bsdtime = bsdtime
+        self.c = c
+        self.caught = caught
+        self.cgname = cgname
+        self.cgroup = cgroup
+        self.cgroupns = cgroupns
+        self.cls = cls
+        self.cmd = cmd
+        self.comm = comm
+        self.cp = cp
+        self.cputime = cputime
+        self.cputimes = cputimes
+        self.cuc = cuc
+        self.cuu = cuu
+        self.docker = docker
+        self.drs = drs
+        self.egid = egid
+        self.egroup = egroup
+        self.eip = eip
+        self.esp = esp
+        self.etime = etime
+        self.etimes = etimes
+        self.environ = environ
+        self.euid = euid
+        self.euser = euser
+        self.exe = exe
+        self.fds = fds
+        self.fgid = fgid
+        self.fgroup = fgroup
+        self.fname = fname
+        self.fuid = fuid
+        self.fuser = fuser
+        self.gid = gid
+        self.group = group
+        self.htprv = htprv
+        self.htshr = htshr
+        self.ignored = ignored
+        self.ipcns = ipcns
+        self.label = label
+        self.lstart = lstart
+        self.lsession = lsession
+        self.luid = luid
+        self.lwp = lwp
+        self.lxc = lxc
+        self.machine = machine
+        self.maj_flt = maj_flt
+        self.min_flt = min_flt
+        self.mntns = mntns
+        self.netns = netns
+        self.ni = ni
+        self.nice = nice
+        self.nlwp = nlwp
+        self.numa = numa
+        self.nwchan = nwchan
+        self.oom = oom
+        self.oomadj = oomadj
+        self.ouid = ouid
+        self.pcap = pcap
+        self.pcaps = pcaps
+        self.pcpu = pcpu
+        self.pending = pending
+        self.pgid = pgid
+        self.pgrp = pgrp
+        self.pidns = pidns
+        self.pmem = pmem
+        self.policy = policy
+        self.ppid = ppid
+        self.pri = pri
+        self.psr = psr
+        self.pss = pss
+        self.rbytes = rbytes
+        self.rchars = rchars
+        self.rgid = rgid
+        self.rgroup = rgroup
+        self.rops = rops
+        self.rss = rss
+        self.rssize = rssize
+        self.rsz = rsz
+        self.rtprio = rtprio
+        self.ruid = ruid
+        self.ruser = ruser
+        self.s = s
+        self.sched = sched
+        self.seat = seat
+        self.sess = sess
+        self.sgi_p = sgi_p
+        self.sgid = sgid
+        self.sid = sid
+        self.sig = sig
+        self.sigcatch = sigcatch
+        self.sigignore = sigignore
+        self.sigmask = sigmask
         self.size = size
+        self.slice = slice
+        self.spid = spid
+        self.stackp = stackp
+        self.start = start
+        self.start_time = start_time
+        self.stat = stat
+        self.state = state
+        self.stime = stime
+        self.suid = suid
+        self.supgid = supgid
+        self.supgrp = supgrp
+        self.suser = suser
+        self.svgid = svgid
+        self.svuid = svuid
+        self.sz = sz
+        self.tgid = tgid
+        self.thcount = thcount
+        self.tid = tid
+        self.timens = timens
+        self.times = times
+        self.tname = tname
+        self.tpgid = tpgid
+        self.trs = trs
+        self.tt = tt
+        self.ucmd = ucmd
+        self.ucomm = ucomm
+        self.uid = uid
+        self.uname = uname
+        self.unit = unit
+        self.user = user
+        self.userns = userns
+        self.uss = uss
+        self.utsns = utsns
+        self.uunit = uunit
+        self.vsize = vsize
+        self.vsz = vsz
+        self.wbytes = wbytes
+        self.wcbytes = wcbytes
         self.wchan = wchan
-
-    def read_file(self, path: str) -> str | None:
-        try:
-            with open(path, "r") as f:
-                return f.read()
-        except FileNotFoundError:
-            print(f"[!] Could not find the file: {path}")
-            return None
-        except Exception as e:
-            print(f"[!] Error reading file: {path} - {e}")
-            return None
-        finally:
-            f.close()
-
-    def get_tty(self, pid: int) -> str | None:
-        try:
-            return os.readlink(f"/proc/{pid}/fd/0").replace("/dev/", "")
-        except FileNotFoundError:
-            print(f"[!] Could not find the process - {pid} : tty Extraction Failed")
-            return
-        except Exception as e:
-            print(f"[!] Error reading files of process - {pid} : tty Extraction Failed")
-
-    def get_command(self, pid: int) -> str | None:
-        try:
-            content = self.read_file(f"/proc/{pid}/comm")
-            return content.strip()
-        except FileNotFoundError:
-            print(f"[!] Could not find the process - {pid} : command Extraction Failed")
-            return
-        except Exception as e:
-            print(
-                f"[!] Error reading files of process - {pid} : command Extraction Failed"
-            )
-
-    def get_current_working_directory(self, pid: int) -> str | None:
-        try:
-            return os.readlink(f"/proc/{pid}/cwd")
-        except FileNotFoundError:
-            print(f"[!] Could not find the process - {pid} : cwd Extraction Failed")
-            return
-        except Exception as e:
-            print(f"[!] Error reading files of process - {pid} : cwd Extraction Failed")
-
-    def get_uid(self, pid: int) -> int | None:
-        content = self.read_file(f"/proc/{pid}/status")
-        if content:
-            for line in content.splitlines():
-                if line.startswith("Uid:"):
-                    return int(line.split()[1])  # Extract the effective UID
-        return None
-
-    def get_ppid(self, pid: int) -> int | None:
-        content = self.read_file(f"/proc/{pid}/status")
-        if content:
-            for line in content.splitlines():
-                if line.startswith("PPid:"):
-                    return int(line.split()[1])  # Extract the PPID
-        return None
-
-    def get_full_command(self, pid: int) -> str | None:
-        content = self.read_file(f"/proc/{pid}/cmdline")
-        if content:
-            args = content.split("\x00")
-            return " ".join(arg for arg in args if arg)
-        return None
-
-    def get_time(self, pid: int) -> str | None:
-        content = self.read_file(f"/proc/{pid}/stat")
-        if content:
-            data = content.split()
-            utime = int(data[13])
-            stime = int(data[14])
-            total_time = utime + stime
-            return f"{total_time // 3600:02}:{(total_time % 3600) // 60:02}:{total_time % 60:02}"
-        return None
-
-    def get_cpu_utilization(self, pid: int) -> int | None:
-        content = self.read_file(f"/proc/{pid}/stat")
-        if content:
-            data = content.split()
-            utime = int(data[13])
-            stime = int(data[14])
-            return utime + stime
-        return None
-
-    def get_start_time(self, pid: int) -> str | None:
-        content = self.read_file(f"/proc/{pid}/stat")
-        if content:
-            data = content.split()
-            start_time = int(data[21])
-            return f"{start_time // 3600:02}:{(start_time % 3600) // 60:02}:{start_time % 60:02}"
-        return None
-
-    def get_process_state(
-        self, pid: int
-    ) -> Literal["R", "S", "D", "Z", "T", "I"] | None:
-        content = self.read_file(f"/proc/{pid}/stat")
-        if content:
-            data = content.split()
-            return data[2]
-        return None
-
-    def get_session_id(self, pid: int) -> int | None:
-        content = self.read_file(f"/proc/{pid}/stat")
-        if content:
-            data = content.split()
-            return int(data[4])
-        return None
-
-    def get_cpu_percentage(self, pid: int) -> float | None:
-        total_cpu_content = self.read_file(f"/proc/stat")
-        process_content = self.read_file(f"/proc/{pid}/stat")
-        if total_cpu_content and process_content:
-            # Extract the first line (aggregate CPU time) and split it
-            total_cpu_line = total_cpu_content.splitlines()[0]
-            total_cpu_values = total_cpu_line.split()[1:]  # Skip the "cpu" label
-            try:
-                total_cpu_time = sum(int(value) for value in total_cpu_values)
-            except ValueError:
-                print(f"[!] Error parsing CPU times from /proc/stat")
-                return None
-
-            # Extract process-specific CPU times
-            data = process_content.split()
-            utime = int(data[13])
-            stime = int(data[14])
-            process_time = utime + stime
-
-            # Calculate CPU percentage
-            return (process_time / total_cpu_time) * 100
-        return None
-
-    def get_memory_utilization(self, pid: int) -> float | None:
-        meminfo_content = self.read_file(f"/proc/meminfo")
-        statm_content = self.read_file(f"/proc/{pid}/statm")
-        if meminfo_content and statm_content:
-            total_memory = int(
-                meminfo_content.splitlines()[0].split()[1]
-            )  # Total memory in kB
-            rss = int(statm_content.split()[1])  # Resident set size in pages
-            page_size = os.sysconf("SC_PAGE_SIZE")  # Page size in bytes
-            rss_kb = rss * (page_size // 1024)  # Convert to kB
-            return (rss_kb / total_memory) * 100
-        return None
-
-    def get_resident_set_size(self, pid: int) -> int | None:
-        statm_content = self.read_file(f"/proc/{pid}/statm")
-        if statm_content:
-            rss = int(statm_content.split()[1])  # Resident set size in pages
-            page_size = os.sysconf("SC_PAGE_SIZE")  # Page size in bytes
-            return rss * page_size  # Return RSS in bytes
-        return None
-
-    def get_virtual_memory_size(self, pid: int) -> int | None:
-        statm_content = self.read_file(f"/proc/{pid}/statm")
-        if statm_content:
-            vsz = int(statm_content.split()[0])  # Virtual memory size in pages
-            page_size = os.sysconf("SC_PAGE_SIZE")  # Page size in bytes
-            return vsz * page_size  # Return VSZ in bytes
-        return None
+        self.wchars = wchars
+        self.wops = wops
