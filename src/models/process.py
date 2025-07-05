@@ -11,6 +11,9 @@ class Process(Logger):
         pid: int,  # process id
         tty: str | None = None,  # terminal associated with the process
         time: str | None = None,  # elapsed CPU utilization time for the process
+        f: Literal[
+            0, 1, 4
+        ] = 0,  # flag to indicate if the process is a system process (1) or user process (4). 0 - no special flag
         command: str | None = None,  # simple name of executable command
         cwd: (
             str | None
@@ -26,6 +29,17 @@ class Process(Logger):
             int | None
         ) = None,  # session ID, If PID == SID, then this process is a session leader
         cpu: int | None = None,  # %CPU: cpu utilization of the process in "##.#" format
+        pri: (
+            int | None
+        ) = 80,  # The priority of the process. Lower values indicate higher priority
+        ni: (
+            int | None
+        ) = 0,  # - The "niceness" of the process, which affects its priority.- Values range from -20 (highest priority) to 19 (lowest priority).
+        addr: str | None = "-",  # The memory address of the process (if applicable).
+        size: int | None = None,  # Size of the process in memory (in pages)
+        wchan: (
+            str | None
+        ) = None,  # The name of the kernel function where the process is currently waiting.
         mem: (
             int | None
         ) = None,  # ratio of the process's resident set size to the physical memory on the machine
@@ -48,6 +62,11 @@ class Process(Logger):
         self.mem = mem if mem is not None else self.get_memory_utilization(pid)
         self.rss = rss if rss is not None else self.get_resident_set_size(pid)
         self.vsz = vsz if vsz is not None else self.get_virtual_memory_size(pid)
+        self.pri = pri if pri is not None else self.get_priority(pid)
+        self.ni = ni
+        self.addr = addr
+        self.size = size
+        self.wchan = wchan
 
     def read_file(self, path: str) -> str | None:
         try:
