@@ -86,7 +86,6 @@ class Process:
         mntns: Optional[int] = None,  # Namespace inode number
         netns: Optional[int] = None,  # Namespace inode number
         ni: int = 0,  # Nice value (-20 to 19, default is 0)
-        nice: Optional[int] = None,  # Nice value (alias for ni)
         nlwp: Optional[int] = None,  # Number of threads in the process
         numa: Optional[int] = None,  # NUMA node associated with the process
         nwchan: Optional[str] = None,  # Kernel function where the process is sleeping
@@ -171,13 +170,10 @@ class Process:
         wchars: Optional[int] = None,  # Bytes written to disk
         wops: Optional[int] = None,  # Write I/O operations
     ):
-        # Assigning all arguments to data members
-        self.pid = pid
         self.type = type
         self.load = load
-        self.tty = tty
-        self.time = time
-        self.f = f
+        # System process attributes
+        self.pid = pid
         self.mem = mem if mem is not None else self.generate_memory_utilization()
         self.addr = addr if addr is not None else self.generate_addr()
         self.ag_id = ag_id if ag_id is not None else self.generate_ag_id()
@@ -211,6 +207,7 @@ class Process:
         self.euid = euid if euid is not None else self.generate_euid()
         self.euser = euser if euser is not None else self.generate_euser()
         self.exe = exe if exe is not None else self.generate_exe()
+        self.f = f if f is not None else self.generate_f()
         self.fds = fds if fds is not None else self.generate_fds()
         self.fgid = fgid if fgid is not None else self.generate_fgid()
         self.fgroup = fgroup if fgroup is not None else self.generate_fgroup()
@@ -233,94 +230,98 @@ class Process:
         self.maj_flt = maj_flt if maj_flt is not None else self.generate_maj_flt()
         self.min_flt = min_flt if min_flt is not None else self.generate_min_flt()
         self.mntns = mntns if mntns is not None else self.generate_mntns()
-        self.netns = netns
-        self.ni = ni
-        self.nice = nice
+        self.netns = netns if netns is not None else self.generate_netns()
+        self.ni = ni if ni is not None else self.generate_ni()
         self.nlwp = nlwp if nlwp is not None else self.generate_nlwp()
-        self.numa = numa
-        self.nwchan = nwchan
-        self.oom = oom
-        self.oomadj = oomadj
-        self.ouid = ouid
-        self.pcap = pcap
-        self.pcaps = pcaps
-        self.pcpu = pcpu
-        self.pending = pending
-        self.pgid = pgid
-        self.pgrp = pgrp
-        self.pidns = pidns
-        self.pmem = pmem
-        self.policy = policy
+        self.numa = numa if numa is not None else self.generate_numa()
+        self.nwchan = nwchan if nwchan is not None else self.generate_nwchan()
+        self.oom = oom if oom is not None else self.generate_oom()
+        self.oomadj = oomadj if oomadj is not None else self.generate_oomadj()
+        self.ouid = ouid if ouid is not None else self.generate_ouid()
+        self.pcap = pcap if pcap is not None else self.generate_pcap()
+        self.pcaps = pcaps if pcaps is not None else self.generate_pcaps()
+        self.pcpu = pcpu if pcpu is not None else self.generate_pcpu()
+        self.pending = pending if pending is not None else self.generate_pending()
+        self.pgid = pgid if pgid is not None else self.generate_pgid()
+        self.pgrp = pgrp if pgrp is not None else self.generate_pgid()
+        self.pidns = pidns if pidns is not None else self.generate_pidns()
+        self.pmem = pmem if pmem is not None else self.generate_pmem()
+        self.policy = policy if policy is not None else self.generate_policy()
         self.ppid = ppid if ppid is not None else self.generate_ppid()
-        self.pri = pri
-        self.psr = psr
-        self.pss = pss
-        self.rbytes = rbytes
-        self.rchars = rchars
-        self.rgid = rgid
-        self.rgroup = rgroup
-        self.rops = rops
-        self.rss = rss
-        self.rssize = rssize
-        self.rsz = rsz
-        self.rtprio = rtprio
-        self.ruid = ruid
-        self.ruser = ruser
-        self.s = s
-        self.sched = sched
-        self.seat = seat
-        self.sess = sess
-        self.sgi_p = sgi_p
-        self.sgid = sgid
-        self.sid = sid
-        self.sig = sig
-        self.sigcatch = sigcatch
-        self.sigignore = sigignore
-        self.sigmask = sigmask
-        self.size = size
-        self.slice = slice
-        self.spid = spid
-        self.stackp = stackp
-        self.start = start
-        self.start_time = start_time
-        self.stat = stat
-        self.state = state
-        self.stime = stime
-        self.suid = suid
-        self.supgid = supgid
-        self.supgrp = supgrp
-        self.suser = suser
-        self.svgid = svgid
-        self.svuid = svuid
-        self.sz = sz
-        self.tgid = tgid
-        self.thcount = thcount
-        self.tid = tid
-        self.timens = timens
-        self.times = times
-        self.tname = tname
-        self.tpgid = tpgid
-        self.trs = trs
-        self.tt = tt
-        self.ucmd = ucmd
-        self.ucomm = ucomm
-        self.uid = uid
-        self.uname = uname
-        self.unit = unit
-        self.user = user
-        self.userns = userns
-        self.uss = uss
-        self.utsns = utsns
-        self.uunit = uunit
-        self.vsize = vsize
+        self.pri = pri if pri is not None else self.generate_pri()
+        self.psr = psr if psr is not None else self.generate_psr()
+        self.pss = pss if pss is not None else self.generate_pss()
+        self.rbytes = rbytes if rbytes is not None else self.generate_rbytes()
+        self.rchars = rchars if rchars is not None else self.generate_rchars()
+        self.rgid = rgid if rgid is not None else self.generate_rgid()
+        self.rgroup = rgroup if rgroup is not None else self.generate_rgroup()
+        self.rops = rops if rops is not None else self.generate_rops()
+        self.rss = rss if rss is not None else self.generate_rss()
+        self.rssize = rssize if rssize is not None else self.generate_rss()
+        self.rsz = rsz if rsz is not None else self.generate_rsz()
+        self.rtprio = rtprio if rtprio is not None else self.generate_rtprio()
+        self.ruid = ruid if ruid is not None else self.generate_ruid()
+        self.ruser = ruser if ruser is not None else self.generate_ruser()
+        self.s = s if s is not None else self.generate_s()
+        self.sched = sched if sched is not None else self.generate_sched()
+        self.seat = seat if seat is not None else self.generate_seat()
+        self.sess = sess if sess is not None else self.generate_sess()
+        self.sgi_p = sgi_p if sgi_p is not None else self.generate_sgi_p()
+        self.sgid = sgid if sgid is not None else self.generate_sgid()
+        self.sid = sid if sid is not None else self.generate_sid()
+        self.sig = sig if sig is not None else self.generate_sig()
+        self.sigcatch = sigcatch if sigcatch is not None else self.generate_sigcatch()
+        self.sigignore = (
+            sigignore if sigignore is not None else self.generate_sigignore()
+        )
+        self.sigmask = sigmask if sigmask is not None else self.generate_sigmask()
+        self.size = size if size is not None else self.generate_size()
+        self.slice = slice if slice is not None else self.generate_slice()
+        self.spid = spid if spid is not None else self.generate_spid()
+        self.stackp = stackp if stackp is not None else self.generate_stackp()
+        self.start = start if start is not None else self.generate_start()
+        self.start_time = (
+            start_time if start_time is not None else self.generate_start_time()
+        )
+        self.stat = stat if stat is not None else self.generate_stat()
+        self.state = state if state is not None else self.generate_s()
+        self.stime = stime if stime is not None else self.generate_stime()
+        self.suid = suid if suid is not None else self.generate_suid()
+        self.supgid = supgid if supgid is not None else self.generate_supgid()
+        self.supgrp = supgrp if supgrp is not None else self.generate_supgrp()
+        self.suser = suser if suser is not None else self.generate_suser()
+        self.svgid = svgid if svgid is not None else self.generate_svgid()
+        self.svuid = svuid if svuid is not None else self.generate_svuid()
+        self.sz = sz if sz is not None else self.generate_sz()
+        self.tgid = tgid if tgid is not None else self.generate_tgid()
+        self.thcount = thcount if thcount is not None else self.generate_thcount()
+        self.tid = tid if tid is not None else self.generate_tid()
+        self.time = time if time is not None else self.generate_time()
+        self.timens = timens if timens is not None else self.generate_timens()
+        self.times = times if times is not None else self.generate_times()
+        self.tname = tname if tname is not None else self.generate_tname()
+        self.tpgid = tpgid if tpgid is not None else self.generate_tpgid()
+        self.trs = trs if trs is not None else self.generate_trs()
+        self.tt = tt if tt is not None else self.generate_tty()
+        self.ucmd = ucmd if ucmd is not None else self.generate_comm()
+        self.ucomm = ucomm if ucomm is not None else self.generate_comm()
+        self.uid = uid if uid is not None else self.generate_uid()
+        self.uname = uname if uname is not None else self.generate_uname()
+        self.unit = unit if unit is not None else self.generate_unit()
+        self.user = user if user is not None else self.generate_user()
+        self.userns = userns if userns is not None else self.generate_userns()
+        self.uss = uss if uss is not None else self.generate_uss()
+        self.utsns = utsns if utsns is not None else self.generate_utsns()
+        self.uunit = uunit if uunit is not None else self.generate_uunit()
+        self.vsize = vsize if vsize is not None else self.generate_vsize()
         self.vsz = vsz if vsz is not None else self.generate_vsz()
-        self.wbytes = wbytes
-        self.wcbytes = wcbytes
+        self.wbytes = wbytes if wbytes is not None else self.generate_wbytes()
+        self.wcbytes = wcbytes if wcbytes is not None else self.generate_wcbytes()
         self.wchan = wchan if wchan is not None else self.generate_wchan()
-        self.wchars = wchars
-        self.wops = wops
+        self.wchars = wchars if wchars is not None else self.generate_wchars()
+        self.wops = wops if wops is not None else self.generate_wops()
 
-    def generate_random_value_round(
+    def generate_random_value_based_on_load_round(
         self,
         light: tuple[int | float, int | float],
         medium: tuple[int | float, int | float],
@@ -394,7 +395,7 @@ class Process:
         Returns:
             float: A randomly generated memory utilization percentage between 0.0 and 100.0.
         """
-        return self.generate_random_value_round(
+        return self.generate_random_value_based_on_load_round(
             light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=2
         )
 
@@ -765,7 +766,7 @@ class Process:
         Returns:
             float: A randomly generated CPU utilization percentage between 0.0 and 100.0.
         """
-        return self.generate_random_value_round(
+        return self.generate_random_value_based_on_load_round(
             light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=1
         )
 
@@ -826,7 +827,7 @@ class Process:
         Returns:
             float: A randomly generated CPU utilization percentage between 0.0 and 100.0.
         """
-        return self.generate_random_value_round(
+        return self.generate_random_value_based_on_load_round(
             light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=1
         )
 
@@ -837,7 +838,7 @@ class Process:
         Returns:
             float: A randomly generated CPU utilization percentage between 0.0 and 100.0.
         """
-        return self.generate_random_value_round(
+        return self.generate_random_value_based_on_load_round(
             light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=1
         )
 
@@ -1493,7 +1494,26 @@ class Process:
         """
         return random.randint(0, 65535)
 
+    def generate_ni(self) -> int:
+        """
+        Generate a random nice value (ni) for a process.
+
+        Returns:
+            int: A randomly generated nice value (-20 to 19).
+        """
+
+        return self.generate_random_value_based_on_type(
+            low=[-20, -20], mid=[0, 10], high=[10, 19], range=[-20, 19]
+        )
+
     def generate_nlwp(self) -> int:
+        """
+        Generate a random number of lightweight processes (nlwp) for a process.
+
+        Returns:
+            int: A randomly generated number of lightweight processes.
+        """
+
         if self.type in ["system", "kernel"]:
             return random.randint(
                 10, 100
@@ -1505,124 +1525,916 @@ class Process:
         else:
             return random.randint(1, 100)  # Default range
 
-    def generate_nice(self) -> int:
-        if self.type in ["system", "kernel"]:
-            return -20  # High priority
-        elif self.type in ["user", "interactive", "foreground"]:
-            return random.randint(0, 10)  # Normal priority
-        elif self.type in ["daemon", "batch", "background"]:
-            return random.randint(10, 19)  # Lower priority
+    def generate_numa(self) -> int:
+        """
+        Generate a random NUMA node (numa) for a process.
+
+        Returns:
+            int: A randomly generated NUMA node.
+        """
+        return random.randint(0, 3)  # Assuming a system with up to 4 NUMA nodes
+
+    def generate_nwchan(self) -> str:
+        """
+        Generate a random wait channel (nwchan) for a process.
+
+        Returns:
+            str: A randomly generated wait channel or "-".
+        """
+
+        if self.type in ["zombie", "orphan"]:
+            return "-"  # No wait channel
         else:
-            return random.randint(-20, 19)  # Default range
+            return random.choice(
+                ["do_wait", "poll_schedule_timeout", "io_schedule", "-"]
+            )
+
+    def generate_oom(self) -> int:
+        """
+        Generate a random Out of Memory (OOM) score for a process.
+
+        Returns:
+            int: A randomly generated OOM score (0 to 1000).
+        """
+        return self.generate_random_value_based_on_type(
+            low=[0, 0], mid=[100, 500], high=[500, 1000], range=[0, 1000]
+        )
+
+    def generate_oomadj(self) -> int:
+        """
+        Generate a random OOM adjustment value (oomadj) for a process.
+
+        Returns:
+            int: A randomly generated OOM adjustment value (-1000 to 1000).
+        """
+        return self.generate_random_value_based_on_type(
+            low=[-1000, -1000], mid=[-500, 0], high=[0, 500], range=[-1000, 1000]
+        )
+
+    def generate_ouid(self) -> int:
+        """
+        Generate a random owner user ID (ouid) for a process.
+
+        Returns:
+            int: A randomly generated owner user ID (0 to 65535).
+        """
+        return self.generate_random_value_based_on_type(
+            low=[0, 0], mid=[1000, 5000], high=[500, 1000], range=[0, 65535]
+        )
+
+    def generate_pcap(self) -> str:
+        """
+        Generate a random process capabilities bitmask (pcap) for a process.
+
+        Returns:
+            str: A randomly generated process capabilities bitmask.
+        """
+
+        if self.type in ["system", "kernel"]:
+            return "0xFFFFFFFF"  # Full capabilities
+        elif self.type in ["user", "interactive", "foreground"]:
+            return "0x00000001"  # Limited capabilities
+        elif self.type in ["daemon", "batch", "background"]:
+            return "0x00000010"  # Service-related capabilities
+        else:
+            return f"0x{random.randint(0, 0xFFFFFFFF):08x}"  # Default range
+
+    def generate_pcaps(self) -> str:
+        """
+        Generate a random process capabilities bitmask (pcaps) for a process.
+
+        Returns:
+            str: A randomly generated process capabilities bitmask.
+        """
+
+        if self.type in ["system", "kernel"]:
+            return "0xFFFFFFFF"  # Full capabilities
+        elif self.type in ["user", "interactive", "foreground"]:
+            return "0x00000001"  # Limited capabilities
+        elif self.type in ["daemon", "batch", "background"]:
+            return "0x00000010"  # Service-related capabilities
+        else:
+            return f"0x{random.randint(0, 0xFFFFFFFF):08x}"  # Default range
+
+    def generate_pcpu(self) -> float:
+        """
+        Generate a random CPU utilization percentage (pcpu) for a process.
+
+        Returns:
+            float: A randomly generated CPU utilization percentage (0.0 to 100.0).
+        """
+
+        return self.generate_random_value_based_on_load_round(
+            light=[0.0, 30.0], medium=[30.1, 70.0], heavy=[70.1, 100.0], round=1
+        )
+
+    def generate_pending(self) -> str:
+        """
+        Generate a random mask of pending signals (pending) for a process.
+
+        Returns:
+            str: A randomly generated mask of pending signals.
+        """
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
 
     def generate_pgid(self) -> int:
+        """
+        Generate a random process group ID (pgid) for a process.
+
+        Returns:
+            int: A randomly generated process group ID (0 to 65535).
+        """
         return random.randint(0, 65535)
 
+    def generate_pgrp(self) -> int:
+        """
+        Generate a random process group ID (pgrp) for a process.
+
+        Returns:
+            int: A randomly generated process group ID (0 to 65535).
+        """
+        return self.pgid  # Alias for `pgid`
+
+    def generate_pidns(self) -> int:
+        """
+        Generate a random PID namespace inode number (pidns) for a process.
+
+        Returns:
+            int: A randomly generated PID namespace inode number.
+        """
+        return random.randint(0, 65535)
+
+    def generate_pmem(self) -> float:
+        """
+        Generate a random memory utilization percentage (pmem) for a process.
+
+        Returns:
+            float: A randomly generated memory utilization percentage (0.0 to 100.0).
+        """
+        return self.generate_random_value_based_on_load_round(
+            light=[0.0, 30.0], medium=[30.1, 70.0], heavy=[70.1, 100.0], round=1
+        )
+
+    def generate_policy(self) -> str:
+        """
+        Generate a random scheduling policy (policy) for a process.
+
+        Returns:
+            str: A randomly generated scheduling policy.
+        """
+        process_type = getattr(self, "process_type", None)
+
+        policy_map = {
+            "system": ["SCHED_OTHER", "SCHED_FIFO"],
+            "user": ["SCHED_OTHER", "SCHED_BATCH"],
+            "daemon": ["SCHED_BATCH", "SCHED_IDLE"],
+            "interactive": ["SCHED_OTHER", "SCHED_RR"],
+            "batch": ["SCHED_BATCH"],
+            "real-time": ["SCHED_FIFO", "SCHED_RR", "SCHED_DEADLINE"],
+            "zombie": ["SCHED_IDLE"],
+            "orphan": ["SCHED_IDLE"],
+            "kernel": ["SCHED_OTHER", "SCHED_FIFO"],
+            "foreground": ["SCHED_OTHER", "SCHED_RR"],
+            "background": ["SCHED_BATCH", "SCHED_IDLE"],
+        }
+
+        if process_type in policy_map:
+            return random.choice(policy_map[process_type])
+        else:
+            return random.choice(
+                [
+                    "SCHED_OTHER",
+                    "SCHED_FIFO",
+                    "SCHED_RR",
+                    "SCHED_BATCH",
+                    "SCHED_IDLE",
+                    "SCHED_DEADLINE",
+                ]
+            )
+
     def generate_ppid(self) -> int:
+        """
+        Generate a random parent process ID (ppid) for a process.
+
+        Returns:
+            int: A randomly generated parent process ID (1 to 65535).
+        """
         return random.randint(1, 65535)
 
     def generate_pri(self) -> int:
+        """
+        Generate a random priority value for a process.
+
+        Returns:
+            int: A randomly generated priority value (0 to 139).
+        """
         return random.randint(0, 139)
 
     def generate_psr(self) -> int:
         return random.randint(0, 7)  # Adjust the range based on the number of CPUs
 
+    def generate_pss(self) -> int:
+        """
+        Generate a random proportional set size (pss) for a process.
+
+        Returns:
+            int: A randomly generated proportional set size in kilobytes.
+        """
+        return random.randint(1024, 65536)  # Memory in KB
+
+    def generate_rbytes(self) -> int:
+        """
+        Generate a random number of bytes read (rbytes) for a process.
+
+        Returns:
+            int: A randomly generated number of bytes read.
+        """
+        return random.randint(0, 1048576)  # Bytes read (up to 1 MB)
+
+    def generate_rchars(self) -> int:
+        """
+        Generate a random number of characters read (rchars) for a process.
+
+        Returns:
+            int: A randomly generated number of characters read.
+        """
+        return random.randint(0, 1048576)  # Characters read (up to 1 MB)
+
     def generate_rgid(self) -> int:
+        """
+        Generate a random real group ID (rgid) for a process.
+
+        Returns:
+            int: A randomly generated real group ID (0 to 65535).
+        """
         return random.randint(0, 65535)
 
     def generate_rgroup(self) -> str:
+        """
+        Generate a random real group name (rgroup) for a process.
+
+        Returns:
+            str: A randomly generated real group name.
+        """
         return random.choice(["staff", "root", "users", "daemon", "services"])
 
+    def generate_rops(self) -> int:
+        """
+        Generate a random number of read operations (rops) for a process.
+
+        Returns:
+            int: A randomly generated number of read operations.
+        """
+        return random.randint(0, 10000)
+
+    def generate_rss(self) -> int:
+        """
+        Generate a random resident set size (rss) for a process.
+
+        Returns:
+            int: A randomly generated resident set size in kilobytes.
+        """
+        return random.randint(1024, 65536)  # Memory in KB
+
+    def generate_rssize(self) -> int:
+        """
+        Generate a random resident set size (rssize) for a process.
+
+        Returns:
+            int: A randomly generated resident set size in kilobytes.
+        """
+        return self.rss()  # Alias for `rss`
+
+    def generate_rsz(self) -> int:
+        """
+        Generate a random resident size (rsz) for a process.
+
+        Returns:
+            int: A randomly generated resident size in kilobytes.
+        """
+        return self.rss  # Alias for `rss`
+
+    def generate_rtprio(self) -> int:
+        """
+        Generate a random real-time priority (rtprio) for a process.
+
+        Returns:
+            int: A randomly generated real-time priority (0 to 99).
+        """
+        return random.randint(0, 99)
+
     def generate_ruid(self) -> int:
-        if self.type in ["system", "kernel"]:
-            return 0  # Root user ID
-        elif self.type in ["user", "interactive", "foreground"]:
-            return random.randint(1000, 5000)  # Standard user IDs
-        elif self.type in ["daemon", "batch", "background"]:
-            return random.randint(500, 1000)  # Service-related user IDs
-        else:
-            return random.randint(0, 65535)  # Default range
+        """
+        Generate a random real user ID (ruid) for a process.
+
+        Returns:
+            int: A randomly generated real user ID (0 to 65535).
+        """
+        return random.randint(0, 65535)
 
     def generate_ruser(self) -> str:
-        user_map = {
-            "system": ["root", "system"],
-            "user": ["user", "developer", "guest"],
-            "daemon": ["daemon", "service"],
-            "interactive": ["user", "admin"],
-            "batch": ["builder", "compiler"],
-            "real-time": ["media", "streamer"],
-            "zombie": ["<unknown>"],
-            "orphan": ["<unknown>"],
-            "kernel": ["root", "system"],
-            "foreground": ["user", "admin"],
-            "background": ["background", "service"],
-        }
+        """
+        Generate a random real user name (ruser) for a process.
 
-        if self.type in user_map:
-            return random.choice(user_map[self.type])
-        else:
-            return random.choice(["root", "user", "nobody", "daemon"])
+        Returns:
+            str: A randomly generated real user name.
+        """
+        return random.choice(["root", "user", "nobody", "daemon"])
+
+    def generate_s(self) -> str:
+        """
+        Generate a random process state (s) for a process.
+
+        Returns:
+            str: A randomly generated process state.
+        """
+        return random.choice(["R", "S", "D", "Z", "T", "X"])
+
+    def generate_sched(self) -> str:
+        """
+        Generate a random scheduling policy (sched) for a process.
+
+        Returns:
+            str: A randomly generated scheduling policy.
+        """
+        return random.choice(
+            [
+                "SCHED_OTHER",
+                "SCHED_FIFO",
+                "SCHED_RR",
+                "SCHED_BATCH",
+                "SCHED_IDLE",
+                "SCHED_DEADLINE",
+            ]
+        )
+
+    def generate_seat(self) -> str:
+        """
+        Generate a random seat name (seat) for a process.
+
+        Returns:
+            str: A randomly generated seat name.
+        """
+        return random.choice(["seat0", "seat1", "seat2"])
 
     def generate_sess(self) -> int:
+        """Generate a random session ID (sess) for a process."""
         return random.randint(0, 65535)
 
     def generate_sgi_p(self) -> int:
+        """Generate a random scheduling priority (sgi_p) for a process."""
         return random.randint(0, 139)
 
-    def generate_stat(self) -> str:
-        state_map = {
-            "system": ["R", "S"],
-            "user": ["R", "S", "T"],
-            "daemon": ["S", "D"],
-            "interactive": ["R", "S"],
-            "batch": ["S", "D"],
-            "real-time": ["R"],
-            "zombie": ["Z"],
-            "orphan": ["Z"],
-            "kernel": ["R", "S"],
-            "foreground": ["R", "S"],
-            "background": ["S", "D"],
-        }
-
-        if self.type in state_map:
-            return random.choice(state_map[self.type])
-        else:
-            return random.choice(["R", "S", "D", "Z", "T", "X"])
-
-    def generate_sz(self) -> int:
-        if self.type in ["system", "kernel"]:
-            return random.randint(4096, 65536)  # Larger memory usage
-        elif self.type in ["user", "interactive", "foreground"]:
-            return random.randint(1024, 4096)  # Moderate memory usage
-        elif self.type in ["daemon", "batch", "background"]:
-            return random.randint(2048, 8192)  # Moderate to high memory usage
-        else:
-            return random.randint(0, 65536)  # Default range
-
-    def generate_tgid(self) -> int:
+    def generate_sgid(self) -> int:
+        """Generate a random saved group ID (sgid) for a process."""
         return random.randint(0, 65535)
 
-    def generate_tty(self) -> str:
-        if self.type in ["system", "kernel", "zombie", "orphan"]:
-            return "-"  # No terminal
-        elif self.type in ["user", "interactive", "foreground"]:
-            return random.choice(["tty1", "tty2", "pts/0", "pts/1"])
-        elif self.type in ["daemon", "batch", "background"]:
-            return "-"
-        else:
-            return random.choice(["tty1", "pts/0", "-"])
+    def generate_sid(self) -> int:
+        """Generate a random session ID (sid) for a process."""
+        return random.randint(0, 65535)
 
-    def generate_vsz(self) -> int:
-        if self.type in ["system", "kernel"]:
-            return random.randint(102400, 1048576)  # Larger virtual memory usage
-        elif self.type in ["user", "interactive", "foreground"]:
-            return random.randint(10240, 204800)  # Moderate virtual memory usage
-        elif self.type in ["daemon", "batch", "background"]:
-            return random.randint(
-                20480, 409600
-            )  # Moderate to high virtual memory usage
-        else:
-            return random.randint(0, 1048576)  # Default range
+    def generate_sig(self) -> str:
+        """Generate a random mask of pending signals (sig) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigcatch(self) -> str:
+        """Generate a random mask of caught signals (sigcatch) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigignore(self) -> str:
+        """Generate a random mask of ignored signals (sigignore) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigmask(self) -> str:
+        """Generate a random mask of blocked signals (sigmask) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_size(self) -> int:
+        """Generate a random virtual memory size (size) for a process."""
+        return random.randint(1024, 1048576)  # Memory in KB
+
+    def generate_slice(self) -> str:
+        """Generate a random slice name (slice) for a process."""
+        return random.choice(["user.slice", "system.slice", "background.slice"])
+
+    def generate_spid(self) -> int:
+        """Generate a random parent process ID (spid) for a process."""
+        return random.randint(1, 65535)
+
+    def generate_stackp(self) -> str:
+        """Generate a random stack pointer (stackp) for a process."""
+        return f"0x{random.randint(0x100000, 0x7FFFFFFF):08x}"
+
+    def generate_start(self) -> str:
+        """Generate a random start time (start) for a process."""
+        start_time = datetime.now() - timedelta(
+            seconds=random.randint(0, 604800)
+        )  # Up to 7 days ago
+        return start_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    def generate_start_time(self) -> int:
+        """Generate a random start time in seconds since epoch (start_time) for a process."""
+        return int(
+            (datetime.now() - timedelta(seconds=random.randint(0, 604800))).timestamp()
+        )
+
+    def generate_stat(self) -> str:
+        """Generate a random process state (stat) for a process."""
+        return random.choice(["R", "S", "D", "Z", "T", "X"])
+
+    def generate_state(self) -> str:
+        """Generate a random process state (state) for a process."""
+        return self.generate_stat()  # Alias for `stat`
+
+    def generate_stime(self) -> int:
+        """Generate a random system time (stime) for a process."""
+        return random.randint(0, 100000)  # Time in jiffies
+
+    def generate_suid(self) -> int:
+        """Generate a random saved user ID (suid) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_supgid(self) -> list:
+        """Generate a random list of supplementary group IDs (supgid) for a process."""
+        return [random.randint(0, 65535) for _ in range(random.randint(1, 5))]
+
+    def generate_sess(self) -> int:
+        """Generate a random session ID (sess) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_sgi_p(self) -> int:
+        """Generate a random scheduling priority (sgi_p) for a process."""
+        return random.randint(0, 139)
+
+    def generate_sgid(self) -> int:
+        """Generate a random saved group ID (sgid) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_sid(self) -> int:
+        """Generate a random session ID (sid) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_sig(self) -> str:
+        """Generate a random mask of pending signals (sig) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigcatch(self) -> str:
+        """Generate a random mask of caught signals (sigcatch) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigignore(self) -> str:
+        """Generate a random mask of ignored signals (sigignore) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigmask(self) -> str:
+        """Generate a random mask of blocked signals (sigmask) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_size(self) -> int:
+        """Generate a random virtual memory size (size) for a process."""
+        return random.randint(1024, 1048576)  # Memory in KB
+
+    def generate_slice(self) -> str:
+        """Generate a random slice name (slice) for a process."""
+        return random.choice(["user.slice", "system.slice", "background.slice"])
+
+    def generate_spid(self) -> int:
+        """Generate a random parent process ID (spid) for a process."""
+        return random.randint(1, 65535)
+
+    def generate_stackp(self) -> str:
+        """Generate a random stack pointer (stackp) for a process."""
+        return f"0x{random.randint(0x100000, 0x7FFFFFFF):08x}"
+
+    def generate_start(self) -> str:
+        """Generate a random start time (start) for a process."""
+        start_time = datetime.now() - timedelta(
+            seconds=random.randint(0, 604800)
+        )  # Up to 7 days ago
+        return start_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    def generate_start_time(self) -> int:
+        """Generate a random start time in seconds since epoch (start_time) for a process."""
+        return int(
+            (datetime.now() - timedelta(seconds=random.randint(0, 604800))).timestamp()
+        )
+
+    def generate_stat(self) -> str:
+        """Generate a random process state (stat) for a process."""
+        return random.choice(["R", "S", "D", "Z", "T", "X"])
+
+    def generate_state(self) -> str:
+        """Generate a random process state (state) for a process."""
+        return self.generate_stat()  # Alias for `stat`
+
+    def generate_stime(self) -> int:
+        """Generate a random system time (stime) for a process."""
+        return random.randint(0, 100000)  # Time in jiffies
+
+    def generate_suid(self) -> int:
+        """Generate a random saved user ID (suid) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_supgid(self) -> list:
+        """Generate a random list of supplementary group IDs (supgid) for a process."""
+        return [random.randint(0, 65535) for _ in range(random.randint(1, 5))]
+
+    def generate_sess(self) -> int:
+        """Generate a random session ID (sess) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_sgi_p(self) -> int:
+        """Generate a random scheduling priority (sgi_p) for a process."""
+        return random.randint(0, 139)
+
+    def generate_sgid(self) -> int:
+        """Generate a random saved group ID (sgid) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_sid(self) -> int:
+        """Generate a random session ID (sid) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_sig(self) -> str:
+        """Generate a random mask of pending signals (sig) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigcatch(self) -> str:
+        """Generate a random mask of caught signals (sigcatch) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigignore(self) -> str:
+        """Generate a random mask of ignored signals (sigignore) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_sigmask(self) -> str:
+        """Generate a random mask of blocked signals (sigmask) for a process."""
+        return f"0x{random.randint(0, 0xFFFFFFFF):08x}"
+
+    def generate_size(self) -> int:
+        """Generate a random virtual memory size (size) for a process."""
+        return random.randint(1024, 1048576)  # Memory in KB
+
+    def generate_slice(self) -> str:
+        """Generate a random slice name (slice) for a process."""
+        return random.choice(["user.slice", "system.slice", "background.slice"])
+
+    def generate_spid(self) -> int:
+        """Generate a random parent process ID (spid) for a process."""
+        return random.randint(1, 65535)
+
+    def generate_stackp(self) -> str:
+        """Generate a random stack pointer (stackp) for a process."""
+        return f"0x{random.randint(0x100000, 0x7FFFFFFF):08x}"
+
+    def generate_start(self) -> str:
+        """Generate a random start time (start) for a process."""
+        start_time = datetime.now() - timedelta(
+            seconds=random.randint(0, 604800)
+        )  # Up to 7 days ago
+        return start_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    def generate_start_time(self) -> int:
+        """Generate a random start time in seconds since epoch (start_time) for a process."""
+        return int(
+            (datetime.now() - timedelta(seconds=random.randint(0, 604800))).timestamp()
+        )
+
+    def generate_stat(self) -> str:
+        """Generate a random process state (stat) for a process."""
+        return random.choice(["R", "S", "D", "Z", "T", "X"])
+
+    def generate_state(self) -> str:
+        """Generate a random process state (state) for a process."""
+        return self.generate_stat()  # Alias for `stat`
+
+    def generate_stime(self) -> int:
+        """Generate a random system time (stime) for a process."""
+        return random.randint(0, 100000)  # Time in jiffies
+
+    def generate_suid(self) -> int:
+        """Generate a random saved user ID (suid) for a process."""
+        return random.randint(0, 65535)
+
+    def generate_supgid(self) -> list:
+        """Generate a random list of supplementary group IDs (supgid) for a process."""
+        return [random.randint(0, 65535) for _ in range(random.randint(1, 5))]
+
+    def generate_supgrp(self) -> list:
+        """
+        Generate a random list of supplementary group names (supgrp) for a process.
+        Return Type: list[str]
+        """
+        return random.sample(
+            ["staff", "root", "users", "daemon", "services"], random.randint(1, 3)
+        )
+
+    def generate_suser(self) -> str:
+        """
+        Generate a random saved user name (suser) for a process.
+        Return Type: str
+        """
+        return random.choice(["root", "user", "nobody", "daemon"])
+
+    def generate_svgid(self) -> int:
+        """
+        Generate a random saved group ID (svgid) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_svuid(self) -> int:
+        """
+        Generate a random saved user ID (svuid) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_trs(self) -> int:
+        """
+        Generate a random text resident set size (trs) for a process.
+        Return Type: int
+        """
+        return random.randint(1024, 65536)  # Memory in KB
+
+    def generate_tt(self) -> str:
+        """
+        Generate a random controlling terminal (tt) for a process.
+        Return Type: str
+        """
+        return random.choice(["tty1", "tty2", "pts/0", "pts/1", "-"])
+
+    def generate_ucmd(self) -> str:
+        """
+        Generate a random command name (ucmd) for a process.
+        Return Type: str
+        """
+        return random.choice(["bash", "python", "java", "nginx", "sshd"])
+
+    def generate_ucomm(self) -> str:
+        """
+        Generate a random command name (ucomm) for a process.
+        Return Type: str
+        """
+        return self.generate_ucmd()  # Alias for `ucmd`
+
+    def generate_uid(self) -> int:
+        """
+        Generate a random user ID (uid) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_uname(self) -> str:
+        """
+        Generate a random user name (uname) for a process.
+        Return Type: str
+        """
+        return random.choice(["root", "user", "nobody", "daemon"])
+
+    def generate_unit(self) -> str:
+        """
+        Generate a random systemd unit name (unit) for a process.
+        Return Type: str
+        """
+        return random.choice(["user.slice", "system.slice", "background.slice"])
+
+    def generate_user(self) -> str:
+        """
+        Generate a random user name (user) for a process.
+        Return Type: str
+        """
+        return self.generate_uname()  # Alias for `uname`
+
+    def generate_userns(self) -> int:
+        """
+        Generate a random user namespace inode number (userns) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_uss(self) -> int:
+        """
+        Generate a random unique set size (uss) for a process.
+        Return Type: int
+        """
+        return random.randint(1024, 65536)  # Memory in KB
+
+    def generate_utsns(self) -> int:
+        """
+        Generate a random UTS namespace inode number (utsns) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_uunit(self) -> str:
+        """
+        Generate a random user unit name (uunit) for a process.
+        Return Type: str
+        """
+        return random.choice(["user.slice", "system.slice", "background.slice"])
+
+    def generate_vsize(self) -> int:
+        """
+        Generate a random virtual memory size (vsize) for a process.
+        Return Type: int
+        """
+        return random.randint(1024, 1048576)  # Memory in KB
+
+    def generate_sz(self) -> int:
+        """
+        Generate a random virtual memory size (sz) for a process.
+        Return Type: int
+        """
+        return random.randint(1024, 1048576)  # Memory in KB
+
+    def generate_tgid(self) -> int:
+        """
+        Generate a random thread group ID (tgid) for a process.
+        Return Type: int
+        """
+        return random.randint(1, 65535)
+
+    def generate_thcount(self) -> int:
+        """
+        Generate a random thread count (thcount) for a process.
+        Return Type: int
+        """
+        return random.randint(1, 100)  # Number of threads
+
+    def generate_tid(self) -> int:
+        """
+        Generate a random thread ID (tid) for a process.
+        Return Type: int
+        """
+        return random.randint(1, 65535)
+
+    def generate_timens(self) -> int:
+        """
+        Generate a random time namespace inode number (timens) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_times(self) -> str:
+        """
+        Generate a random cumulative CPU time (times) for a process.
+        Return Type: str
+        """
+        hours = random.randint(0, 23)
+        minutes = random.randint(0, 59)
+        seconds = random.randint(0, 59)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    def generate_tname(self) -> str:
+        """
+        Generate a random thread name (tname) for a process.
+        Return Type: str
+        """
+        return random.choice(["main", "worker", "io_thread", "render_thread"])
+
+    def generate_tpgid(self) -> int:
+        """
+        Generate a random terminal process group ID (tpgid) for a process.
+        Return Type: int
+        """
+        return random.randint(1, 65535)
+
+    def generate_trs(self) -> int:
+        """
+        Generate a random text resident set size (trs) for a process.
+        Return Type: int
+        """
+        return random.randint(1024, 65536)  # Memory in KB
+
+    def generate_tt(self) -> str:
+        """
+        Generate a random controlling terminal (tt) for a process.
+        Return Type: str
+        """
+        return random.choice(["tty1", "tty2", "pts/0", "pts/1", "-"])
+
+    def generate_ucmd(self) -> str:
+        """
+        Generate a random command name (ucmd) for a process.
+        Return Type: str
+        """
+        return random.choice(["bash", "python", "java", "nginx", "sshd"])
+
+    def generate_ucomm(self) -> str:
+        """
+        Generate a random command name (ucomm) for a process.
+        Return Type: str
+        """
+        return self.generate_ucmd()  # Alias for `ucmd`
+
+    def generate_uid(self) -> int:
+        """
+        Generate a random user ID (uid) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_uname(self) -> str:
+        """
+        Generate a random user name (uname) for a process.
+        Return Type: str
+        """
+        return random.choice(["root", "user", "nobody", "daemon"])
+
+    def generate_unit(self) -> str:
+        """
+        Generate a random systemd unit name (unit) for a process.
+        Return Type: str
+        """
+        return random.choice(["user.slice", "system.slice", "background.slice"])
+
+    def generate_user(self) -> str:
+        """
+        Generate a random user name (user) for a process.
+        Return Type: str
+        """
+        return self.generate_uname()  # Alias for `uname`
+
+    def generate_userns(self) -> int:
+        """
+        Generate a random user namespace inode number (userns) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_uss(self) -> int:
+        """
+        Generate a random unique set size (uss) for a process.
+        Return Type: int
+        """
+        return random.randint(1024, 65536)  # Memory in KB
+
+    def generate_utsns(self) -> int:
+        """
+        Generate a random UTS namespace inode number (utsns) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 65535)
+
+    def generate_uunit(self) -> str:
+        """
+        Generate a random user unit name (uunit) for a process.
+        Return Type: str
+        """
+        return random.choice(["user.slice", "system.slice", "background.slice"])
+
+    def generate_vsize(self) -> int:
+        """
+        Generate a random virtual memory size (vsize) for a process.
+        Return Type: int
+        """
+        return random.randint(1024, 1048576)  # Memory in KB
+
+    def generate_wbytes(self) -> int:
+        """
+        Generate a random number of bytes written (wbytes) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 1048576)  # Bytes written (up to 1 MB)
+
+    def generate_wcbytes(self) -> int:
+        """
+        Generate a random number of cancelled write bytes (wcbytes) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 1048576)  # Cancelled write bytes (up to 1 MB)
+
+    def generate_wchars(self) -> int:
+        """
+        Generate a random number of characters written (wchars) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 1048576)  # Characters written (up to 1 MB)
+
+    def generate_wops(self) -> int:
+        """
+        Generate a random number of write operations (wops) for a process.
+        Return Type: int
+        """
+        return random.randint(0, 10000)  # Number of write operations
+
+    def generate_f(self) -> str:
+        """
+        Generate a random process flag (f) for a process.
+        Return Type: str
+        """
+        return random.choice(["0x00000000", "0x00000001", "0xFFFFFFFF"])
+
+    def generate_time(self) -> str:
+        """
+        Generate a random cumulative CPU time (time) for a process.
+        Return Type: str
+        """
+        hours = random.randint(0, 23)
+        minutes = random.randint(0, 59)
+        seconds = random.randint(0, 59)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     def generate_wchan(self) -> str:
         if self.type in ["zombie", "orphan"]:
@@ -1631,52 +2443,3 @@ class Process:
             return random.choice(
                 ["do_wait", "poll_schedule_timeout", "io_schedule", "-"]
             )
-
-    def generate_cmdline(self) -> str:
-
-        cmdline_map = {
-            "system": ["systemd --unit=multi-user.target", "init"],
-            "user": ["bash -c 'ls'", "python script.py", "java -jar app.jar"],
-            "daemon": ["nginx -g 'daemon off;'", "sshd -D", "cron"],
-            "interactive": ["vim file.txt", "nano config.cfg"],
-            "batch": ["make build", "gcc -o program source.c"],
-            "real-time": ["ffmpeg -i input.mp4 output.mp4", "vlc --fullscreen"],
-            "zombie": ["<defunct>"],
-            "orphan": ["<unknown>"],
-            "kernel": ["kworker/0:1", "ksoftirqd/0"],
-            "foreground": ["top", "htop"],
-            "background": ["sleep 100", "nohup long_running_task &"],
-        }
-
-        if self.type in cmdline_map:
-            return random.choice(cmdline_map[self.type])
-        else:
-            return random.choice(
-                [
-                    "bash -c 'ls'",
-                    "python script.py",
-                    "java -jar app.jar",
-                    "systemd --unit=multi-user.target",
-                ]
-            )
-
-    def generate_cwd(self) -> str:
-
-        cwd_map = {
-            "system": ["/", "/etc"],
-            "user": ["/home/user", "/home/developer"],
-            "daemon": ["/var/www", "/var/log"],
-            "interactive": ["/home/user", "/home/admin"],
-            "batch": ["/tmp/build", "/tmp"],
-            "real-time": ["/home/media", "/home/streamer"],
-            "zombie": ["<unknown>"],
-            "orphan": ["<unknown>"],
-            "kernel": ["/", "/proc"],
-            "foreground": ["/home/user", "/tmp"],
-            "background": ["/tmp", "/var/tmp"],
-        }
-
-        if self.type in cwd_map:
-            return random.choice(cwd_map[self.type])
-        else:
-            return random.choice(["/", "/home/user", "/var/www", "/tmp"])
