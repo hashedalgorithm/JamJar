@@ -23,3 +23,9 @@ class CommandBase:
         Extract paths from the command arguments.
         """
         return [arg for arg in args if not arg.startswith("-")]
+
+    def initialize_flag_map(self, flags: list[str]) -> dict:
+        """
+        Initialize the flag map based on the provided flags.
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
