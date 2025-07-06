@@ -8,7 +8,7 @@ import ipcalc
 
 class PING(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("ping")
         self.LOCAL_NETS = ["10.0.0.0/8", "172.16.0.0/12", "12.168.0.0/16"]
 
     def run(self) -> str | None:

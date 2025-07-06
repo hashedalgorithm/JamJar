@@ -5,7 +5,7 @@ from utils import helper
 
 class KILL(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("kill")
         
     def kill(self, args):
         valid_arg = False

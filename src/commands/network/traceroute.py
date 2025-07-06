@@ -6,7 +6,7 @@ import random
 
 class TRACEROUTE(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("traceroute")
         
     def run(self) -> str | None:
         raise Exception("TRACEROUTE not implemented yet!")

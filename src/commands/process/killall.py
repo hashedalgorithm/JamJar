@@ -5,7 +5,7 @@ from utils import helper
 
 class KILLALL(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("killall")
 
     def killall(self, args):
 

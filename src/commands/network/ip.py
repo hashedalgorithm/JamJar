@@ -5,7 +5,7 @@ from models.interface import INTERFACE
 
 class IP(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("ip")
         
     def run(self) -> str | None:
         raise Exception("IP not implemented yet!")

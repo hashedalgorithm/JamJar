@@ -5,7 +5,7 @@ from models.arp import ARP
 
 class ARP(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("arp")
 
     def run(self) -> str | None:
         raise Exception("ARP not implemented yet!")

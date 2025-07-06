@@ -5,7 +5,7 @@ from utils import helper
 
 class PS(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("ps")
         
     def run(self) -> str | None:
         raise Exception("PS not implemented yet!")

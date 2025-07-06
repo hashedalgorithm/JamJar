@@ -31,7 +31,7 @@ class RMFlagMap:
 
 class RM(CommandBase):
     def __init__(self, file_system: FileSystem, args: list[str]):
-        super().__init__("rm", "Remove files or directories")
+        super().__init__("rm")
         self.args = args
         self.file_system = file_system
         self.flags = self.extract_flags(args)

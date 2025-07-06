@@ -5,7 +5,7 @@ from models.file import File
 
 class TOUCH(CommandBase):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("touch")
 
     def run(self) -> str | None:
         raise Exception("TOUCH not implemented yet!")

@@ -4,7 +4,7 @@ from commands.base import CommandBase
 
 class MKDIR(CommandBase):
     def __init__(self, file_system: FileSystem) -> None:
-        super().__init__()
+        super().__init__("mkdir")
         self.file_system = file_system
         
     def run(self) -> str | None:

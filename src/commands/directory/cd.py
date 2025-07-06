@@ -4,7 +4,7 @@ from commands.base import CommandBase
 
 class CD(CommandBase):
     def __init__(self, file_system: FileSystem) -> None:
-        super().__init__()
+        super().__init__("cd")
         self.file_system = file_system
         self.parser = CommandParser()
 
