@@ -1,14 +1,16 @@
 from commands.base import CommandBase
 from models.process import Process
 from utils import helper
+from utils.parser import ParsedCommand
 
 
 class PS(CommandBase):
-    def __init__(self, processes: Process) -> None:
+    def __init__(self, processes: list[Process], parsed: ParsedCommand) -> None:
         super().__init__("ps")
         self.processes = processes
+        self.parsed = parsed
         
-    def run(self) -> str | None:
+    def run(self, tty, pid) -> str | None:
         raise Exception("PS not implemented yet!")
     
     def ps(self, args, tty, uid):

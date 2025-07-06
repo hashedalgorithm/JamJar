@@ -1,11 +1,13 @@
 from commands.base import CommandBase
 from utils import helper
 from models.arp import ARP
+from utils.parser import ParsedCommand
 
 
 class ARP(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, parsed: ParsedCommand) -> None:
         super().__init__("arp")
+        self.parsed = parsed
 
     def run(self) -> str | None:
         raise Exception("ARP not implemented yet!")

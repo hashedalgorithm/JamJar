@@ -1,12 +1,14 @@
 from commands.base import CommandBase
 from models.process import Process
 from utils import helper
+from utils.parser import ParsedCommand
 
 
 class KILL(CommandBase):
-    def __init__(self, processes) -> None:
+    def __init__(self, processes, parsed: ParsedCommand) -> None:
         super().__init__("kill")
         self.processes = processes
+        self.parsed = parsed
         
     def kill(self, args):
         valid_arg = False

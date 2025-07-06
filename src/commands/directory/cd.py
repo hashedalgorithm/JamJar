@@ -3,20 +3,21 @@ from utils.parser import CommandParser, ParsedCommand
 from commands.base import CommandBase
 
 class CD(CommandBase):
-    def __init__(self, file_system: FileSystem) -> None:
+    def __init__(self, file_system: FileSystem, parsed: ParsedCommand) -> None:
         super().__init__("cd")
         self.file_system = file_system
         self.parser = CommandParser()
+        self.parsed = parsed
 
-    def run(self, parsed_command: ParsedCommand) -> str | None:
+    def run(self) -> str | None:
         # Define valid flags
         valid_flags = {"-@", "-L", "-P", "-e", "--help"}
 
         flags = []
         positional_args = []
 
-        # Separate flags and positional args from parsed_command.args
-        for arg in parsed_command.args:
+        # Separate flags and positional args from self.parsed.args
+        for arg in self.parsed.args:
             if arg.type == "flag":
                 if arg.name not in valid_flags:
                     return (

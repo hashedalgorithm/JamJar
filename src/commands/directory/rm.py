@@ -1,6 +1,7 @@
 from models.file_system import FileSystem
 from models.directory import Directory
 from ..base import CommandBase
+from utils.parser import CommandParser, ParsedCommand
 
 
 class RMFlagMap:
@@ -30,8 +31,9 @@ class RMFlagMap:
 
 
 class RM(CommandBase):
-    def __init__(self, file_system: FileSystem, args: list[str]):
+    def __init__(self, file_system: FileSystem, parsed: ParsedCommand, args: list[str]):
         super().__init__("rm")
+        self.parsed = parsed
         self.args = args
         self.file_system = file_system
         self.flags = self.extract_flags(args)
