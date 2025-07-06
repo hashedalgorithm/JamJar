@@ -18,20 +18,20 @@ class ProcessHandler(Logger):
             "ps": ["-C", "-G", "-g", "-p", "-q", "-t", "-U", "-u", "-o", "--sort", "--ppid", "--pid", "--tty", "--user"]
         }
 
-    def handle(self, command: str, full_command: str, tty: str, uid: int):
+    def handle(self, command: str, full_command: str, tty: str, pid: int):
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:
             case "ps":
                 ps = PS(self.processes)
-                return ps.run(parsed, tty, uid)
+                return ps.run(parsed, tty, pid)
 
             case "kill":
-                kill = KILL()
-                return kill.run(parsed, tty, uid)
+                kill = KILL(self.processes)
+                return kill.run(parsed, tty, pid)
 
             case "killall":
-                killall = KILLALL()
+                killall = KILLALL(self.processes)
                 return killall.run(parsed)
 
             case _:
