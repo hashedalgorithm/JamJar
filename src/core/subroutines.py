@@ -9,85 +9,137 @@ from models.process import Process
 
 
 class Subroutines(Logger):
+
     def __init__(self, process_tracer: ProcessTracer):
         super().__init__()
         self.command_handler = CommandHandler()
         self.process_tracer = process_tracer
 
-        # Category-based command routing map
-        self.command_map = {
-            "directory": {"cd", "ls", "rmdir", "mkdir", "mv", "cp", "rm"},
-            "network": {"ifconfig", "nmap", "ping", "arp", "ip", "traceroute", "ftp"},
-            "process": {"ps", "kill", "killall"},
-            "file_ops": {
-                "cat", "grep", "echo", "locate", "wget", "curl", "unzip",
-                "chmod", "nano", "pico", "vi", "vim", "ln", "crontab"
-            },
-            "system": {
-                "df", "history", "php", "uname", "whoami", "w", "id", "last", "uptime"
-            },
-        }
+    def subroutine_manager(
+        self,
+        process: Process,
+        username: str,
+    ) -> None:
+        match process.command:
+            case "cd" | "ls" | "rmdir" | "mkdir" | "mv" | "cp" | "rm":
+                return self.directory_routine(process)
 
-    def subroutine_manager(self, process: Process, username: str) -> None:
-        command = process.command
+            case "ifconfig" | "nmap" | "ping" | "arp" | "ip" | "traceroute" | "ftp":
+                return self.network_routine(process)
 
-        for category, commands in self.command_map.items():
-            if command in commands:
-                handler = getattr(self, f"{category}_routine", None)
-                if handler:
-                    return handler(process, username) if category == "process" else handler(process)
+            case "ps" | "kill" | "killall":
+                return self.process_routine(process, username)
 
-        self.logger.warning(f"Subroutine for command '{command}' is not implemented yet.")
-        self.release_process(process.pid)
+            case (
+                "cat"
+                | "grep"
+                | "echo"
+                | "locate"
+                | "wget"
+                | "curl"
+                | "unzip"
+                | "chmod"
+                | "nano"
+                | "pico"
+                | "vi"
+                | "vim"
+                | "ln"
+                | "crontab"
+            ):
+                return self.file_ops_routine(process)
 
-    def release_process(self, pid: int) -> None:
+            case (
+                "df"
+                | "history"
+                | "php"
+                | "uname"
+                | "whoami"
+                | "w"
+                | "id"
+                | "last"
+                | "uptime"
+            ):
+                return self.system_routine(process)
+
+            case _:
+                self.logger.warning(
+                    f"Subroutine for command {process.command} is not implemented yet!"
+                )
+                self.release_process(process.pid)
+                return
+
+    def release_process(self, pid) -> None:
         self.process_tracer.resume(pid)
         self.process_tracer.detach(pid)
 
     def directory_routine(self, process: Process) -> None:
-        self._handle_generic(process, self.command_handler.invoke_directory_handler)
+        try:
+            full_command = process.get_full_command(process.pid)
+
+            raw_output = self.command_handler.invoke_directory_handler(
+                process.command, full_command
+            )
+            output = self.sanitize_string(raw_output)
+
+            self.inject_output(process.pid, process.ppid, output, False)
+
+        except Exception as e:
+            self.logger.error(f"Error in Directory Handler: {e}")
+            self.release_process(process.pid)
 
     def network_routine(self, process: Process) -> None:
-        output = self.command_handler.invoke_directory_handler(
-            process.command, process.get_full_command(process.pid)
-        )
-        output = self.sanitize_string(output)
+        full_command = process.get_full_command(process.pid)
 
-        # Special handling for ping
-        if isinstance(output, list):
-            for i, line in enumerate(output):
-                self.inject_output_to_proc(line + "\n", process.ppid)
-                if i < 5:
+        raw_output = self.command_handler.invoke_directory_handler(
+            process.command, full_command
+        )
+        output = self.sanitize_string(raw_output)
+
+        # Special case ping
+        if type(output) == list:
+            for n, item in enumerate(output):
+                self.inject_output_to_proc(item + "\n", process.ppid)
+                if n < 5:
                     time.sleep(1)
         else:
             self.inject_output(process.pid, process.ppid, output, True)
 
-    def process_routine(self, process: Process, username: str) -> None:
-        output = self.command_handler.invoke_process_handler(
-            process.command, process.get_full_command(process.pid),
-            process.tty, username
+    def process_routine(
+        self,
+        process: Process,
+        username: str,
+    ) -> None:
+        full_command = process.get_full_command(process.pid)
+
+        raw_output = self.command_handler.invoke_process_handler(
+            process.command, full_command, process.tty, username
         )
-        output = self.sanitize_string(output)
+        output = self.sanitize_string(raw_output)
+
         self.inject_output(process.pid, process.ppid, output, False)
 
-    def file_ops_routine(self, process: Process) -> None:
-        self._handle_generic(process, self.command_handler.invoke_file_ops_handler)
-
     def system_routine(self, process: Process) -> None:
-        self._handle_generic(process, self.command_handler.invoke_system_handler)
+        full_command = process.get_full_command(process.pid)
 
-    def _handle_generic(self, process: Process, handler_fn) -> None:
-        try:
-            full_command = process.get_full_command(process.pid)
-            output = handler_fn(process.command, full_command)
-            output = self.sanitize_string(output)
-            self.inject_output(process.pid, process.ppid, output, False)
-        except Exception as e:
-            self.logger.error(f"Error in handler for command {process.command}: {e}")
-            self.release_process(process.pid)
+        raw_output = self.command_handler.invoke_system_handler(
+            process.command, full_command
+        )
+        output = self.sanitize_string(raw_output)
+
+        # TODO: Implement system routine
+
+    def file_ops_routine(self, process: Process) -> None:
+        full_command = process.get_full_command(process.pid)
+
+        raw_output = self.command_handler.invoke_file_ops_handler(
+            process.command, full_command
+        )
+        output = self.sanitize_string(raw_output)
+
+        # TODO: Implement file operations routine
 
     def sanitize_string(self, message: str) -> str:
-        if message and not message.endswith("\n"):
+        if not message == None and not message.endswith("\n") and not message == "":
             return message + "\n"
         return message
 
@@ -111,6 +163,8 @@ class Subroutines(Logger):
                 print(f"[!] Kernel EFAULT writing to {fd_path}")
             else:
                 raise Exception(f"Error injecting output : {e}")
+        finally:
+            fd.close()
 
     def inject_output(self, pid: int, ppid: int, message: str, usePID: bool) -> None:
         if message:
