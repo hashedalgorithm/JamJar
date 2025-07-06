@@ -1,10 +1,17 @@
 import shlex
-from typing import List, Optional
+from typing import List, Optional, Literal
 import os
+
+ParsedArgumentType = Literal["flag", "option", "positional", "special"]
 
 
 class ParsedArgument:
-    def __init__(self, type: str, name: Optional[str] = None, value: Optional[str] = None):
+    def __init__(
+        self,
+        type: ParsedArgumentType,
+        name: Optional[str] = None,
+        value: Optional[str] = None,
+    ):
         self.type = type  # "flag", "option", "positional", "special"
         self.name = name
         self.value = value
@@ -76,11 +83,15 @@ class CommandParser:
                 # Handle options that require values
                 if arg in self.options_with_values:
                     if i + 1 < len(args):
-                        parsed.append(ParsedArgument(type="option", name=arg, value=args[i + 1]))
+                        parsed.append(
+                            ParsedArgument(type="option", name=arg, value=args[i + 1])
+                        )
                         i += 2
                         continue
                     else:
-                        parsed.append(ParsedArgument(type="option", name=arg, value=None))
+                        parsed.append(
+                            ParsedArgument(type="option", name=arg, value=None)
+                        )
                         i += 1
                         continue
 
@@ -94,7 +105,6 @@ class CommandParser:
             i += 1
 
         return parsed
-
 
     def split_path(self, path: str) -> list[str]:
         if not path:
