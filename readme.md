@@ -24,16 +24,19 @@ sudo apt install -y unzip zip bison build-essential cmake flex git libedit-dev \
 These packages are internally used by bcc's dependencies and will be installed in ubuntu by default and will create issues when you are building bcc.
 
 ```
-sudo apt install libcurl4--openssl-dev liblaujit-5.1-dev
+sudo apt install libcurl4-openssl-dev libluajit-5.1-dev
 ```
 ---
 
 ## **📦 Installation Steps**
-### **1. Clone JamJar from Github**
+### **1. Clone JamJar from Github
 
 ```
 git clone https://www.github.com/hashedalgorithm/JamJar.git
 ```
+
+---
+
 ### **2. Create a Python Virtual Environment**
 
 ```
@@ -47,7 +50,6 @@ Activate the virtual environment (if not already):
 ```
 source ~/JamJar/jamjar-venv/bin/activate
 ```
-
 
 ---
 
@@ -79,7 +81,17 @@ cd build
 
 ---
 
-### **6. Build and Install BCC Core**
+### **6. Install Python Dependencies (for your venv)**
+
+```
+pip install six setuptools ipcalc build
+```
+
+> ⚠️ If you are getting errors then the reason for it would be ownership issues with the folder.
+
+---
+
+### **7. Build and Install BCC Core**
 
 ```
 cmake ..
@@ -87,21 +99,15 @@ make $(nproc)
 make install
 ```
 
-> ⚠️ If you are getting errors then the reason for it would be ownership issues with the folder.
 ---
-
-### **7. Install Python Dependencies (for your venv)**
-```
-pip install six setuptools ipcalc build
-```
 
 ### **8. Installing ptrace(0.9.9 stable) from source**
 
 ```
 // Go to ~/JamJar
 wget https://github.com/vstinner/python-ptrace/archive/refs/tags/0.9.9.zip
-unzip python-ptrace0.9.9.zip
-cd python-ptrace0.9.9/
+unzip 0.9.9.zip
+cd python-ptrace-0.9.9/
 ```
 
 ```
@@ -113,15 +119,18 @@ This creates a .whl file in the dist/ directory.
 pip install dist/*.whl
 ```
 
+---
+
 ### **9. Build and Install Python Bindings (for your venv)**
 
 From within the build directory:
 
 ```
-cmake -DPYTHON_CMD=python3 ..
-pushd ../src/python
+cd ../bcc
+cmake -DPYTHON_CMD=python3 ./
+pushd ./src/python
 make $(nproc)
-python3 setup.py install
+python3 ./bcc-python3/setup.py install
 popd
 ```
 
@@ -153,18 +162,26 @@ If this prints without errors, BCC is ready to use. If throws error in either of
 If you no longer need the source or build artifacts:
 
 ```
-rm -rf ~/JamJar/bcc
-rm -rf ~/JamJar/python-ptrace0.9.9
-rm -r ~/JamJar/python-ptrace0.9.9.zip
+sudo rm -rf ~/JamJar-main/bcc
+sudo rm -rf ~/JamJar-main/python-ptrace-0.9.9
+sudo rm -r ~/JamJar-main/0.9.9.zip
 ```
 
 ---
 
+<<<<<<< HEAD
+## **🍯 Running JamJar **
+
+JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
+
+### **👤 Change Password of Root User
+=======
 ## **🍯 Running JamJar**
 
 JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
 
 ### **👤 Change Password of Root User**
+>>>>>>> v2-ls
 
 ```
 ubuntu@VM:~$ sudo passwd root
@@ -174,7 +191,11 @@ Retype new password:
 passwd: password updated successfully
 ```
 
+<<<<<<< HEAD
+### **🦾 Get Root Shell
+=======
 ### **🦾 Get Root Shell**
+>>>>>>> v2-ls
 
 ```
 ubuntu@VM:~$ su
@@ -192,4 +213,8 @@ python3 main.py
 > ⚠️ If you came across any error like module not found try to install it using pip(except for bcc and ptrace).
 
 
+<<<<<<< HEAD
 ---
+=======
+---
+>>>>>>> v2-ls

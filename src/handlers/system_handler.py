@@ -1,82 +1,73 @@
-class SystemHandler:
+from utils.logger import Logger
+from utils.parser import CommandParser
 
-    def __init__(self):
-        pass
+from commands.system.df import DF
+from commands.system.history import HISTORY
+from commands.system.id import ID
+from commands.system.last import LAST
+from commands.system.php import PHP
+from commands.system.uname import UNAME
+from commands.system.uptime import UPTIME
+from commands.system.w import W
+from commands.system.whoami import WHOAMI
 
-    def handle(self, command: str, args: list):
 
+class SystemHandler(Logger):
+    def __init__(self) -> None:
+        super().__init__()
+        self.parser = CommandParser()
+        self.command_options_map = {
+            "df": ["-T", "--type", "--output"],
+            "history": [],
+            "id": [],
+            "last": ["-n", "--limit"],
+            "php": ["-f", "-r", "--define", "--php-ini", "--syntax-check", "--file", "--run"],
+            "uname": [],
+            "uptime": [],
+            "w": [],
+            "whoami": []
+        }
+
+    def handle(self, command: str, full_command: str):
+        self.parser.set_options_with_values(self.command_options_map.get(command, []))
+        parsed = self.parser.parse(full_command)
         match command:
             case "df":
-                return self.df()
+                df = DF(parsed)
+                return df.run()
 
             case "history":
-                return self.history()
+                history = HISTORY(parsed)
+                return history.run()
 
             case "php":
-                return self.php()
+                php = PHP(parsed)
+                return php.run()
 
             case "uname":
-                return self.uname()
+                uname = UNAME(parsed)
+                return uname.run()
 
             case "whoami":
-                return self.whoami()
+                whoami = WHOAMI(parsed)
+                return whoami.run()
 
             case "w":
-                return self.w()
+                w = W(parsed)
+                return w.run()
 
             case "id":
-                return self.id()
+                id = ID(parsed)
+                return id.run()
 
             case "last":
-                return self.last()
+                last = LAST(parsed)
+                return last.run()
 
             case "uptime":
-                return self.uptime()
+                uptime = UPTIME(parsed)
+                return uptime.run()
 
             case _:
                 print(f"Command '{command}' not recognized by SystemHandler.")
                 return None
-
-    def df(self):
-        # TODO: Implement df command
-        pass
-
-    def history(self):
-        # TODO: Implement history command
-        print("history not implemented yet")
-        return None
-
-    def php(self):
-        # TODO: Implement php command
-        print("php not implemented yet")
-        return None
-
-    def uname(self):
-        # TODO: Implement uname command
-        print("uname not implemented yet")
-        return None
-
-    def whoami(self):
-        # TODO: Implement whoami command
-        print("whoami not implemented yet")
-        return None
-
-    def w(self):
-        # TODO: Implement w command
-        print("w not implemented yet")
-        return None
-
-    def id(self):
-        # TODO: Implement id command
-        print("id not implemented yet")
-        return None
-
-    def last(self):
-        # TODO: Implement last command
-        print("last not implemented yet")
-        return None
-
-    def uptime(self):
-        # TODO: Implement uptime command
-        print("uptime not implemented yet")
-        return None

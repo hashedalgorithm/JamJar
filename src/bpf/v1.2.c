@@ -53,8 +53,13 @@ int handle_exec_syscall_entry(struct pt_regs *ctx, const char __user *filename,
 
   trigger_data.pid = bpf_get_current_pid_tgid() >> 32;
 
-  // Submitting the entry event so that process can be attached to debugger
+  bpf_trace_printk("Exec syscall entry for PID: %d\\n", trigger_data.pid);
+
   trigger_event_perf_submit(ctx, &trigger_data);
+  return 0;
+}
+
+int handle_exec_syscall_return(struct pt_regs *ctx) {
 
   u32 event_map_index = 0;
   struct task_struct *task;
@@ -63,7 +68,7 @@ int handle_exec_syscall_entry(struct pt_regs *ctx, const char __user *filename,
     bpf_trace_printk("Failed to get event_data from event_map\\n");
     return 0;
   }
-  event_data->pid = trigger_data.pid;
+  event_data->pid = bpf_get_current_pid_tgid() >> 32;
   event_data->uid = bpf_get_current_uid_gid() & 0xFFFFFFFF;
   task = (struct task_struct *)bpf_get_current_task();
   event_data->ppid = task->real_parent->tgid;
@@ -79,89 +84,69 @@ int handle_exec_syscall_entry(struct pt_regs *ctx, const char __user *filename,
     return 0;
   }
 
-  int offset = ret;
-  u32 args_map_index = 0;
-  struct temp_args_holder *temp_args_holder_ptr =
-      args_map.lookup(&args_map_index);
+  // int offset = ret;
+  // u32 args_map_index = 0;
+  // struct temp_args_holder *temp_args_holder_ptr =
+  //     args_map.lookup(&args_map_index);
 
-  if (!temp_args_holder_ptr) {
-    bpf_trace_printk("Failed to get args buffer from map\\n");
-    return 0;
-  }
+  // if (!temp_args_holder_ptr) {
+  //   bpf_trace_printk("Failed to get args buffer from map\\n");
+  //   return 0;
+  // }
 
-  char *temp_args_buffer = temp_args_holder_ptr->args;
+  // char *temp_args_buffer = temp_args_holder_ptr->args;
 
-  if (!temp_args_holder_ptr) {
-    bpf_trace_printk("Failed to get args_ptr from args_map\\n");
-    return 0;
-  }
+  // if (!temp_args_holder_ptr) {
+  //   bpf_trace_printk("Failed to get args_ptr from args_map\\n");
+  //   return 0;
+  // }
 
-  temp_args_buffer = temp_args_buffer + offset;
-  int args_processing_ret = 0;
+  // temp_args_buffer = temp_args_buffer + offset;
+  // int args_processing_ret = 0;
 
-#pragma unroll
-  for (int i = 0; i < MAX_ARG_LIMIT; i++) {
-    if (!&__argv[i]) {
-      bpf_trace_printk("Reached end of arguments at index %d\\n", i);
-      break;
-    }
+  // #pragma unroll
+  //   for (int i = 0; i < MAX_ARG_LIMIT; i++) {
+  //     if (!&__argv[i]) {
+  //       bpf_trace_printk("Reached end of arguments at index %d\\n", i);
+  //       break;
+  //     }
 
-    bpf_trace_printk("Processing argument %d\\n", i);
-    const char *argp = NULL;
+  //     bpf_trace_printk("Processing argument %d\\n", i);
+  //     const char *argp = NULL;
 
-    int ret = bpf_probe_read_user(&argp, sizeof(argp), &__argv[i]);
-    if (ret < 0 || !argp) {
-      bpf_trace_printk("Failed to read pointer %d, ret: %d\\n", i, ret);
-      break;
-    }
+  //     int ret = bpf_probe_read_user(&argp, sizeof(argp), &__argv[i]);
+  //     if (ret < 0 || !argp) {
+  //       bpf_trace_printk("Failed to read pointer %d, ret: %d\\n", i, ret);
+  //       break;
+  //     }
 
-    ret = bpf_probe_read_user_str(&temp_args_buffer, sizeof(argp), &argp);
+  //     ret = bpf_probe_read_user_str(&temp_args_buffer, sizeof(argp), &argp);
 
-    int remaining_space = ARGSIZE - offset;
-    int used_space = offset + ret;
+  //     int remaining_space = ARGSIZE - offset;
+  //     int used_space = offset + ret;
 
-    if (ret < 0) {
-      bpf_trace_printk("Failed to read argument %d, ret: %d\\n", i, ret);
-      args_processing_ret = -1;
-      break;
-    }
+  //     if (ret < 0) {
+  //       bpf_trace_printk("Failed to read argument %d, ret: %d\\n", i, ret);
+  //       args_processing_ret = -1;
+  //       break;
+  //     }
 
-    if (ret < remaining_space) {
-      temp_args_buffer = temp_args_buffer + ret;
-    }
+  //     if (ret < remaining_space) {
+  //       temp_args_buffer = temp_args_buffer + ret;
+  //     }
 
-    offset += ret;
-  }
+  //     offset += ret;
+  //   }
 
-  if (ret < 0) {
-    bpf_trace_printk("Failed to process(concat) arguments from user space\\n");
-    return 0;
-  }
+  //   if (ret < 0) {
+  //     bpf_trace_printk("Failed to process(concat) arguments from user
+  //     space\\n"); return 0;
+  //   }
 
-  bpf_trace_printk("Concatenated args: %s\\n", &event_data->args);
+  // bpf_trace_printk("Concatenated args: %s\\n", &event_data->args);
 
+  event_data->retval = PT_REGS_RC(ctx);
   event_perf_submit(ctx, event_data);
 
   return 0;
 }
-
-// int handle_exec_syscall_return(struct pt_regs *ctx) {
-//   struct event_data data = {};
-//   struct task_struct *task;
-
-//   u32 uid = bpf_get_current_uid_gid() & 0xffffffff;
-//   if (uid != UID_FILTER) {
-//     return 0;
-//   }
-
-//   data.pid = bpf_get_current_pid_tgid() >> 32;
-//   data.uid = uid;
-
-//   task = (struct task_struct *)bpf_get_current_task();
-//   data.ppid = task->real_parent->tgid;
-
-//   // bpf_get_current_comm(&data.comm, sizeof(data.comm));
-//   data.retval = PT_REGS_RC(ctx);
-//   event_perf_submit(ctx, &data);
-//   return 0;
-// }

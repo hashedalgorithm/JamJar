@@ -1,162 +1,79 @@
-from utils import helper
-from models.storage_entry import StorageEntry
+from utils.logger import Logger
+from utils.parser import CommandParser
+
+from commands.file_ops.cat import CAT
+from commands.file_ops.chmod import CHMOD
+from commands.file_ops.crontab import CRONTAB
+from commands.file_ops.echo import ECHO
+from commands.file_ops.grep import GREP
+from commands.file_ops.ln import LN
+from commands.file_ops.nano import NANO
+from commands.file_ops.touch import TOUCH
+from commands.file_ops.unzip import UNZIP
+from commands.file_ops.vi import VI
 
 
-class FileOpsHandler:
-    def __int__(self):
-        pass
+class FileOpsHandler(Logger):
+    def __init__(self) -> None:
+        super().__init__()
+        self.parser = CommandParser()
+        self.command_options_map = {
+            "cat": [],
+            "chmod": ["--reference"],
+            "crontab": ["-u"],
+            "echo": [],
+            "grep": ["-e", "--regexp", "-f", "--file", "-m", "--max-count", "--label", "--binary-files", "-d", "--directories", "-D", "--devices", "--include", "--exclude", "--exclude-from", "--exclude-dir", "-B", "--before-context", "-A", "--after-context", "-C", "--context", "--group-separator", "--color", "--colour"],
+            "ln": ["--backup", "-S", "--suffix", "-t", "--target-directory"],
+            "nano": ["-C", "--backupdir", "-J", "--guidestripe", "-Q", "--quotestr", "-T", "--tabsize", "-X", "--wordchars", "-Y", "--syntax", "-f", "--rcfile", "-o", "--operatingdir", "-r", "--fill", "-s", "--speller"],
+            "touch": ["-d", "--date", "-r", "--reference", "--time"],
+            "unzip": ["-O", "-I"],
+            "vi": ["-T", "-u", "--cmd", "-c", "-S", "-s", "-w", "-W"]
+        }
 
-    def handle(self, command: str, args: list[str]):
-
+    def handle(self, command: str, full_command: str) -> str | None:
+        self.parser.set_options_with_values(self.command_options_map.get(command, []))
+        parsed = self.parser.parse(full_command)
         match command:
             case "touch":
-                return self.touch(args, "")
+                touch = TOUCH(parsed)
+                return touch.run()
 
             case "cat":
-                return self.cat()
+                cat = CAT(parsed)
+                return cat.run()
 
             case "grep":
-                return self.grep()
+                grep = GREP(parsed)
+                return grep.run()
 
             case "echo":
-                return self.echo()
-
-            case "locate":
-                return self.locate()
-
-            case "wget":
-                return self.wget()
-
-            case "curl":
-                return self.curl()
+                echo = ECHO(parsed)
+                return echo.run()
 
             case "unzip":
-                return self.unzip()
+                unzip = UNZIP(parsed)
+                return unzip.run()
 
             case "chmod":
-                return self.chmod()
+                chmod = CHMOD(parsed)
+                return chmod.run()
 
             case "nano":
-                return self.nano()
-
-            case "pico":
-                return self.pico()
+                nano = NANO(parsed)
+                return nano.run()
 
             case "vi":
-                return self.vi()
-
-            case "vim":
-                return self.vim()
+                vi = VI(parsed)
+                return vi.run()
 
             case "ln":
-                return self.ln()
+                ln = LN(parsed)
+                return ln.run()
 
             case "crontab":
-                return self.crontab()
+                crontab = CRONTAB(parsed)
+                return crontab.run()
 
             case _:
                 print(f"Command '{command}' not recognized by FileOpsHandler.")
                 return None
-
-    def touch(self, args, src_dir):
-        target_file = ""
-        path_flag = False
-
-        target_file, _ = helper.get_main_arg_helper(args)
-
-        if "/" in target_file:
-            path_flag = True
-            target_file, src_dir_list = helper.target_dir_is_path_helper(
-                target_file, src_dir
-            )
-
-        if not target_file:
-            output = (
-                "touch: missing file operand \nTry 'touch --help' for more information."
-            )
-            return output
-
-        file_type_split = target_file.split(".")
-
-        if len(file_type_split) > 1:
-            file_type = target_file.split(".")[-1]
-        else:
-            file_type = "file"
-
-        target_obj = StorageEntry(target_file, file_type=file_type)
-
-        helper.add_file_helper(
-            self.root, src_dir_list if path_flag else src_dir, target_obj
-        )
-
-        return None
-
-    def cat(self) -> str | None:
-        # TODO: Implement cat command
-        print("cd not implemented yet")
-        return None
-
-    def grep(self) -> str | None:
-        # TODO: Implement grep command
-        print("grep not implemented yet")
-        return None
-
-    def echo(self) -> str | None:
-        # TODO: Implement echo command
-        print("echo not implemented yet")
-        return None
-
-    def locate(self) -> str | None:
-        # TODO: Implement locate command
-        print("locate not implemented yet")
-        return None
-
-    def wget(self) -> str | None:
-        # TODO: Implement wget command
-        print("wget not implemented yet")
-        return None
-
-    def curl(self) -> str | None:
-        # TODO: Implement curl command
-        print("curl not implemented yet")
-        return None
-
-    def unzip(self) -> str | None:
-        # TODO: Implement unzip command
-        print("unzip not implemented yet")
-        return None
-
-    def chmod(self) -> str | None:
-        # TODO: Implement chmod command
-        print("chmod not implemented yet")
-        return None
-
-    def nano(self) -> str | None:
-        # TODO: Implement nano command
-        print("nano not implemented yet")
-        return None
-
-    def pico(self) -> str | None:
-        # TODO: Implement pico command
-        print("pico not implemented yet")
-        return None
-
-    def vi(self) -> str | None:
-        # TODO: Implement vi command
-        print("vi not implemented yet")
-        return None
-
-    def vim(self) -> str | None:
-        # TODO: Implement vim command
-        print("vim not implemented yet")
-        return None
-
-    def ln(self) -> str | None:
-        # TODO: Implement ln command
-        print("ln not implemented yet")
-        return None
-
-    def crontab(self) -> str | None:
-        # TODO: Implement crontab command
-        print("crontab not implemented yet")
-        return None
