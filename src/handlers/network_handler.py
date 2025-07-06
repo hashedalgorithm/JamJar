@@ -34,32 +34,32 @@ class NetworkHandler(Logger):
         parsed = self.parser.parse(full_command)
         match command:
             case "ifconfig":
-                ifconfig = IFCONFIG()
-                return ifconfig.run(parsed)
+                ifconfig = IFCONFIG(parsed)
+                return ifconfig.run()
 
             case "nmap":
-                nmap = NMAP()
-                return nmap.run(parsed)
+                nmap = NMAP(parsed)
+                return nmap.run()
 
             case "ping":
-                ping = PING(self.arp_table, self.interfaces)
-                return ping.run(parsed)
+                ping = PING(self.arp_table, self.interfaces, parsed)
+                return ping.run()
 
             case "arp":
-                arp = ARP(self.arp_table)
-                return arp.run(parsed)
+                arp = ARP(self.arp_table, parsed)
+                return arp.run()
 
             case "ip":
-                ip = IP(self.interfaces, self.routes)
-                return ip.run(parsed)
+                ip = IP(self.interfaces, self.routes, parsed)
+                return ip.run()
 
             case "traceroute":
-                traceroute = TRACEROUTE(self.interfaces)
-                return traceroute.run(parsed)
+                traceroute = TRACEROUTE(self.interfaces, parsed)
+                return traceroute.run()
 
             case "ftp":
-                ftp = FTP()
-                return ftp.run(parsed)
+                ftp = FTP(parsed)
+                return ftp.run()
 
             case _:
                 self.logger.info(

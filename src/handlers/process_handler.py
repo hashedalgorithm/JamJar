@@ -23,16 +23,16 @@ class ProcessHandler(Logger):
         parsed = self.parser.parse(full_command)
         match command:
             case "ps":
-                ps = PS(self.processes)
-                return ps.run(parsed, tty, pid)
+                ps = PS(self.processes, parsed)
+                return ps.run(tty, pid)
 
             case "kill":
-                kill = KILL(self.processes)
-                return kill.run(parsed, tty, pid)
+                kill = KILL(self.processes, parsed)
+                return kill.run(tty, pid)
 
             case "killall":
-                killall = KILLALL(self.processes)
-                return killall.run(parsed)
+                killall = KILLALL(self.processes, parsed)
+                return killall.run()
 
             case _:
                 self.logger.info(
