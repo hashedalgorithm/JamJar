@@ -34,17 +34,13 @@ class Subroutines(Logger):
                 "cat"
                 | "grep"
                 | "echo"
-                | "locate"
-                | "wget"
-                | "curl"
                 | "unzip"
                 | "chmod"
                 | "nano"
-                | "pico"
                 | "vi"
-                | "vim"
                 | "ln"
                 | "crontab"
+                | "touch"
             ):
                 return self.file_ops_routine(process)
 
