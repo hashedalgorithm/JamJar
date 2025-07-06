@@ -18,18 +18,6 @@ TRACEROUTES = [
     "172.69.148.3",
 ]
 
-
-def get_main_arg_helper(args: list) -> tuple:
-    target = ""
-
-    for arg in args:
-        if not arg.startswith("-"):
-            target = arg
-            args.remove(arg)  # Call by reference hat auch Vorteile :D
-            break
-    return target, "".join(args)
-
-
 def nslookup_helper(domain):
     ip = ""
 
