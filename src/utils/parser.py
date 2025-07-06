@@ -28,6 +28,12 @@ class ParsedCommand:
     def __repr__(self):
         return f"ParsedCommand(command={self.command!r}, args={self.args!r})"
 
+    def check_arg_exists(self, arg: str) -> bool:
+        for parsed_arg in self.args:
+            if parsed_arg.name == arg:
+                return True
+        return False
+
 
 class CommandParser:
     def __init__(self, options_with_values: Optional[List[str]] = None):
