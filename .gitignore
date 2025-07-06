@@ -2,5 +2,4 @@
 /src/venv
 **/__pycache__/
 .vscode/
-/src/temp/
 jamjar-venv/*
