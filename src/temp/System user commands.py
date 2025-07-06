@@ -29,6 +29,7 @@ class FakeLinuxSystem:
         self.filesystem = {"home": {}}
         self.next_uid = 1001
         self.next_gid = 1001
+        self.current_user = "root"  # Track the current user
 
         # Create root user and group
         self.groups["root"] = Group("root", 0)
@@ -92,6 +93,24 @@ class FakeLinuxSystem:
             for g in self.groups.values()
         )
 
+    def set_current_user(self, username):
+        if username in self.users:
+            self.current_user = username
+            return f"Switched to user '{username}'"
+        return f"User '{username}' does not exist."
+
+    def get_current_user(self):
+        return self.current_user
+
+    def get_user(self, username):
+        return self.users.get(username, None)
+
+    def get_group_by_gid(self, gid):
+        for group in self.groups.values():
+            if group.gid == gid:
+                return group
+        return None
+
 # --- Global System Instance ---
 system = FakeLinuxSystem()
 
@@ -127,36 +146,24 @@ def useradd(args):
         group_name=parsed_args.group
     )
 
-# --- passwd Command ---
-def passwd(args):
-    if len(args) > 1:
-        return "passwd: too many arguments"
+# --- id Command ---
+def id(args=None):
+    username = system.get_current_user()
+    user = system.get_user(username)
+    if not user:
+        return "id: user not found"
+    group = system.get_group_by_gid(user.gid)
+    group_name = group.name if group else user.gid
+    groups = [str(user.gid)]
+    # Add supplementary groups
+    for g in system.groups.values():
+        if username in g.members and g.gid != user.gid:
+            groups.append(str(g.gid))
+    return f"uid={user.uid}({user.username}) gid={user.gid}({group_name}) groups={','.join(groups)}"
 
-    username = args[0] if args else "root"
-
-    if username not in system.users:
-        return f"passwd: user '{username}' does not exist"
-
-    user = system.users[username]
-
-    # Simulated password check
-    old_password = input("Current password: ")
-    hashed_input = crypt.crypt(old_password, user.password_hash)
-
-    if hashed_input != user.password_hash:
-        return "passwd: Authentication token manipulation error\npasswd: password unchanged"
-
-    new_password = input("New password: ")
-    confirm_password = input("Retype new password: ")
-
-    if new_password != confirm_password:
-        return "passwd: passwords do not match"
-
-    new_hash = system.hash_password(new_password)
-    user.password_hash = new_hash
-    system.shadows[username] = new_hash
-
-    return "passwd: password updated successfully"
+# --- whoami Command ---
+def whoami(args=None):
+    return system.get_current_user()
 
 # --- Run Tests ---
 commands = [
@@ -173,10 +180,11 @@ for cmd, args in commands:
     print(output)
     print("-" * 40)
 
-# --- Change Password Test ---
-print("=== Change Password for johnsmith ===")
-print(passwd(["johnsmith"]))
-print("-" * 40)
+# --- Test id and whoami ---
+print("=== id ===")
+print(id())
+print("=== whoami ===")
+print(whoami())
 
 # --- Show Simulated Files ---
 print("=== /etc/passwd ===")
