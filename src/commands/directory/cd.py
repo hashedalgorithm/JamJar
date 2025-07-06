@@ -2,6 +2,7 @@ from models.file_system import Directory, FileSystem
 from utils.parser import CommandParser, ParsedCommand
 from commands.base import CommandBase
 
+
 class CD(CommandBase):
     def __init__(self, file_system: FileSystem) -> None:
         super().__init__("cd")
@@ -33,45 +34,47 @@ class CD(CommandBase):
 
         # Handle --help flag
         if "--help" in flags:
-            return '''cd: cd [-L|[-P [-e]] [-@]] [dir]
-Change the shell working directory.
+            return """cd: cd [-L|[-P [-e]] [-@]] [dir]
+                    Change the shell working directory.
 
-Change the current directory to DIR.  The default DIR is the value of the
-HOME shell variable. If DIR is "-", it is converted to $OLDPWD.
+                    Change the current directory to DIR.  The default DIR is the value of the
+                    HOME shell variable. If DIR is "-", it is converted to $OLDPWD.
 
-The variable CDPATH defines the search path for the directory containing
-DIR.  Alternative directory names in CDPATH are separated by a colon (:).
-A null directory name is the same as the current directory.  If DIR begins
-with a slash (/), then CDPATH is not used.
+                    The variable CDPATH defines the search path for the directory containing
+                    DIR.  Alternative directory names in CDPATH are separated by a colon (:).
+                    A null directory name is the same as the current directory.  If DIR begins
+                    with a slash (/), then CDPATH is not used.
 
-If the directory is not found, and the shell option `cdable_vars' is set,
-the word is assumed to be  a variable name.  If that variable has a value,
-its value is used for DIR.
+                    If the directory is not found, and the shell option `cdable_vars' is set,
+                    the word is assumed to be  a variable name.  If that variable has a value,
+                    its value is used for DIR.
 
-Options:
--L    force symbolic links to be followed: resolve symbolic
-        links in DIR after processing instances of `..'
--P    use the physical directory structure without following
-        symbolic links: resolve symbolic links in DIR before
-        processing instances of `..'
--e    if the -P option is supplied, and the current working
-        directory cannot be determined successfully, exit with
-        a non-zero status
--@    on systems that support it, present a file with extended
-        attributes as a directory containing the file attributes
+                    Options:
+                    -L    force symbolic links to be followed: resolve symbolic
+                            links in DIR after processing instances of `..'
+                    -P    use the physical directory structure without following
+                            symbolic links: resolve symbolic links in DIR before
+                            processing instances of `..'
+                    -e    if the -P option is supplied, and the current working
+                            directory cannot be determined successfully, exit with
+                            a non-zero status
+                    -@    on systems that support it, present a file with extended
+                            attributes as a directory containing the file attributes
 
-The default is to follow symbolic links, as if `-L' were specified.
-`..' is processed by removing the immediately previous pathname component
-back to a slash or the beginning of DIR.
+                    The default is to follow symbolic links, as if `-L' were specified.
+                    `..' is processed by removing the immediately previous pathname component
+                    back to a slash or the beginning of DIR.
 
-Exit Status:
-Returns 0 if the directory is changed, and if $PWD is set successfully when
--P is used; non-zero otherwise.
-'''
+                    Exit Status:
+                    Returns 0 if the directory is changed, and if $PWD is set successfully when
+                    -P is used; non-zero otherwise.
+                    """
 
         # Handle -@ flag: invalid option per your snippet
         if "-@" in flags:
-            return "bash: cd: -@: invalid option\ncd: usage: cd [-L|[-P [-e]] [-@]] [dir]"
+            return (
+                "bash: cd: -@: invalid option\ncd: usage: cd [-L|[-P [-e]] [-@]] [dir]"
+            )
 
         # Determine mode based on flags: last -L or -P wins, default to -L
         mode = "L"
@@ -97,7 +100,10 @@ Returns 0 if the directory is changed, and if $PWD is set successfully when
         # Handle cd - (OLDPWD)
         if input_path == "-":
             if hasattr(self.file_system, "oldpwd") and self.file_system.oldpwd:
-                self.file_system.cwd, self.file_system.oldpwd = self.file_system.oldpwd, self.file_system.cwd
+                self.file_system.cwd, self.file_system.oldpwd = (
+                    self.file_system.oldpwd,
+                    self.file_system.cwd,
+                )
                 self.file_system.path_stack, self.file_system.oldpwd_path_stack = (
                     self.file_system.oldpwd_path_stack,
                     self.file_system.path_stack,
@@ -113,7 +119,9 @@ Returns 0 if the directory is changed, and if $PWD is set successfully when
         if path_components[0] == "~":
             # Expand ~ to /root/home/strawberry
             try:
-                current_dir = self.file_system.root.children["home"].children["strawberry"]
+                current_dir = self.file_system.root.children["home"].children[
+                    "strawberry"
+                ]
             except KeyError:
                 return "bash: cd: no such user directory for ~"
             current_path_stack = ["root", "home", "strawberry"]
@@ -138,7 +146,9 @@ Returns 0 if the directory is changed, and if $PWD is set successfully when
                     current_path_stack.pop()
             else:
                 # Check if comp exists and is a directory
-                if comp in current_dir.children and isinstance(current_dir.children[comp], Directory):
+                if comp in current_dir.children and isinstance(
+                    current_dir.children[comp], Directory
+                ):
                     current_dir = current_dir.children[comp]
                     current_path_stack.append(comp)
                 else:
@@ -157,6 +167,7 @@ Returns 0 if the directory is changed, and if $PWD is set successfully when
         self.file_system.path_stack = current_path_stack
 
         return None
+
 
 if __name__ == "__main__":
     # Mock or minimal FileSystem and Directory setup for testing
