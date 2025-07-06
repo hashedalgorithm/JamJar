@@ -3,10 +3,9 @@ from commands.base import CommandBase
 
 
 class LS(CommandBase):
-    def __init__(self, file_system: FileSystem, args: list[str] = []) -> None:
+    def __init__(self, file_system: FileSystem) -> None:
+        super().__init__("ls")
         self.file_system = file_system
-        self.paths = self.extract_paths(args)
-        self.extract_options = self.extract_options(args)
 
     def extract_options(self, args: list[str]) -> list[str]:
         option: list[str] = []

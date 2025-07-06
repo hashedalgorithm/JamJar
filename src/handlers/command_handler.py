@@ -20,30 +20,23 @@ class CommandHandler(Logger):
         self.process_handler = ProcessHandler(process_group=self.process_group)
         self.file_ops_handler = FileOpsHandler()
         self.system_handler = SystemHandler()
-
+ 
     def invoke_directory_handler(self, command: str, full_command: str):
-        # TODO Parsing logic @Nivi
         self.logger.info(f"Captured - {command}")
-        return self.directory_handler.handle(command, {})
+        return self.directory_handler.handle(command, full_command)
 
     def invoke_network_handler(self, command: str, full_command: str):
-        # TODO Parsing logic @Nivi
         self.logger.info(f"Captured - {command}")
         return self.network_handler.handle(command, full_command)
 
-    def invoke_process_handler(
-        self, command: str, full_command: str, tty: int, pid: int
-    ):
-        # TODO Parsing logic @Nivi
+    def invoke_process_handler(self, command: str, full_command: str, tty: int, pid: int):
         self.logger.info(f"Captured - {command}")
-        return self.process_handler.handle(command, tty, pid)
+        return self.process_handler.handle(command, full_command, tty=tty, pid=pid)
 
     def invoke_file_ops_handler(self, command: str, full_command: str):
-        # TODO Parsing logic @Nivi
         self.logger.info(f"Captured - {command}")
         return self.file_ops_handler.handle(command, full_command)
 
     def invoke_system_handler(self, command: str, full_command: str):
-        # TODO Parsing logic @Nivi
         self.logger.info(f"Captured - {command}")
         return self.system_handler.handle(command, full_command)

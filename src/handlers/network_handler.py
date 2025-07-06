@@ -1,203 +1,68 @@
-from models.arp import ARP
-from models.route import ROUTE
 from utils import helper
 from utils.logger import Logger
-import random
-import ipcalc
+from utils.parser import CommandParser
 
-LOCAL_NETS = ["10.0.0.0/8", "172.16.0.0/12", "12.168.0.0/16"]
+from commands.network.arp import ARP
+from commands.network.ifconfig import IFCONFIG
+from commands.network.ftp import FTP
+from commands.network.ip import IP
+from commands.network.nmap import NMAP
+from commands.network.ping import PING
+from commands.network.traceroute import TRACEROUTE
 
 
 class NetworkHandler(Logger):
-
-    output = None
-
-    arp_table = {}
-    interfaces = []
-
     def __init__(self) -> None:
         super().__init__()
         self.interfaces = helper.create_fake_interface_data_helper()
         self.arp_table = helper.create_fake_arp_data_helper(self.interfaces["ens18"])
         self.routes = helper.create_fake_route_data_helper(self.interfaces["ens18"])
+        self.parser = CommandParser()
+        self.command_options_map = {
+            "ping": ["-c", "-I", "-i", "-l", "-m", "-p", "-Q", "-s", "-S", "-t", "-w", "-W"],
+            "nmap": [],
+            "ftp": ["-o", "-P", "-s", "-T", "-u", "-x"],
+            "ip": ["-i", "-f"],
+            "traceroute": ["-p", "-m", "-f", "-q", "-z"],
+            "ifconfig": ["netmask", "broadcast", "mtu"], 
+            "arp": ["-i", "-H", "-A", "-s", "-d"]
+        }
+
 
     def handle(self, command: str, full_command: str):
-
-        args = full_command.split(" ")[1:]
-
+        self.parser.set_options_with_values(self.command_options_map.get(command, []))
+        parsed = self.parser.parse(full_command)
         match command:
-
             case "ifconfig":
-                return self.ifconfig(args)
+                ifconfig = IFCONFIG()
+                return ifconfig.run(parsed)
 
             case "nmap":
-                return self.nmap(args)
+                nmap = NMAP()
+                return nmap.run(parsed)
 
             case "ping":
-                return self.ping(args)
+                ping = PING(self.arp_table, self.interfaces)
+                return ping.run(parsed)
 
             case "arp":
-                return self.arp(args)
+                arp = ARP(self.arp_table)
+                return arp.run(parsed)
 
             case "ip":
-                return self.ip(args)
+                ip = IP(self.interfaces, self.routes)
+                return ip.run(parsed)
 
             case "traceroute":
-                return self.traceroute(args)
+                traceroute = TRACEROUTE(self.interfaces)
+                return traceroute.run(parsed)
 
             case "ftp":
-                return self.ftp(args)
+                ftp = FTP()
+                return ftp.run(parsed)
 
             case _:
                 self.logger.info(
                     f"Command '{command}' not recognized by NetworkHandler."
                 )
                 return None
-
-    def ifconfig(self, args):
-        # TODO: Implement ifconfig command
-        print("ifconfig not implemented yet")
-        return None
-
-    def nmap(self, args):
-        # TODO: Implement nmap command
-        print("nmap not implemented yet")
-        return None
-
-    def ping(self, args):
-        output = []
-
-        target_host, _ = helper.get_main_arg_helper(args)
-        target_ip = ""
-
-        target_ip = helper.nslookup_helper(target_host)
-
-        local = False
-        if target_host not in self.arp_table:
-            for net in LOCAL_NETS:
-                if target_ip in ipcalc.Network(net):
-                    local = True
-
-            interface = self.interfaces["ens18"]
-            arp_ip = target_ip if local else interface.inet4_gtw[0]
-
-            self.arp_table[target_ip] = ARP(
-                address=arp_ip, hwaddress="16:38:fd:f6:c2:c3", iface=interface
-            )
-
-        output.append(f"PING {target_host} ({target_ip}) 56(84) bytes of data.")
-        time_total = 0
-
-        for i in range(1, 5):
-            time = str(random.randint(10, 50))
-            time_dec = str(random.randint(1, 9))
-            time_total += float(time + "." + time_dec)
-            output.append(
-                f"64 bytes from {target_ip}: icmp_seq={i} ttl=56 time={time}.{time_dec} ms"
-            )
-
-        output.append(f"--- {target_host} ping statistics ---")
-        output.append(
-            f"4 packets transmitted, 4 received, 0% packet loss, time {time_total}"
-        )
-        output.append("rtt min/avg/max/mdev = 12.578/13.047/13.555/0.273 ms")
-
-        return output
-
-    def arp(self, args):
-        output = None
-
-        target_host, args_str = helper.get_main_arg_helper(args)
-
-        d = "d" in args_str
-
-        if d:
-            if not target_host:
-                return "arp: need host name"
-
-            if not target_host in self.arp_table:
-                return f"{target_host}: No address associated with name"
-
-            self.arp_table.pop(target_host)
-
-        else:
-            output = "Address\t\tHWtype\t\tHWaddress\t\tFlags Mask\tIface\n"
-            for entry in self.arp_table:
-                output += str(self.arp_table[entry]) + "\n"
-
-        return output
-
-    def ip(self, args):
-
-        output = ""
-
-        args_str = "".join(args)
-        a = "a" in args_str or "addr" in args_str
-        r = "r" in args_str or "route" in args_str
-        add = "add" in args_str
-        delete = "del" in args_str
-
-        if a:
-            if add:
-                self.interfaces[args[-1]].add_ip(args[-3])
-
-            elif delete:
-                self.interfaces[args[-1]].del_ip(args[-3])
-
-            else:
-                for n, entry in enumerate(self.interfaces):
-                    output += f"{n+1}: {str(self.interfaces[entry])}\n"
-
-        if r:
-            if add:
-                self.routes.append(
-                    ROUTE(inet_to=args[-3], interface=self.interfaces[args[-1]])
-                )
-
-            elif delete:
-                for x, route in enumerate(self.routes):
-                    if args[-1] in route.interface.names and route.inet_to in args[-3]:
-                        self.routes.pop(x)
-                        break
-            else:
-                for entry in self.routes:
-                    output += str(entry) + "\n"
-
-        return output.strip("\n")
-
-    def traceroute(self, args):
-        output = []
-        target_ip = ""
-
-        target_host, _ = helper.get_main_arg_helper(args)
-        target_ip = helper.nslookup_helper(target_host)
-
-        output.append(f"traceroute to {target_host} ({target_ip}), 64 hops max")
-
-        random_hops = random.randint(5, 11)
-
-        for i in range(1, random_hops):
-            time_total = []
-            for _ in range(3):
-                time = str(random.randint(1 * (i - 1), 10 * (i - 1)))
-                time_dec = str(random.randint(1, 9))
-
-                time_total.append(str(float(time + "." + time_dec)) + "ms")
-
-            interface = self.interfaces["ens18"]
-
-            if i == 1:
-                ip = interface.inet4_gtw[0]
-            elif i == random_hops - 1:
-                ip = target_ip
-            else:
-                ip = random.choice(helper.TRACEROUTES)
-
-            output.append(f"{i}  {ip} {" ".join(time_total)}")
-
-        return output
-
-    def ftp(self):
-        # TODO: Implement ftp command
-        print("ftp not implemented yet")
-        return None
