@@ -1,79 +1,8 @@
 from commands.base import CommandBase
 from models.process_group import ProcessGroup
 from commands.flagmap import Flagmap, FlagWithArgument
-from utils.parser import Parser
+from utils.parser import ParsedCommand
 from models.process import Process
-
-
-class PSFlagMap(Flagmap):
-
-    def __init__(
-        self,
-        A: bool = False,  # show all processes
-        a: bool = False,  # show processes for all users
-        c: bool = False,  # display scheduler information
-        d: bool = False,  # display processes except session leaders
-        e: bool = False,  # display all processes
-        f: bool = False,  # display full-format listing
-        l: bool = False,  # display long format
-        x: bool = False,  # include processes without a controlling terminal
-        forest: bool = False,  # show processes in a forest view
-        help: bool = False,  # display help information
-        version: bool = False,  # display version information
-        no_header: bool = False,  # hides header in long format
-        u: FlagWithArgument = FlagWithArgument(
-            "u", None
-        ),  # display user-oriented format
-        p: FlagWithArgument = FlagWithArgument("p", None),  # display process by PID
-        t: FlagWithArgument = FlagWithArgument(
-            "t", None
-        ),  # display processes associated with a terminal
-        sort: FlagWithArgument = FlagWithArgument(
-            "sort", None
-        ),  # sort processes by a specific field
-        o: FlagWithArgument = FlagWithArgument("o", None),  # specify output format
-        g: FlagWithArgument = FlagWithArgument(
-            "g", None
-        ),  # display processes for a specific group
-        G: FlagWithArgument = FlagWithArgument(
-            "G", None
-        ),  # display processes for a specific group by name
-        U: FlagWithArgument = FlagWithArgument(
-            "U", None
-        ),  # display processes for a specific real user ID
-        C: FlagWithArgument = FlagWithArgument(
-            "C", None
-        ),  # display processes running a specific command
-        cols: FlagWithArgument = FlagWithArgument(
-            "cols", None
-        ),  # set the width of the output
-        rows: FlagWithArgument = FlagWithArgument(
-            "rows", None
-        ),  # set the height of the output
-    ):
-        self.a = a
-        self.u = u
-        self.x = x
-        self.f = f
-        self.e = e
-        self.c = c
-        self.A = A
-        self.l = l
-        self.forest = forest
-        self.help = help
-        self.version = version
-        self.d = d
-        self.t = t
-        self.p = p
-        self.sort = sort
-        self.o = o
-        self.g = g
-        self.G = G
-        self.U = U
-        self.C = C
-        self.cols = cols
-        self.rows = rows
-        self.no_header = no_header
 
 
 class Attribute:
@@ -95,6 +24,205 @@ class Attribute:
 
 
 class PS(CommandBase):
+    """
+    PS Command
+    A class that implements the functionality of the Unix `ps` command, which reports a snapshot of current processes.
+    This class supports a wide range of flags and output format specifiers, similar to the traditional `ps` command.
+    Flags/Options (partial list with brief descriptions):
+    "a"      # List processes of all users on a terminal, except session leaders.
+    "-A"     # List all processes.
+    "-a"     # List all processes with a terminal, except session leaders.
+    "-d"     # List all processes except session leaders.
+    "--deselect" # Invert the selection.
+    "-e"     # List all processes (same as -A).
+    "g"      # List all processes in the current process group.
+    "-N"     # Invert the selection.
+    "T"      # List all processes attached to the current terminal.
+    "r"      # Restrict output to running processes.
+    "x"      # List processes without controlling terminal.
+    "-C"         # Select by command name.
+    "-G"         # Select by real group ID.
+    "-g"         # Select by session or group ID.
+    "--Group"    # Select by effective group name.
+    "--group"    # Select by effective group name.
+    "p"          # Select by process ID.
+    "-p"         # Select by process ID.
+    "--pid"      # Select by process ID.
+    "--ppid"     # Select by parent process ID.
+    "q"          # Select by quick PID.
+    "-q"         # Select by quick PID.
+    "--quick-pid" # Select by quick PID.
+    "-s"         # Select by session ID.
+    "--sid"      # Select by session ID.
+    "t"          # Select by terminal.
+    "-t"         # Select by terminal.
+    "--tty"      # Select by terminal.
+    "U"          # Select by effective user name or ID.
+    "-U"         # Select by effective user name or ID.
+    "-u"         # Select by effective user name or ID.
+    "--User"     # Select by effective user name.
+    "--user"     # Select by effective user name.
+    "-c"         # Display scheduler information.
+    "--context"  # Show security context.
+    "-f"         # Full-format listing.
+    "-F"         # Extra full-format listing.
+    "--format"   # User-defined format.
+    "j"          # Jobs format.
+    "l"          # Long format.
+    "-l"         # Long format.
+    "-M"         # Show security data.
+    "O"          # Preload columns before others.
+    "-O"         # Preload columns before others.
+    "o"          # User-defined format.
+    "-o"         # User-defined format.
+    "-P"         # Show threads as processes.
+    "s"          # Signal format.
+    "u"          # User-oriented format.
+    "v"          # Virtual memory format.
+    "X"          # Old Linux i386 register format.
+    "-y"         # Do not show flags; show RSS in place of SZ.
+    "Z"          # Show security context.
+    "c"              # Show true command name.
+    "--cols"         # Set screen width.
+    "--columns"      # Set screen width.
+    "--cumulative"   # Include child CPU time.
+    "-D"             # Show elapsed time.
+    "--date-format"  # Set date format.
+    "e"              # Show environment after command.
+    "f"              # ASCII-art process hierarchy.
+    "--forest"       # ASCII-art process hierarchy.
+    "h"              # No header.
+    "-H"             # Show process hierarchy.
+    "--headers"      # Show headers.
+    "k"              # Sort order.
+    "--lines"        # Set screen height.
+    "n"              # Show numeric user/group IDs.
+    "--no-headers"   # No header.
+    "O"              # Preload columns before others.
+    "--rows"         # Set screen height.
+    "S"              # Show cumulative CPU time.
+    "--sort"         # Specify sort order.
+    "--signames"     # Show signal names.
+    "w"              # Wide output.
+    "-w"             # Wide output.
+    "--width"        # Set screen width.
+    "H"      # Show threads as if they were processes.
+    "-L"     # Show threads.
+    "-m"     # Show threads after processes.
+    "m"      # Show threads after processes.
+    "-T"     # Show threads.
+    # Information flags
+    "--help"    # Show help message.
+    "--info"    # Show additional info.
+    "L"         # Show format specifiers.
+    "-V"        # Show version.
+    "V"         # Show version.
+    "--version" # Show version.
+    Attributes:
+        - The `attributes` list defines all possible output columns, their keys, headers, and whether they are included by default in long format.
+    Methods:
+        - __init__: Initializes the PS command with process group, user ID, and parsed command.
+        - check_options: Validates mutually exclusive or conflicting options.
+        - get_default_attributes: Returns default columns for standard output.
+        - generate_header: Generates the output header line.
+        - check_attribute: Checks if a given attribute key is valid.
+        - get_default_attributes_long: Returns default columns for long format.
+        - generate_output: Generates the formatted output for the selected processes.
+        - run: Main entry point to execute the command and return output.
+    """
+
+    flags = {
+        # Simple Process Selection
+        "a",
+        "-A",
+        "-a",
+        "-d",
+        "--deselect",
+        "-e",
+        "g",
+        "-N",
+        "T",
+        "r",
+        "x"
+        # Process selection
+        "-C",
+        "-G",
+        "-g",
+        "--Group",
+        "--group",
+        "p",
+        "-p",
+        "--pid",
+        "--ppid",
+        "q",
+        "-q",
+        "--quick-pid",
+        "-s",
+        "--sid",
+        "t",
+        "-t",
+        "--tty",
+        "U" "-U",
+        "-u",
+        "--User",
+        "--user"
+        # Output Format Controllers
+        "-c",
+        "--context" "-f",
+        "-F",
+        "--format",
+        "j",
+        "l",
+        "-l",
+        "-M",
+        "O",
+        "-O",
+        "o",
+        "-o",
+        "-P",
+        "s",
+        "u",
+        "v",
+        "X",
+        "-y" "Z"
+        # Output Modifiers
+        "c",
+        "--cols",
+        "--columns",
+        "--cumulative",
+        "-D",
+        "--date-format",
+        "e" "f",
+        "--forest",
+        "h",
+        "-H",
+        "--headers",
+        "k",
+        "--lines",
+        "n",
+        "--no-headers",
+        "O",
+        "--rows",
+        "S",
+        "--sort",
+        "--signames",
+        "w",
+        "-w",
+        "--width"
+        # Threads display
+        "H",
+        "-L",
+        "-m",
+        "m",
+        "-T",
+        # information flags
+        "--help",
+        "--info",
+        "L",
+        "-V",
+        "V",
+        "--version",
+    }
 
     attributes: list[Attribute] = [
         Attribute("addr", "ADDR", True),  # Memory Address
@@ -247,39 +375,23 @@ class PS(CommandBase):
         Attribute("wops", "WOPS"),  # Write I/O operations
     ]
 
-    def __init__(self, process_group: ProcessGroup, full_command: str, uid: int):
+    def __init__(self, process_group: ProcessGroup, uid: int, parsed: ParsedCommand):
         super().__init__()
-        self.parser
         self.process_group = process_group
         self.uid = uid
-        self.flag_map: PSFlagMap = self.initialize_flag_map()
+        self.parsed = parsed
 
+        self.filtered_process: list[Process] = []
         self.check_options()
-
-    def initialize_flag_map(self, flags: list[str]) -> PSFlagMap:
-        """
-        Initialize the flag map based on the provided flags.
-        """
-        flag_map = PSFlagMap()
-        for flag in flags:
-            if "a" in flag:
-                flag_map.a = True
-            if "u" in flag:
-                flag_map.u = True
-            if "x" in flag:
-                flag_map.x = True
-            if "f" in flag:
-                flag_map.f = True
-            if "e" in flag:
-                flag_map.e = True
-            if "c" in flag:
-                flag_map.c = True
-
-        return flag_map
 
     def check_options(self) -> None:
 
-        if self.flag_map.l and self.flag_map.o:
+        if self.parsed.check_arg_exists("-l") and self.parsed.check_arg_exists("-o"):
+            raise ValueError(f"PS: Conflicting format options.")
+
+        if self.parsed.check_arg_exists("-y") and not self.parsed.check_arg_exists(
+            "-l"
+        ):
             raise ValueError(f"PS: Conflicting format options.")
 
         return
@@ -289,9 +401,6 @@ class PS(CommandBase):
 
     def generate_header(self, attributes: list[Attribute]) -> str:
         header = ""
-
-        if self.flag_map.no_header:
-            return header
 
         for attribute in attributes:
             header = header + f"{attribute.attribute_header}:<10"
@@ -354,12 +463,42 @@ class PS(CommandBase):
 
         return output
 
+    def A(self):
+        return self.process_group.processes
+
+    def _a(self):
+        for process in self.process_group.processes.values():
+            if process.stat.find("s") == -1:
+                is_exists = next(
+                    (x for x in self.filtered_process if x.pid == process.pid), None
+                )
+
+                if not is_exists:
+                    self.filtered_process.append(process)
+
+        return self.filtered_process
+
+    def a(self):
+        for process in self.process_group.processes.values():
+            if process.stat.find("s") == -1:
+                is_exists = next(
+                    (x for x in self.filtered_process if x.pid == process.pid), None
+                )
+
+                if not is_exists:
+                    self.filtered_process.append(process)
+
+        return self.filtered_process
+
     def run(self):
-        processes = []
 
-        if self.flag_map.e or self.flag_map.a or self.flag_map.A:
-            processes = self.process_group.processes
+        if self.parsed.check_arg_exists("-A"):
+            self.filtered_process = self.process_group.processes
 
-        # if(self.flag_map.)
+        if self.parsed.check_arg_exists("-a"):
+            self._a()
 
-        return self.generate_output(processes)
+        if self.parsed.check_arg_exists("a"):
+            self.a()
+
+        return self.generate_output(self.filtered_process)

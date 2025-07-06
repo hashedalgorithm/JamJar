@@ -48,8 +48,8 @@ class ProcessHandler(Logger):
 
         match command:
             case "ps":
-                ps = PS(self.processes)
-                return ps.run(parsed, tty, pid)
+                ps = PS(self.processes, parsed)
+                return ps.run(tty, pid)
 
             case "kill":
                 kill = KILL(self.processes)
