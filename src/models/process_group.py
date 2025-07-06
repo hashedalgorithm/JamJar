@@ -1,3 +1,4 @@
+import subprocess
 from models.process import Process
 
 
@@ -322,6 +323,30 @@ class ProcessGroup:
                     load=process.load,
                 )
             )
+
+    def count_active_terminals():
+        try:
+            # Run 'who' to get active login sessions
+            result = subprocess.run(
+                ["who"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+
+            if result.returncode != 0:
+                raise RuntimeError(f"Error running 'who': {result.stderr}")
+
+            lines = result.stdout.strip().split("\n")
+
+            # Extract terminals from the output (2nd column)
+            terminals = [line.split()[1] for line in lines if line]
+
+            # Remove duplicates, in case multiple sessions use the same terminal
+            unique_terminals = set(terminals)
+
+            return len(unique_terminals)
+
+        except Exception as e:
+            print(f"Error checking active terminals: {e}")
+            return 0
 
     def add_process(self, process: Process) -> None:
         """Add a new process to the process group."""
