@@ -1,9 +1,10 @@
 from models.file_system import FileSystem
 from models.directory import Directory
 from .base import CommandBase
+from .flagmap import Flagmap
 
 
-class RMFlagMap:
+class RMFlagMap(Flagmap):
     def __init__(
         self,
         f=False,

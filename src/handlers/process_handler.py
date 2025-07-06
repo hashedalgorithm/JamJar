@@ -1,24 +1,28 @@
 from models.process import Process
 from utils import helper
 from utils.logger import Logger
+from models.process_group import ProcessGroup
+from commands.ps import PS
 
 
 class ProcessHandler(Logger):
 
     output = None
 
-    def __init__(self) -> None:
+    def __init__(self, process_group: ProcessGroup) -> None:
         super().__init__()
-        self.output = helper.create_fake_processes()
+        self.process_group = process_group
 
     def handle(self, command: str, full_command: str, tty: str, uid: int):
 
-        args = command.split(" ")[1:]
+        # parsed =
+        args = full_command.split(" ")[1:]
 
         match command:
 
             case "ps":
-                return self.ps(args, tty, uid)
+                ps = PS(self.process_group)
+                return ps.run()
 
             case "kill":
                 return self.kill(args)
