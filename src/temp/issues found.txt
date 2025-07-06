@@ -1,6 +1,6 @@
 not getting read: echo, cd, kill, history, [ifconfig, nmap, traceroute - maybe because command not found]
 
-getting stuck in terminal: cat, chmod, crontab, grep, ln, nano, unzip, vi, killall, ps, df, id, last, uname, uptime, w, whoami, php
+getting stuck in terminal: cat, chmod, crontab, grep, ln, nano, unzip, vi, killall, touch, ps, df, id, last, uname, uptime, w, whoami, php
 
 returning back killed since command is getting redirected to directory handler and is not recognised there(in such situations it returns None): ftp, ip, ping
 
