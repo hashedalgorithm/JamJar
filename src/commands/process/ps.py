@@ -4,8 +4,9 @@ from utils import helper
 
 
 class PS(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, processes: Process) -> None:
         super().__init__("ps")
+        self.processes = processes
         
     def run(self) -> str | None:
         raise Exception("PS not implemented yet!")

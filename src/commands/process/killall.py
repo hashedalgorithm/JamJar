@@ -4,8 +4,9 @@ from utils import helper
 
 
 class KILLALL(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, processes) -> None:
         super().__init__("killall")
+        self.processes = processes
 
     def killall(self, args):
 

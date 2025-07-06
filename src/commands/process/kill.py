@@ -4,8 +4,9 @@ from utils import helper
 
 
 class KILL(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, processes) -> None:
         super().__init__("kill")
+        self.processes = processes
         
     def kill(self, args):
         valid_arg = False
