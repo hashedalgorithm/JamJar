@@ -71,32 +71,32 @@ class DirectoryHandler(Logger):
         parsed = self.parser.parse(full_command)
         match command:
             case "cd":
-                cd = CD(self.file_system)
-                return cd.run(parsed)
+                cd = CD(self.file_system, parsed)
+                return cd.run()
 
             case "cp":
-                cp = CP(self.file_system)
-                return cp.run(parsed)
+                cp = CP(self.file_system, parsed)
+                return cp.run()
 
             case "ls":
-                ls = LS(self.file_system)
-                return ls.run(parsed)
+                ls = LS(self.file_system, parsed)
+                return ls.run()
 
             case "mkdir":
-                mkdir = MKDIR(self.file_system)
-                return mkdir.run(parsed)
+                mkdir = MKDIR(self.file_system, parsed)
+                return mkdir.run()
 
             case "mv":
-                mv = MV(self.file_system)
-                return mv.run(parsed)
+                mv = MV(self.file_system, parsed)
+                return mv.run()
 
             case "rm":
-                rm = RM(self.file_system)
-                return rm.run(parsed)
+                rm = RM(self.file_system, parsed)
+                return rm.run()
 
             case "rmdir":
-                rmdir = RMDIR(self.file_system)
-                return rmdir.run(parsed)
+                rmdir = RMDIR(self.file_system, parsed)
+                return rmdir.run()
 
             case _:
                 print(f"Command '{command}' not recognized by DirectoryHandler.")

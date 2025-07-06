@@ -1,72 +1,23 @@
-from models.file_system import FileSystem
-from models.directory import Directory
-from ..base import CommandBase
-from commands.flagmap import Flagmap
-
-
-class RMFlagMap(Flagmap):
-    def __init__(
-        self,
-        f=False,
-        i=False,
-        r=False,
-        d=False,
-        v=False,
-        one_file_system=False,
-        no_preserve_root=False,
-        preserve_root=False,
-    ):
-        self.f = f  # force
-        self.i = i  # interactive
-        self.r = r  # recursive
-        self.d = d  # directory
-        self.v = v  # verbose
-        self.one_file_system = one_file_system  # one file system
-        self.no_preserve_root = no_preserve_root  # no preserve root
-        self.preserve_root = preserve_root  # preserve root
-
-    def set_flag(self, flag: str, value: bool) -> None:
-        if hasattr(self, flag):
-            setattr(self, flag, value)
-
+# rm.py
+from models.file_system import FileSystem, Directory
+from utils.parser import ParsedCommand, ParsedArgument
+from commands.base import CommandBase
 
 class RM(CommandBase):
-    def __init__(self, file_system: FileSystem, args: list[str]):
+    def __init__(self, file_system: FileSystem, parsed: ParsedCommand) -> None:
         super().__init__("rm")
-        self.args = args
         self.file_system = file_system
-        self.flags = self.extract_flags(args)
-        self.paths = self.extract_paths(args)
-        self.flag_map = self.initialize_flag_map(self.flags)
+        self.parsed = parsed
 
-    def initialize_flag_map(self, flags: list[str]) -> RMFlagMap:
-        """
-        Initialize the flag map based on the provided flags.
-        """
-        flag_map = RMFlagMap()
-        for flag in flags:
-            if flag == "-f":
-                flag_map.f = True
-            elif flag == "-i" | "--interactive":
-                flag_map.i = True
-            elif flag in "-r" | "-R" | "--recursive":
-                flag_map.r = True
-            elif flag == "-d" | "--dir":
-                flag_map.d = True
-            elif flag == "-v":
-                flag_map.v = True
-            elif flag == "--one-file-system":
-                flag_map.one_file_system = True
-            elif flag == "--no-preserve-root":
-                flag_map.no_preserve_root = True
-            elif flag == "--preserve-root":
-                flag_map.preserve_root = True
+    def run(self) -> str | None:
+        flags = set()
+        files = []
 
-        return flag_map
-
-    def run(self, args: list[str]) -> str | None:
-        flags = self.extract_flags(args)
-        paths = self.extract_paths(args)
+        for arg in self.parsed.args:
+            if arg.type == "flag":
+                flags.add(arg.name)
+            elif arg.type == "positional":
+                files.append(arg.value)
 
         # Handle --version and --help
         if "--version" in flags:
@@ -79,52 +30,23 @@ class RM(CommandBase):
                 "Written by Paul Rubin, David MacKenzie, Richard M. Stallman,\n"
                 "and Jim Meyering.\n"
             )
+
         if "--help" in flags:
             return (
                 "Usage: rm [OPTION]... [FILE]...\n"
                 "Remove (unlink) the FILE(s).\n\n"
                 "  -f, --force           ignore nonexistent files and arguments, never prompt\n"
-                "  -I                    prompt once before removing more than three files, or\n"
-                "                          when removing recursively; less intrusive than -i,\n"
-                "                          while still giving protection against most mistakes\n"
-                "      --interactive[=WHEN]  prompt according to WHEN: never, once (-I), or\n"
-                "                          always (-i); without WHEN, prompt always\n"
-                "      --one-file-system  when removing a hierarchy recursively, skip any\n"
-                "                          directory that is on a file system different from\n"
-                "                          that of the corresponding command line argument\n"
-                "      --no-preserve-root  do not treat '/' specially\n"
-                "      --preserve-root[=all]  do not remove '/' (default);\n"
-                "                              with 'all', reject any command line argument\n"
-                "                              on a separate device from its parent\n"
                 "  -r, -R, --recursive   remove directories and their contents recursively\n"
                 "  -d, --dir             remove empty directories\n"
                 "  -v, --verbose         explain what is being done\n"
-                "      --help        display this help and exit\n"
-                "      --version     output version information and exit\n\n"
-                "By default, rm does not remove directories.  Use the --recursive (-r or -R)\n"
-                "option to remove each listed directory, too, along with all of its contents.\n\n"
-                "To remove a file whose name starts with a '-', for example '-foo',\n"
-                "use one of these commands:\n"
-                "  rm -- -foo\n"
-                "  rm ./-foo\n\n"
-                "Note that if you use rm to remove a file, it might be possible to recover\n"
-                "some of its contents, given sufficient expertise and/or time.  For greater\n"
-                "assurance that the contents are truly unrecoverable, consider using shred(1).\n\n"
-                "GNU coreutils online help: <https://www.gnu.org/software/coreutils/>\n"
-                "Full documentation <https://www.gnu.org/software/coreutils/rm>\n"
-                "or available locally via: info '(coreutils) rm invocation'\n"
+                "      --help            display this help and exit\n"
+                "      --version         output version information and exit\n"
             )
 
-    def rm(self, args):
-        # For this example, we always work in 'a' folder
-
-        flags = [arg for arg in args if arg.startswith("-")]
-        files = [arg for arg in args if not arg.startswith("-")]
-
-        recursive = any("r" in flag for flag in flags)
-        force = any("f" in flag for flag in flags)
-        verbose = any("v" in flag for flag in flags)
-        dir_only = any("d" in flag for flag in flags)
+        recursive = "-r" in flags or "-R" in flags or "--recursive" in flags
+        force = "-f" in flags or "--force" in flags
+        verbose = "-v" in flags or "--verbose" in flags
+        dir_only = "-d" in flags or "--dir" in flags
 
         outputs = []
 
@@ -132,18 +54,13 @@ class RM(CommandBase):
             target = self.file_system.cwd.children.get(name)
             if not target:
                 if not force:
-                    outputs.append(
-                        f"rm: cannot remove '{name}': No such file or directory"
-                    )
+                    outputs.append(f"rm: cannot remove '{name}': No such file or directory")
                 continue
 
             if isinstance(target, Directory):
                 if dir_only:
-                    # Only remove if directory is empty
                     if target.children:
-                        outputs.append(
-                            f"rm: cannot remove '{name}': Directory not empty"
-                        )
+                        outputs.append(f"rm: cannot remove '{name}': Directory not empty")
                         continue
                     del self.file_system.cwd.children[name]
                     if verbose:
@@ -163,3 +80,90 @@ class RM(CommandBase):
                     outputs.append(f"removed '{name}'")
 
         return "\n".join(outputs) if outputs else None
+
+# ---------- Inline test harness ----------
+
+if __name__ == "__rm__":
+    # Minimal mock implementations for testing
+
+    class Directory:
+        def __init__(self, name):
+            self.name = name
+            self.children = {}
+            self.parent = None
+
+        def add_child(self, child):
+            self.children[child.name] = child
+            child.parent = self
+
+        def __repr__(self):
+            return f"Directory({self.name})"
+
+    class File:
+        def __init__(self, name):
+            self.name = name
+
+    class FileSystem:
+        def __init__(self):
+            self.root = Directory("root")
+            self.cwd = self.root
+            self.path_stack = ["root"]
+
+    class ParsedArgument:
+        def __init__(self, type, value=None, name=None):
+            self.type = type
+            self.value = value
+            self.name = name
+
+    class ParsedCommand:
+        def __init__(self, command, args):
+            self.command = command
+            self.args = args
+
+    # Set up virtual file system
+    fs = FileSystem()
+    docs = Directory("docs")
+    file1 = File("note.txt")
+    file2 = File("log.txt")
+    empty_dir = Directory("empty")
+    non_empty_dir = Directory("nonempty")
+    child_file = File("inside.txt")
+
+    non_empty_dir.add_child(child_file)
+    fs.cwd.add_child(docs)
+    fs.cwd.add_child(file1)
+    fs.cwd.add_child(file2)
+    fs.cwd.add_child(empty_dir)
+    fs.cwd.add_child(non_empty_dir)
+
+    def build_parsed(cmd, args):
+        parsed_args = []
+        for arg in args:
+            if arg.startswith("-"):
+                parsed_args.append(ParsedArgument(type="flag", name=arg))
+            else:
+                parsed_args.append(ParsedArgument(type="positional", value=arg))
+        return ParsedCommand(command=cmd, args=parsed_args)
+
+    tests = [
+        ["rm", ["note.txt"]],
+        ["rm", ["-v", "log.txt"]],
+        ["rm", ["-d", "empty"]],
+        ["rm", ["-d", "nonempty"]],
+        ["rm", ["-r", "nonempty"]],
+        ["rm", ["nonexistent"]],
+        ["rm", ["-f", "nonexistent"]],
+        ["rm", ["--help"]],
+        ["rm", ["--version"]],
+    ]
+
+    for cmd, args in tests:
+        parsed = build_parsed(cmd, args)
+        rm = RM(fs, parsed)
+        result = rm.run()
+        print(f"Command: {' '.join(args)}")
+        if result:
+            print(result)
+        else:
+            print("Success with no output.")
+        print("-" * 40)

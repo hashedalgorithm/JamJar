@@ -52,12 +52,12 @@ class ProcessHandler(Logger):
                 return ps.run(tty, pid)
 
             case "kill":
-                kill = KILL(self.processes)
-                return kill.run(parsed, tty, pid)
+                kill = KILL(self.processes, parsed)
+                return kill.run(tty, pid)
 
             case "killall":
-                killall = KILLALL(self.processes)
-                return killall.run(parsed)
+                killall = KILLALL(self.processes, parsed)
+                return killall.run()
 
             case _:
                 self.logger.info(

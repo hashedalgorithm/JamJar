@@ -1,11 +1,13 @@
 from models.file_system import FileSystem
 from commands.base import CommandBase
+from utils.parser import CommandParser, ParsedCommand
 
 
 class LS(CommandBase):
-    def __init__(self, file_system: FileSystem) -> None:
+    def __init__(self, file_system: FileSystem, parsed: ParsedCommand) -> None:
         super().__init__("ls")
         self.file_system = file_system
+        self.parsed = parsed
 
     def extract_options(self, args: list[str]) -> list[str]:
         option: list[str] = []

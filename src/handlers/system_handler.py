@@ -33,40 +33,40 @@ class SystemHandler(Logger):
         parsed = self.parser.parse(full_command)
         match command:
             case "df":
-                df = DF()
-                return df.run(parsed)
+                df = DF(parsed)
+                return df.run()
 
             case "history":
-                history = HISTORY()
-                return history.run(parsed)
+                history = HISTORY(parsed)
+                return history.run()
 
             case "php":
-                php = PHP()
-                return php.run(parsed)
+                php = PHP(parsed)
+                return php.run()
 
             case "uname":
-                uname = UNAME()
-                return uname.run(parsed)
+                uname = UNAME(parsed)
+                return uname.run()
 
             case "whoami":
-                whoami = WHOAMI()
-                return whoami.run(parsed)
+                whoami = WHOAMI(parsed)
+                return whoami.run()
 
             case "w":
-                w = W()
-                return w.run(parsed)
+                w = W(parsed)
+                return w.run()
 
             case "id":
-                id = ID()
-                return id.run(parsed)
+                id = ID(parsed)
+                return id.run()
 
             case "last":
-                last = LAST()
-                return last.run(parsed)
+                last = LAST(parsed)
+                return last.run()
 
             case "uptime":
-                uptime = UPTIME()
-                return uptime.run(parsed)
+                uptime = UPTIME(parsed)
+                return uptime.run()
 
             case _:
                 print(f"Command '{command}' not recognized by SystemHandler.")

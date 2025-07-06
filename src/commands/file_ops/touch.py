@@ -1,11 +1,13 @@
 from commands.base import CommandBase
 from utils import helper
 from models.file import File
+from utils.parser import ParsedCommand
 
 
 class TOUCH(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, parsed: ParsedCommand) -> None:
         super().__init__("touch")
+        self.parsed = parsed
 
     def run(self) -> str | None:
         raise Exception("TOUCH not implemented yet!")

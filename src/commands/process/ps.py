@@ -3,133 +3,23 @@ from models.process_group import ProcessGroup
 from commands.flagmap import Flagmap, FlagWithArgument
 from utils.parser import ParsedCommand
 from models.process import Process
-
-
-class Attribute:
-    def __init__(
-        self, attribute_header: str, attribute_key: str, default: bool = False
-    ):
-        self.attribute_key = attribute_key
-        self.attribute_header = attribute_header
-        self.default = default
-
-    def get_attribute_header(self) -> str:
-        return self.attribute_header
-
-    def get_attribute_key(self) -> str:
-        return self.attribute_key
-
-    def get(self) -> tuple[str, str]:
-        return self.attribute_key, self.attribute_header
+from utils import helper
+from utils.parser import ParsedCommand
 
 
 class PS(CommandBase):
-    """
-    PS Command
-    A class that implements the functionality of the Unix `ps` command, which reports a snapshot of current processes.
-    This class supports a wide range of flags and output format specifiers, similar to the traditional `ps` command.
-    Flags/Options (partial list with brief descriptions):
-    "a"      # List processes of all users on a terminal, except session leaders.
-    "-A"     # List all processes.
-    "-a"     # List all processes with a terminal, except session leaders.
-    "-d"     # List all processes except session leaders.
-    "--deselect" # Invert the selection.
-    "-e"     # List all processes (same as -A).
-    "g"      # List all processes in the current process group.
-    "-N"     # Invert the selection.
-    "T"      # List all processes attached to the current terminal.
-    "r"      # Restrict output to running processes.
-    "x"      # List processes without controlling terminal.
-    "-C"         # Select by command name.
-    "-G"         # Select by real group ID.
-    "-g"         # Select by session or group ID.
-    "--Group"    # Select by effective group name.
-    "--group"    # Select by effective group name.
-    "p"          # Select by process ID.
-    "-p"         # Select by process ID.
-    "--pid"      # Select by process ID.
-    "--ppid"     # Select by parent process ID.
-    "q"          # Select by quick PID.
-    "-q"         # Select by quick PID.
-    "--quick-pid" # Select by quick PID.
-    "-s"         # Select by session ID.
-    "--sid"      # Select by session ID.
-    "t"          # Select by terminal.
-    "-t"         # Select by terminal.
-    "--tty"      # Select by terminal.
-    "U"          # Select by effective user name or ID.
-    "-U"         # Select by effective user name or ID.
-    "-u"         # Select by effective user name or ID.
-    "--User"     # Select by effective user name.
-    "--user"     # Select by effective user name.
-    "-c"         # Display scheduler information.
-    "--context"  # Show security context.
-    "-f"         # Full-format listing.
-    "-F"         # Extra full-format listing.
-    "--format"   # User-defined format.
-    "j"          # Jobs format.
-    "l"          # Long format.
-    "-l"         # Long format.
-    "-M"         # Show security data.
-    "O"          # Preload columns before others.
-    "-O"         # Preload columns before others.
-    "o"          # User-defined format.
-    "-o"         # User-defined format.
-    "-P"         # Show threads as processes.
-    "s"          # Signal format.
-    "u"          # User-oriented format.
-    "v"          # Virtual memory format.
-    "X"          # Old Linux i386 register format.
-    "-y"         # Do not show flags; show RSS in place of SZ.
-    "Z"          # Show security context.
-    "c"              # Show true command name.
-    "--cols"         # Set screen width.
-    "--columns"      # Set screen width.
-    "--cumulative"   # Include child CPU time.
-    "-D"             # Show elapsed time.
-    "--date-format"  # Set date format.
-    "e"              # Show environment after command.
-    "f"              # ASCII-art process hierarchy.
-    "--forest"       # ASCII-art process hierarchy.
-    "h"              # No header.
-    "-H"             # Show process hierarchy.
-    "--headers"      # Show headers.
-    "k"              # Sort order.
-    "--lines"        # Set screen height.
-    "n"              # Show numeric user/group IDs.
-    "--no-headers"   # No header.
-    "O"              # Preload columns before others.
-    "--rows"         # Set screen height.
-    "S"              # Show cumulative CPU time.
-    "--sort"         # Specify sort order.
-    "--signames"     # Show signal names.
-    "w"              # Wide output.
-    "-w"             # Wide output.
-    "--width"        # Set screen width.
-    "H"      # Show threads as if they were processes.
-    "-L"     # Show threads.
-    "-m"     # Show threads after processes.
-    "m"      # Show threads after processes.
-    "-T"     # Show threads.
-    # Information flags
-    "--help"    # Show help message.
-    "--info"    # Show additional info.
-    "L"         # Show format specifiers.
-    "-V"        # Show version.
-    "V"         # Show version.
-    "--version" # Show version.
-    Attributes:
-        - The `attributes` list defines all possible output columns, their keys, headers, and whether they are included by default in long format.
-    Methods:
-        - __init__: Initializes the PS command with process group, user ID, and parsed command.
-        - check_options: Validates mutually exclusive or conflicting options.
-        - get_default_attributes: Returns default columns for standard output.
-        - generate_header: Generates the output header line.
-        - check_attribute: Checks if a given attribute key is valid.
-        - get_default_attributes_long: Returns default columns for long format.
-        - generate_output: Generates the formatted output for the selected processes.
-        - run: Main entry point to execute the command and return output.
-    """
+    def __init__(self, processes: list[Process], parsed: ParsedCommand) -> None:
+        super().__init__("ps")
+        self.processes = processes
+        self.parsed = parsed
+        
+    def run(self, tty, pid) -> str | None:
+        raise Exception("PS not implemented yet!")
+    
+    def ps(self, args, tty, uid):
+        output = ""
+        process_list = []
+        processes = []
 
     flags = {
         # Simple Process Selection
