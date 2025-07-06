@@ -10,4 +10,5 @@ class CP(CommandBase):
         self.parsed = parsed
         
     def run(self) -> str | None:
-        raise Exception("CP not implemented yet!")
+        if not self.parsed.args:
+            return "cp: missing operand\nTry 'rm --help' for more information."
