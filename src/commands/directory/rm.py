@@ -1,6 +1,6 @@
 from models.file_system import FileSystem
 from models.directory import Directory
-from .base import CommandBase
+from ..base import CommandBase
 
 
 class RMFlagMap:
