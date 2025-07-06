@@ -8,5 +8,6 @@ class CAT(CommandBase):
         self.parsed = parsed
         
     def run(self) -> str | None:
-        raise Exception("CAT not implemented yet!")
+        if not self.parsed.args:
+            return "cat: missing operand\nTry 'rm --help' for more information."
     
