@@ -1,5 +1,5 @@
 from commands.base import CommandBase
-from models.route import ROUTE
+from models.route import Route
 from models.interface import INTERFACE
 from utils.parser import ParsedCommand
 
@@ -8,10 +8,10 @@ class IP(CommandBase):
     def __init__(self, parsed: ParsedCommand) -> None:
         super().__init__("ip")
         self.parsed = parsed
-        
+
     def run(self) -> str | None:
         raise Exception("IP not implemented yet!")
-    
+
     def ip(self, args):
 
         output = ""
@@ -36,7 +36,7 @@ class IP(CommandBase):
         if r:
             if add:
                 self.routes.append(
-                    ROUTE(inet_to=args[-3], interface=self.interfaces[args[-1]])
+                    Route(inet_to=args[-3], interface=self.interfaces[args[-1]])
                 )
 
             elif delete:

@@ -1,22 +1,7 @@
-from models.arp import ARP
-from models.route import ROUTE
-from models.interface import INTERFACE
 from models.process import Process
-
 from pwd import getpwuid
-
 import socket
 
-
-TRACEROUTES = [
-    "62.155.245.90",
-    "217.5.70.26",
-    "80.156.160.223",
-    "80.231.65.10",
-    "195.219.148.122",
-    "162.158.84.111",
-    "172.69.148.3",
-]
 
 def nslookup_helper(domain):
     ip = ""
@@ -34,35 +19,6 @@ def get_username_by_uid(uid=1000):
         return getpwuid(uid).pw_name
     except KeyError:
         return None
-
-
-def create_fake_arp_data_helper(int1):
-    return {
-        "_gateway": ARP(address="_gateway", hwaddress="af:33:4f:f6:2c:dd", iface=int1)
-    }
-
-
-def create_fake_interface_data_helper():
-    return {
-        "lo": INTERFACE(),
-        "ens18": INTERFACE(
-            ["ens18", "enp0s18"],
-            "ether",
-            1500,
-            "BROADCAST,MULTICAST",
-            mac="42:f6:3a:54:ad",
-            mac_brd="ff:ff:ff:ff:ff:ff",
-            state=2,
-            inet4=["192.168.0.12/24"],
-            inet6="fe80::ef52:de12:d4ee:139a/64",
-        ),
-    }
-
-
-def create_fake_route_data_helper(interface):
-    return [
-        ROUTE(inet_from="default", inet_to=interface.inet4_gtw[0], interface=interface)
-    ]
 
 
 def create_fake_processes():
