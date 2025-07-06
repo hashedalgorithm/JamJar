@@ -4,3 +4,4 @@
 .vscode/
 /src/temp/
 jamjar-venv/*
+jamjar-env/*
