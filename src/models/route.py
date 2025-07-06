@@ -1,13 +1,8 @@
-
-
-
-class ROUTE():
+class Route:
     inet_from = ""
     inet_to = ""
     interface = None
 
-
-    
     def __str__(self):
         output = f"{self.inet_from} via {self.inet_to} dev {self.interface.names[0]} proto dhcp src {self.interface.inet4[0]} metric 100"
 
