@@ -1,11 +1,13 @@
 from commands.base import CommandBase
 from models.route import ROUTE
 from models.interface import INTERFACE
+from utils.parser import ParsedCommand
 
 
 class IP(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, parsed: ParsedCommand) -> None:
         super().__init__("ip")
+        self.parsed = parsed
         
     def run(self) -> str | None:
         raise Exception("IP not implemented yet!")

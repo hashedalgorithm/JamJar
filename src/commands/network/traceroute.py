@@ -2,11 +2,13 @@ from commands.base import CommandBase
 from utils import helper
 from models.interface import INTERFACE
 import random
+from utils.parser import ParsedCommand
 
 
 class TRACEROUTE(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, parsed: ParsedCommand) -> None:
         super().__init__("traceroute")
+        self.parsed = parsed
         
     def run(self) -> str | None:
         raise Exception("TRACEROUTE not implemented yet!")

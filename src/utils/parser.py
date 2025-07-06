@@ -134,9 +134,34 @@ class CommandParser:
             else:
                 stack.append(token)
 
+<<<<<<< HEAD
+#     args = [
+#         "-a",
+#         "-o",
+#         "output.txt",
+#         "--verbose",
+#         "--file=log.txt",
+#         "input1.txt",
+#         "--",
+#         "-notAnOption",
+#     ]
+#     opts_with_values = ["-o", "--file"]
+
+#     argparser = ArgumentParser(args, opts_with_values)
+#     # parsed = argparse_arguments_structured(args, opts_with_values)
+
+#     import pprint
+
+#     pprint.pprint(argparser)
+    # parsed_command = Parser("cd ~/Downloads/scripts folder\\ name 'yessss'")
+    # print(parsed_command.parsed[0]['pipeline'][0]['args'])
+    # parsed_args = ArgumentParser(parsed_command.parsed[0]['pipeline'][0]['args'])
+    # print(parsed_args)
+=======
         if is_absolute:
             return ["/"] + stack
         elif path.startswith("."):
             return ["."] + stack
         else:
             return stack
+>>>>>>> v2-process

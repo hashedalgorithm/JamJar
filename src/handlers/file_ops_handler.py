@@ -14,7 +14,7 @@ from commands.file_ops.vi import VI
 
 
 class FileOpsHandler(Logger):
-    def __int__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.parser = CommandParser()
         self.command_options_map = {
@@ -30,49 +30,49 @@ class FileOpsHandler(Logger):
             "vi": ["-T", "-u", "--cmd", "-c", "-S", "-s", "-w", "-W"]
         }
 
-    def handle(self, command: str, full_command: str):
+    def handle(self, command: str, full_command: str) -> str | None:
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:
             case "touch":
-                touch = TOUCH()
-                return touch.run(parsed)
+                touch = TOUCH(parsed)
+                return touch.run()
 
             case "cat":
-                cat = CAT()
-                return cat.run(parsed)
+                cat = CAT(parsed)
+                return cat.run()
 
             case "grep":
-                grep = GREP()
-                return grep.run(parsed)
+                grep = GREP(parsed)
+                return grep.run()
 
             case "echo":
-                echo = ECHO()
-                return echo.run(parsed)
+                echo = ECHO(parsed)
+                return echo.run()
 
             case "unzip":
-                unzip = UNZIP()
-                return unzip.run(parsed)
+                unzip = UNZIP(parsed)
+                return unzip.run()
 
             case "chmod":
-                chmod = CHMOD()
-                return chmod.run(parsed)
+                chmod = CHMOD(parsed)
+                return chmod.run()
 
             case "nano":
-                nano = NANO()
-                return nano.run(parsed)
+                nano = NANO(parsed)
+                return nano.run()
 
             case "vi":
-                vi = VI()
-                return vi.run(parsed)
+                vi = VI(parsed)
+                return vi.run()
 
             case "ln":
-                ln = LN()
-                return ln.run(parsed)
+                ln = LN(parsed)
+                return ln.run()
 
             case "crontab":
-                crontab = CRONTAB()
-                return crontab.run(parsed)
+                crontab = CRONTAB(parsed)
+                return crontab.run()
 
             case _:
                 print(f"Command '{command}' not recognized by FileOpsHandler.")

@@ -4,12 +4,14 @@ from models.interface import INTERFACE
 from utils import helper
 import random
 import ipcalc
+from utils.parser import ParsedCommand
 
 
 class PING(CommandBase):
-    def __init__(self) -> None:
+    def __init__(self, parsed: ParsedCommand) -> None:
         super().__init__("ping")
         self.LOCAL_NETS = ["10.0.0.0/8", "172.16.0.0/12", "12.168.0.0/16"]
+        self.parsed = parsed
 
     def run(self) -> str | None:
         raise Exception("PING not implemented yet!")
