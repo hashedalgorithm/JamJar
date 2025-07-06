@@ -18,12 +18,52 @@ class DirectoryHandler(Logger):
         self.parser = CommandParser()
         self.command_options_map = {
             "cd": [],
-            "cp": ["--backup", "--block-size", "-S", "--suffix", "-t", "--target-directory", "--no-preserve", "--preserve", "--reflink", "--sparse", "--update", "--context"],
-            "ls": ["--block-size", "--color", "-F", "--classify", "--format", "--hide", "--hyperlink", "-p", "--indicator-style", "-I", "--ignore", "--quoting-style", "--sort", "--time", "--time-style", "-T", "--tabsize", "-w", "--width"],
+            "cp": [
+                "--backup",
+                "--block-size",
+                "-S",
+                "--suffix",
+                "-t",
+                "--target-directory",
+                "--no-preserve",
+                "--preserve",
+                "--reflink",
+                "--sparse",
+                "--update",
+                "--context",
+            ],
+            "ls": [
+                "--block-size",
+                "--color",
+                "-F",
+                "--classify",
+                "--format",
+                "--hide",
+                "--hyperlink",
+                "-p",
+                "--indicator-style",
+                "-I",
+                "--ignore",
+                "--quoting-style",
+                "--sort",
+                "--time",
+                "--time-style",
+                "-T",
+                "--tabsize",
+                "-w",
+                "--width",
+            ],
             "mkdir": ["-m", "--mode", "--context"],
-            "mv": ["--backup", "-S", "--suffix", "-t", "--target-directory", "--update"],
+            "mv": [
+                "--backup",
+                "-S",
+                "--suffix",
+                "-t",
+                "--target-directory",
+                "--update",
+            ],
             "rm": ["--interactive"],
-            "rmdir": []
+            "rmdir": [],
         }
 
     def handle(self, command: str, full_command: str) -> str | None:
@@ -31,8 +71,7 @@ class DirectoryHandler(Logger):
         parsed = self.parser.parse(full_command)
         match command:
             case "cd":
-                cd = CD(self
-                .file_system)
+                cd = CD(self.file_system)
                 return cd.run(parsed)
 
             case "cp":
