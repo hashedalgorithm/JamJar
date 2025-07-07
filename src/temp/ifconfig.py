@@ -98,6 +98,9 @@ class FakeInterface:
     def set_mac(self, mac):
         self.mac = mac
 
+    def set_mtu(self, mtu):
+        self.mtu = mtu
+
     def to_string(self):
         lines = [f"{self.name}: flags={'UP' if self.is_up() else 'DOWN'}"]
         lines.append(f"    inet {self.ip}  netmask {self.netmask}  broadcast {self.broadcast}" if self.ip else "    inet not assigned")
@@ -144,22 +147,37 @@ fake_net_interfaces = {
 
 def ifconfig(args=None):
     """
-    Simulates `ifconfig`, `ifconfig -a`, `ifconfig <interface>`, and
+    Simulates `ifconfig`, `ifconfig -a`, `ifconfig -s`, `ifconfig <interface>`, and
     `ifconfig <interface> <IP>`, `ifconfig <interface> netmask <mask>`, `ifconfig <interface> broadcast <address>`,
-    `ifconfig <interface> hw ether <MAC>`.
+    `ifconfig <interface> hw ether <MAC>`, `ifconfig <interface> mtu <size>`, `ifconfig -v`, `ifconfig --version`.
     """
     if args is None or len(args) == 0:
         interfaces = [iface for iface in fake_net_interfaces.values() if iface.is_up()]
         return "\n\n".join(iface.to_string() for iface in interfaces)
+    elif args[0] in ('-v', '--version'):
+        return (
+            "ifconfig (net-tools) 2.10-alpha\n"
+            "Compiled with GLIBC 2.31\n"
+            "Copyright (C) 1997-2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 net-tools team\n"
+            "This is free software; see the source for copying conditions.  There is NO\n"
+            "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+        )
     elif args[0] == '-a':
         interfaces = list(fake_net_interfaces.values())
         return "\n\n".join(iface.to_string() for iface in interfaces)
+    elif args[0] == '-s':
+        # Short output: just interface names and status
+        lines = []
+        for name, iface in fake_net_interfaces.items():
+            status = "UP" if iface.is_up() else "DOWN"
+            lines.append(f"{name}\t{status}\tmtu:{iface.mtu}\tmac:{iface.mac}")
+        return "\n".join(lines)
     else:
         name = args[0]
         iface = fake_net_interfaces.get(name)
         if not iface:
             return f"ifconfig: interface '{name}' not found"
-        # Handle set IP/netmask/broadcast/hw ether
+        # Handle set IP/netmask/broadcast/hw ether/mtu
         if len(args) == 2:
             iface.set_ip(args[1])
             return iface.to_string()
@@ -169,6 +187,9 @@ def ifconfig(args=None):
                 return iface.to_string()
             elif args[1] == "broadcast":
                 iface.set_broadcast(args[2])
+                return iface.to_string()
+            elif args[1] == "mtu":
+                iface.set_mtu(args[2])
                 return iface.to_string()
             else:
                 return f"ifconfig: unknown option '{args[1]}'"
@@ -188,6 +209,12 @@ def run_ifconfig_tests():
     print(ifconfig())
     print("\n===== ifconfig -a =====")
     print(ifconfig(['-a']))
+    print("\n===== ifconfig -s =====")
+    print(ifconfig(['-s']))
+    print("\n===== ifconfig -v =====")
+    print(ifconfig(['-v']))
+    print("\n===== ifconfig --version =====")
+    print(ifconfig(['--version']))
     print("\n===== ifconfig eth0 =====")
     print(ifconfig(['eth0']))
     print("\n===== ifconfig eth1 =====")
@@ -220,6 +247,12 @@ def run_ifconfig_tests():
     print(ifconfig(['eth1', 'hw', 'ether', 'aa:bb:cc:dd:ee:ff']))
     print("\n===== ifconfig lo hw ether 00:00:00:00:00:01 =====")
     print(ifconfig(['lo', 'hw', 'ether', '00:00:00:00:00:01']))
+    print("\n===== ifconfig eth0 mtu 9000 =====")
+    print(ifconfig(['eth0', 'mtu', '9000']))
+    print("\n===== ifconfig eth1 mtu 2000 =====")
+    print(ifconfig(['eth1', 'mtu', '2000']))
+    print("\n===== ifconfig lo mtu 12345 =====")
+    print(ifconfig(['lo', 'mtu', '12345']))
 
 # --- Main Execution ---
 
