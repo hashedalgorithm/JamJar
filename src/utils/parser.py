@@ -1,5 +1,5 @@
 import shlex
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Set, Tuple
 import os
 
 ParsedArgumentType = Literal["flag", "option", "positional", "special"]
@@ -12,7 +12,7 @@ class ParsedArgument:
         name: Optional[str] = None,
         value: Optional[str] = None,
     ):
-        self.type = type  # "flag", "option", "positional", "special"
+        self.type = type
         self.name = name
         self.value = value
 
@@ -31,6 +31,25 @@ class ParsedCommand:
     def check_arg_exists(self, arg: str) -> bool:
         for parsed_arg in self.args:
             if parsed_arg.name == arg:
+                return True
+        return False
+
+    def has_only_valid_args(
+        self, valid_flags: Set[str], valid_options: Set[str]
+    ) -> bool:
+        for arg in self.args:
+            if arg.type == "flag" and arg.name not in valid_flags:
+                return False
+            elif arg.type == "option" and arg.name not in valid_options:
+                return False
+            elif arg.type not in {"flag", "option", "positional", "special"}:
+                return False
+        return True
+
+    def has_conflicting_options(self, conflict_pairs: List[Tuple[str, str]]) -> bool:
+        seen = set(arg.name for arg in self.args if arg.type in {"flag", "option"})
+        for a, b in conflict_pairs:
+            if a in seen and b in seen:
                 return True
         return False
 
@@ -61,7 +80,6 @@ class CommandParser:
             arg = args[i]
 
             if parsing_options and arg == "--":
-                parsed.append(ParsedArgument(type="special", value="--"))
                 parsing_options = False
                 i += 1
                 continue
@@ -78,7 +96,6 @@ class CommandParser:
                     i += 1
                     continue
 
-                # Handle combined short flags like -rfz
                 if len(arg) > 2 and not arg.startswith("--"):
                     for ch in arg[1:]:
                         flag = f"-{ch}"
@@ -86,7 +103,6 @@ class CommandParser:
                     i += 1
                     continue
 
-                # Handle options that require values
                 if arg in self.options_with_values:
                     if i + 1 < len(args):
                         parsed.append(
@@ -101,12 +117,10 @@ class CommandParser:
                         i += 1
                         continue
 
-                # Handle standalone flags
                 parsed.append(ParsedArgument(type="flag", name=arg))
                 i += 1
                 continue
 
-            # Treat as positional
             parsed.append(ParsedArgument(type="positional", value=arg))
             i += 1
 
@@ -134,34 +148,9 @@ class CommandParser:
             else:
                 stack.append(token)
 
-<<<<<<< HEAD
-#     args = [
-#         "-a",
-#         "-o",
-#         "output.txt",
-#         "--verbose",
-#         "--file=log.txt",
-#         "input1.txt",
-#         "--",
-#         "-notAnOption",
-#     ]
-#     opts_with_values = ["-o", "--file"]
-
-#     argparser = ArgumentParser(args, opts_with_values)
-#     # parsed = argparse_arguments_structured(args, opts_with_values)
-
-#     import pprint
-
-#     pprint.pprint(argparser)
-    # parsed_command = Parser("cd ~/Downloads/scripts folder\\ name 'yessss'")
-    # print(parsed_command.parsed[0]['pipeline'][0]['args'])
-    # parsed_args = ArgumentParser(parsed_command.parsed[0]['pipeline'][0]['args'])
-    # print(parsed_args)
-=======
         if is_absolute:
             return ["/"] + stack
         elif path.startswith("."):
             return ["."] + stack
         else:
             return stack
->>>>>>> v2-process
