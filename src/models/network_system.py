@@ -16,16 +16,20 @@ class NetworkSystem:
     ]
 
     def __init__(self):
-        self.interfaces: dict[str, NetworkInterface] = (
-            self.create_fake_network_interfaces()
-        )
-        self.arp_table = self.create_fake_arp_data_helper(self.interfaces["ens18"])
-        self.routes = self.create_fake_route_data_helper(self.interfaces["ens18"])
+        self.interfaces: dict[str, NetworkInterface] = {}
+
+        self.create_fake_network_interfaces()
+        self.arp_table = self.create_fake_arp_data_helper(self.interfaces["enp0s1"])
+        self.routes = self.create_fake_route_data_helper(self.interfaces["enp0s1"])
 
     def create_fake_network_interfaces(self):
 
         self.interfaces["enp0s1"] = NetworkInterface(
             name="enp0s1",
+            id=1,
+            status="up",
+            type="enp0s1",
+            mac_address="6E:92:F4:3B:5A:C7",
             flags="4163<UP,BROADCAST,RUNNING,MULTICAST>",
             mtu=1500,
             ipv4_address="192.168.64.4",
@@ -58,7 +62,6 @@ class NetworkSystem:
                     "scopeid": "0x0<global>",
                 },
             ],
-            mac_address="8a:3c:20:a1:2a:49",
             txqueuelen=1000,
             rx_packets=1249582,
             rx_bytes=1510717271,
@@ -76,6 +79,10 @@ class NetworkSystem:
         )
         self.interfaces["l0"] = NetworkInterface(
             name="l0",
+            id=0,
+            status="down",
+            type="lo",
+            mac_address="7F:01:G5:4C:6B:B8",
             flags="73<UP,LOOPBACK,RUNNING>",
             mtu=65536,
             ipv4_address="127.0.0.1",
@@ -99,7 +106,7 @@ class NetworkSystem:
             tx_collisions=0,
         )
 
-    def create_fake_route_data_helper(interface: NetworkInterface):
+    def create_fake_route_data_helper(self, interface: NetworkInterface):
         return [
             Route(
                 inet_from="default",
@@ -108,7 +115,7 @@ class NetworkSystem:
             )
         ]
 
-    def create_fake_arp_data_helper(int1):
+    def create_fake_arp_data_helper(self, int1):
         return {
             "_gateway": ARP(
                 address="_gateway", hwaddress="af:33:4f:f6:2c:dd", iface=int1
