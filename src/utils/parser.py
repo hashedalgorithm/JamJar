@@ -147,7 +147,6 @@ class CommandParser:
                     stack.append("..")
             else:
                 stack.append(token)
-
         if is_absolute:
             return ["/"] + stack
         elif path.startswith("."):
