@@ -149,11 +149,9 @@ def ifconfig(args=None):
     `ifconfig <interface> hw ether <MAC>`.
     """
     if args is None or len(args) == 0:
-        # Default: show only UP interfaces
         interfaces = [iface for iface in fake_net_interfaces.values() if iface.is_up()]
         return "\n\n".join(iface.to_string() for iface in interfaces)
     elif args[0] == '-a':
-        # Show all interfaces
         interfaces = list(fake_net_interfaces.values())
         return "\n\n".join(iface.to_string() for iface in interfaces)
     else:
