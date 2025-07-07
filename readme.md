@@ -167,21 +167,18 @@ sudo rm -rf ~/JamJar-main/python-ptrace-0.9.9
 sudo rm -r ~/JamJar-main/0.9.9.zip
 ```
 
----
 
-<<<<<<< HEAD
 ## **🍯 Running JamJar **
 
 JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
 
-### **👤 Change Password of Root User
-=======
+
 ## **🍯 Running JamJar**
 
 JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
 
 ### **👤 Change Password of Root User**
->>>>>>> v2-ls
+
 
 ```
 ubuntu@VM:~$ sudo passwd root
@@ -191,11 +188,7 @@ Retype new password:
 passwd: password updated successfully
 ```
 
-<<<<<<< HEAD
-### **🦾 Get Root Shell
-=======
 ### **🦾 Get Root Shell**
->>>>>>> v2-ls
 
 ```
 ubuntu@VM:~$ su
@@ -212,9 +205,3 @@ python3 main.py
 
 > ⚠️ If you came across any error like module not found try to install it using pip(except for bcc and ptrace).
 
-
-<<<<<<< HEAD
----
-=======
----
->>>>>>> v2-ls
