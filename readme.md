@@ -185,13 +185,15 @@ Fix: Use single quotes instead of double quotes or escape !:
 python3 -c 'from bcc import BPF; print("✅ BCC installed!")'
 ```
 
-Make sure your Python virtual environment is activated before installing.
-
 ---
+
 
 ## **🍯 Running JamJar**
 
-JamJar requires root privileges due to kernel operations.
+JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. 
+Hence we need root shell. To obtain root shell in ubuntu
+
+### **👤 Change Password of Root User**
 
 1. Set root password:
 ```
@@ -199,7 +201,8 @@ sudo passwd root
 
 ```
 
-> ⚠️ If you came across any error like module not found try to install it using pip(except for bcc and ptrace).
+
+### **🦾 Get Root Shell**
 
 2. Switch to root shell: 
 ```
@@ -215,7 +218,6 @@ python3 main.py
 
 > ⚠️ If you came across any error like module not found try to install it using pip(except for bcc and ptrace).
 
----
 
 ## **🧹 Cleanup (Optional)**
 
@@ -224,3 +226,4 @@ If you no longer need the source or build artifacts:
 ```
 sudo rm -rf ~/JamJar/bcc
 ```
+
