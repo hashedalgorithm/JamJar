@@ -302,7 +302,7 @@ class Process:
         self.tname = tname if tname is not None else self.generate_tname()
         self.tpgid = tpgid if tpgid is not None else self.generate_tpgid()
         self.trs = trs if trs is not None else self.generate_trs()
-        self.tt = tt if tt is not None else self.generate_tty()
+        self.tt = tt if tt is not None else self.generate_tt()
         self.ucmd = ucmd if ucmd is not None else self.generate_comm()
         self.ucomm = ucomm if ucomm is not None else self.generate_comm()
         self.uid = uid if uid is not None else self.generate_uid()
@@ -326,28 +326,32 @@ class Process:
         light: tuple[int | float, int | float],
         medium: tuple[int | float, int | float],
         heavy: tuple[int | float, int | float],
-        round: int = 1,
+        round_digits: int = 1,
     ):
         # Determine the value range based on load
         if self.load == "light":
             # Light load: Lower value
-            return round(random.uniform(light[0], light[1]), round)
+            return round(random.uniform(light[0], light[1]), round_digits)
         elif self.load == "medium":
             # Medium load: Moderate value
-            return round(random.uniform(medium[0], medium[1]), round)
+            return round(random.uniform(medium[0], medium[1]), round_digits)
         elif self.load == "heavy":
             # Heavy load: Higher value
-            return round(random.uniform(heavy[0], heavy[1]), round)
+            return round(random.uniform(heavy[0], heavy[1]), round_digits)
         else:
             # If load does not affect the value, generate a generic value
-            return round(random.uniform(light[0], heavy[1]), round)
+            return round(random.uniform(light[0], heavy[1]), round_digits)
 
     def generate_random_value_by_load(
         self,
         light: tuple[int | float, int | float],
         medium: tuple[int | float, int | float],
         heavy: tuple[int | float, int | float],
+        fallback_range: tuple[int | float, int | float] | None = None,
     ):
+        fallback_range = (
+            fallback_range if fallback_range is not None else (light[0], heavy[1])
+        )
         # Determine the processor utilization range based on load
         if self.load == "light":
             # Light load: Lower CPU utilization
@@ -360,7 +364,7 @@ class Process:
             return random.randint(heavy[0], heavy[1])
         else:
             # If load does not affect the value, generate a generic CPU utilization
-            return random.randint(light[0], heavy[1])
+            return random.randint(fallback_range[0], fallback_range[1])
 
     def generate_random_value_based_on_type(
         self,
@@ -396,7 +400,7 @@ class Process:
             float: A randomly generated memory utilization percentage between 0.0 and 100.0.
         """
         return self.generate_random_value_based_on_load_round(
-            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=2
+            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round_digits=2
         )
 
     def generate_ag_id(self) -> int:
@@ -417,31 +421,9 @@ class Process:
         Returns:
             int: A randomly generated autogroup nice value between -20 and 19.
         """
-        # Default range for `ag_nice`
-        min_nice = -20
-        max_nice = 19
-
-        # Adjust `ag_nice` based on process type
-        if self.type == "system":
-            # System processes typically have higher priority (lower nice value)
-            return random.randint(min_nice, -10)
-        elif self.type == "user":
-            # User processes have medium priority
-            return random.randint(-10, 10)
-        elif self.type == "background":
-            # Background processes have lower priority (higher nice value)
-            return random.randint(10, max_nice)
-
-        # Adjust `ag_nice` based on system load
-        if self.load > 80.0:
-            # High system load: prioritize critical processes
-            return random.randint(min_nice, -5)
-        elif self.load < 20.0:
-            # Low system load: allow more flexibility for background processes
-            return random.randint(5, max_nice)
-
-        # Default random value if type and load don't affect the value
-        return random.randint(min_nice, max_nice)
+        return self.generate_random_value_by_load(
+            light=[10, 19], medium=[0, 10], heavy=[-20, 0], fallback_range=[-20, 19]
+        )
 
     def generate_args(self) -> str:
         """
@@ -767,7 +749,7 @@ class Process:
             float: A randomly generated CPU utilization percentage between 0.0 and 100.0.
         """
         return self.generate_random_value_based_on_load_round(
-            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=1
+            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round_digits=1
         )
 
     def generate_cputime(self) -> str:
@@ -828,7 +810,7 @@ class Process:
             float: A randomly generated CPU utilization percentage between 0.0 and 100.0.
         """
         return self.generate_random_value_based_on_load_round(
-            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=1
+            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round_digits=1
         )
 
     def generate_cuu(self) -> float:
@@ -839,7 +821,7 @@ class Process:
             float: A randomly generated CPU utilization percentage between 0.0 and 100.0.
         """
         return self.generate_random_value_based_on_load_round(
-            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round=1
+            light=[0.0, 30.0], medium=[30.0, 70.0], heavy=[70.0, 100.0], round_digits=1
         )
 
     def generate_docker(self) -> str:
@@ -1625,7 +1607,7 @@ class Process:
         """
 
         return self.generate_random_value_based_on_load_round(
-            light=[0.0, 30.0], medium=[30.1, 70.0], heavy=[70.1, 100.0], round=1
+            light=[0.0, 30.0], medium=[30.1, 70.0], heavy=[70.1, 100.0], round_digits=1
         )
 
     def generate_pending(self) -> str:
@@ -1672,7 +1654,7 @@ class Process:
             float: A randomly generated memory utilization percentage (0.0 to 100.0).
         """
         return self.generate_random_value_based_on_load_round(
-            light=[0.0, 30.0], medium=[30.1, 70.0], heavy=[70.1, 100.0], round=1
+            light=[0.0, 30.0], medium=[30.1, 70.0], heavy=[70.1, 100.0], round_digits=1
         )
 
     def generate_policy(self) -> str:
@@ -2443,3 +2425,13 @@ class Process:
             return random.choice(
                 ["do_wait", "poll_schedule_timeout", "io_schedule", "-"]
             )
+
+    def generate_vsz(self) -> int:
+        """
+        Generate a random virtual memory size (vsz) for a process.
+
+        Return Type: int
+        """
+        return self.generate_random_value_by_load(
+            light=[1024, 20480], medium=[20481, 104857], heavy=[104858, 1048576]
+        )

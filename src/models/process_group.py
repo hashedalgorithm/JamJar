@@ -4,7 +4,8 @@ from models.process import Process
 
 class ProcessGroup:
     def __init__(self):
-        self.processes: dict[int, Process] = self.create_fake_processes()
+        self.processes: dict[int, Process] = {}
+        self.create_fake_processes()
 
     def create_fake_processes(self) -> None:
         fake_process_data: list[Process] = [
@@ -313,18 +314,18 @@ class ProcessGroup:
         for process in fake_process_data:
             self.add_process(
                 Process(
-                    pid=process.pid,
-                    uid=process.uid,
-                    cmd=process.cmd,
-                    tty=process.tt,
-                    ppid=process.ppid,
-                    stat=process.stat,
-                    type=process.type,
-                    load=process.load,
+                    pid=process["pid"],
+                    uid=process["uid"],
+                    cmd=process["cmd"],
+                    tty=process["tty"],
+                    ppid=process["ppid"],
+                    stat=process["stat"],
+                    type=process["type"],
+                    load=process["load"],
                 )
             )
 
-    def count_active_terminals():
+    def count_active_terminals(self):
         try:
             # Run 'who' to get active login sessions
             result = subprocess.run(

@@ -7,15 +7,33 @@ from utils import helper
 from utils.parser import ParsedCommand
 
 
+class Attribute:
+    def __init__(
+        self, attribute_header: str, attribute_key: str, default: bool = False
+    ):
+        self.attribute_key = attribute_key
+        self.attribute_header = attribute_header
+        self.default = default
+
+    def get_attribute_header(self) -> str:
+        return self.attribute_header
+
+    def get_attribute_key(self) -> str:
+        return self.attribute_key
+
+    def get(self) -> tuple[str, str]:
+        return self.attribute_key, self.attribute_header
+
+
 class PS(CommandBase):
     def __init__(self, processes: list[Process], parsed: ParsedCommand) -> None:
         super().__init__("ps")
         self.processes = processes
         self.parsed = parsed
-        
+
     def run(self, tty, pid) -> str | None:
         raise Exception("PS not implemented yet!")
-    
+
     def ps(self, args, tty, uid):
         output = ""
         process_list = []

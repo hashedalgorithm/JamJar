@@ -1,55 +1,59 @@
 
-# **Installing BCC (BPF Compiler Collection) on Ubuntu 24.04 with Python Virtual Environment** For JAMJAR
+# **JamJar Installation Guide (Ubuntu 24.04 + Python Virtual Environment)**
 
+This guide covers installing the [BPF Compiler Collection (BCC)](https://github.com/iovisor/bcc/blob/master/INSTALL.md) from source on **Ubuntu 24.04** inside a **Python virtual environment**, including troubleshooting common installation issues.
   
-
-This guide provides steps to install [BCC](https://github.com/iovisor/bcc/blob/master/INSTALL.md) from source on **Ubuntu 24.04** using a **Python virtual environment** instead of system-wide installation.
 
 ---
 
 ## **🔧 Prerequisites**
 
-You need Ubuntu version - 24.04
+Make sure your system is Ubuntu 24.04 or similar.
 
-Before starting, make sure you have the following installed:
+Update and install system packages:
 
 ```
-sudo apt update
-sudo apt upgrade
+sudo apt update && sudo apt upgrade -y
 sudo apt install -y unzip zip bison build-essential cmake flex git libedit-dev \
-  libllvm18 llvm-18-dev libclang-18-dev python3 zlib1g-dev libelf-dev libfl-dev python3-setuptools \
-  liblzma-dev libdebuginfod-dev arping netperf iperf libpolly-18-dev
-```
-
-These packages are internally used by bcc's dependencies and will be installed in ubuntu by default and will create issues when you are building bcc.
+libllvm18 llvm-18-dev libclang-18-dev python3 zlib1g-dev libelf-dev libfl-dev python3-setuptools \
+liblzma-dev libdebuginfod-dev arping netperf iperf libpolly-18-dev libcurl4-openssl-dev libluajit-5.1-dev
 
 ```
-sudo apt install libcurl4-openssl-dev libluajit-5.1-dev
+
+These packages are needed for building BCC and its dependencies.
+
 ```
+
+---
+
+## **🧹 Cleanup (Start fresh)**
+
+If you've attempted installation before and want to start clean, remove these folders and files:
+
+rm -rf ~/JamJar/bcc
+rm -rf ~/JamJar/python-ptrace-0.9.9
+rm -rf ~/JamJar/0.9.9.zip
+rm -rf ~/JamJar/jamjar-venv
+
 ---
 
 ## **📦 Installation Steps**
-### **1. Clone JamJar from Github
+### **1. Clone JamJar Repository from Github
 
 ```
-git clone https://www.github.com/hashedalgorithm/JamJar.git
+git clone https://github.com/hashedalgorithm/JamJar.git
+cd JamJar
 ```
-
 ---
 
-### **2. Create a Python Virtual Environment**
+### **2. Create and activate Python virtual environment**
 
 ```
-python3 -m venv ~/JamJar/jamjar-venv
+python3 -m venv jamjar-venv
+source jamjar-venv/bin/activate
 ```
 
 This ensures that Python bindings for BCC are installed in an isolated environment.
-
-Activate the virtual environment (if not already):
-
-```
-source ~/JamJar/jamjar-venv/bin/activate
-```
 
 ---
 
@@ -62,7 +66,7 @@ cd bcc
 
 ---
 
-### **4. Change Folder Ownership (Recommended for Virtualized/Root-Owned Folders)**
+### **4. Fix folder ownership (if cloned with sudo or running in VM)**
 
 If you’re using a virtual machine or ran git clone with sudo, you may need to change the folder’s ownership:
 
@@ -81,13 +85,13 @@ cd build
 
 ---
 
-### **6. Install Python Dependencies (for your venv)**
+### **6. Install Python Dependencies (inside venv)**
 
 ```
 pip install six setuptools ipcalc build
 ```
 
-> ⚠️ If you are getting errors then the reason for it would be ownership issues with the folder.
+> ⚠️ If permission or dependency errors arise, check folder ownership and your virtual environment activation.
 
 ---
 
@@ -95,115 +99,117 @@ pip install six setuptools ipcalc build
 
 ```
 cmake ..
-make $(nproc)
-make install
+make -j$(nproc)
+sudo make install
 ```
+
+> **Note:** sudo is needed here because installing to /usr/lib requires root permissions.
 
 ---
 
-### **8. Installing ptrace(0.9.9 stable) from source**
-
-```
-// Go to ~/JamJar
-wget https://github.com/vstinner/python-ptrace/archive/refs/tags/0.9.9.zip
-unzip 0.9.9.zip
-cd python-ptrace-0.9.9/
-```
-
-```
-python3 -m build
-``` 
-This creates a .whl file in the dist/ directory.
-
-```
-pip install dist/*.whl
-```
-
----
-
-### **9. Build and Install Python Bindings (for your venv)**
+### **8. Build and Install Python Bindings (for your venv)**
 
 From within the build directory:
 
 ```
 cd ../bcc
-cmake -DPYTHON_CMD=python3 ./
-pushd ./src/python
-make $(nproc)
-python3 ./bcc-python3/setup.py install
-popd
+cmake -DPYTHON_CMD=python3 .
+cd src/python
+make -j$(nproc)
+python3 setup.py install
 ```
 
-> ⚠️ **Do not use sudo make install here**, since you’re installing in a virtual environment.
+> ⚠️ **Important:** Do NOT run sudo make install here; the Python bindings must install in the virtual environment.
 
 ---
 
 ## **✅ Verifying Installation**
 
-Try running a sample Python program using BCC:
+Activate your virtual environment and run:
 
 ```
-ubuntu@VM:~$ python3
-Python 3.12.3 (main, Feb  4 2025, 14:48:35) [GCC 13.3.0] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> from bcc import BPF
->>> import ptrace
->>> 
+python3 -c "from bcc import BPF; print('✅ BCC Python bindings installed!')"
 
 ```
 
-If this prints without errors, BCC is ready to use. If throws error in either of these you just to make, build and install again. 
+If this prints without errors, BCC is ready to use.
 
 > 🤩 Tip : Check the make logs and verify that everything is installed correctly
----
-
-## **🧹 Cleanup (Optional)**
-
-If you no longer need the source or build artifacts:
-
-```
-sudo rm -rf ~/JamJar-main/bcc
-sudo rm -rf ~/JamJar-main/python-ptrace-0.9.9
-sudo rm -r ~/JamJar-main/0.9.9.zip
-```
 
 ---
 
-<<<<<<< HEAD
-## **🍯 Running JamJar **
+## **🚩 Common Issues and Solutions**
+### **1. ModuleNotFoundError: No module named 'bcc.version'**
 
-JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
+Cause: version.py file missing in bcc/ directory.
 
-### **👤 Change Password of Root User
-=======
+Fix: Create a version.py in bcc/ with the following content:
+
+```
+__version__ = "0.35.0"
+```
+
+Confirm your current directory is the root of BCC Python source (bcc/src/python/) when running Python commands.
+
+---
+
+### **2. Permission Denied on make install for BCC core libraries**
+
+Cause: You need root permission to install shared libraries into /usr/lib.
+
+Fix: Use sudo make install during core BCC installation.
+
+---
+
+### **3. Errors during pip install or building Python bindings**
+
+Cause: Folder ownership issues or missing dependencies.
+
+Fix: Ensure the entire BCC repo directory is owned by your user:
+
+```
+sudo chown -R $(whoami):$(whoami) ~/JamJar/bcc
+```
+
+Make sure your Python virtual environment is activated before installing.
+
+---
+
+### **4. Bash error: bash: !': event not found when running python -c with exclamation marks**
+
+Cause: Bash interprets ! as history expansion.
+
+Fix: Use single quotes instead of double quotes or escape !:
+
+```
+python3 -c 'from bcc import BPF; print("✅ BCC installed!")'
+```
+
+---
+
+
 ## **🍯 Running JamJar**
 
-JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. Hence we need root shell. To obtain root shell in ubuntu
+JamJar needs su permissions to work hence it handles with kernal operations. even if you try to run it sudo it doesn't work. 
+Hence we need root shell. To obtain root shell in ubuntu
 
 ### **👤 Change Password of Root User**
->>>>>>> v2-ls
+
+1. Set root password:
+```
+sudo passwd root
 
 ```
-ubuntu@VM:~$ sudo passwd root
-[sudo] password for ubuntu: 
-New password: 
-Retype new password: 
-passwd: password updated successfully
-```
 
-<<<<<<< HEAD
-### **🦾 Get Root Shell
-=======
+
 ### **🦾 Get Root Shell**
->>>>>>> v2-ls
 
+2. Switch to root shell: 
 ```
-ubuntu@VM:~$ su
-Password: 
-root@VM:/home/ubuntu# 
+su
 ```
 
-Now navigate to JamJar and activate your venv and  run main.py
+3. Navigate to JamJar, activate venv and run: 
 ```
 cd ~/JamJar
 source jamjar-venv/bin/activate
@@ -213,8 +219,11 @@ python3 main.py
 > ⚠️ If you came across any error like module not found try to install it using pip(except for bcc and ptrace).
 
 
-<<<<<<< HEAD
----
-=======
----
->>>>>>> v2-ls
+## **🧹 Cleanup (Optional)**
+
+If you no longer need the source or build artifacts:
+
+```
+sudo rm -rf ~/JamJar/bcc
+```
+
