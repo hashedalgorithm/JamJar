@@ -1,6 +1,6 @@
-from utils import helper
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.process_group import ProcessGroup
 
 from commands.process.kill import KILL
 from commands.process.killall import KILLALL
@@ -8,9 +8,9 @@ from commands.process.ps import PS
 
 
 class ProcessHandler(Logger):
-    def __init__(self) -> None:
+    def __init__(self, process_group: ProcessGroup) -> None:
         super().__init__()
-        self.processes = helper.create_fake_processes()
+        self.process_group = process_group
         self.parser = CommandParser()
         self.command_options_map = {
             "kill": ["-s", "--signal", "-n"],
@@ -48,15 +48,15 @@ class ProcessHandler(Logger):
 
         match command:
             case "ps":
-                ps = PS(self.processes, parsed)
+                ps = PS(self.process_group.processes, parsed)
                 return ps.run(tty, pid)
 
             case "kill":
-                kill = KILL(self.processes, parsed)
+                kill = KILL(self.process_group.processes, parsed)
                 return kill.run(tty, pid)
 
             case "killall":
-                killall = KILLALL(self.processes, parsed)
+                killall = KILLALL(self.process_group.processes, parsed)
                 return killall.run()
 
             case _:

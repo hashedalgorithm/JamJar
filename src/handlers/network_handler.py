@@ -46,7 +46,7 @@ class NetworkHandler(Logger):
         match command:
             case "ifconfig":
                 ifconfig = IFCONFIG(parsed)
-                return ifconfig.run()
+                return ifconfig.run(self.network_system.interfaces)
 
             case "nmap":
                 nmap = NMAP(parsed)
