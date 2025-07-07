@@ -1,6 +1,7 @@
 from core.ebpf import EBPF
 import os
 from utils.logger import Logger
+import traceback
 
 
 def ascii_art():
@@ -30,7 +31,7 @@ def ascii_art():
 if __name__ == "__main__":
 
     try:
-        logger = Logger().logger
+        logger = Logger(__name__).logger
         ascii_art()
 
         # Initialize BPF
@@ -47,4 +48,4 @@ if __name__ == "__main__":
         exit(1)
 
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"Error: {e}\n{traceback.format_exc()}")
