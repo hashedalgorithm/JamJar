@@ -3,9 +3,11 @@ import logging
 
 class Logger:
 
-    def __init__(self):
-        full_name = f"{self.__module__}.{self.__class__.__name__}"
-        self.logger = logging.getLogger(full_name)
+    def __init__(self, name=None):
+        name = (
+            name if name is not None else f"{self.__module__}.{self.__class__.__name__}"
+        )
+        self.logger = logging.getLogger(name)
 
         # Avoid duplicate handlers if the logger is already configured
         if not self.logger.hasHandlers():

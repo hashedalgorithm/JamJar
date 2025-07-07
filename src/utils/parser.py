@@ -134,7 +134,7 @@ class CommandParser:
             else:
                 stack.append(token)
 
-<<<<<<< HEAD
+
 #     args = [
 #         "-a",
 #         "-o",
@@ -153,15 +153,7 @@ class CommandParser:
 #     import pprint
 
 #     pprint.pprint(argparser)
-    # parsed_command = Parser("cd ~/Downloads/scripts folder\\ name 'yessss'")
-    # print(parsed_command.parsed[0]['pipeline'][0]['args'])
-    # parsed_args = ArgumentParser(parsed_command.parsed[0]['pipeline'][0]['args'])
-    # print(parsed_args)
-=======
-        if is_absolute:
-            return ["/"] + stack
-        elif path.startswith("."):
-            return ["."] + stack
-        else:
-            return stack
->>>>>>> v2-process
+# parsed_command = Parser("cd ~/Downloads/scripts folder\\ name 'yessss'")
+# print(parsed_command.parsed[0]['pipeline'][0]['args'])
+# parsed_args = ArgumentParser(parsed_command.parsed[0]['pipeline'][0]['args'])
+# print(parsed_args)
