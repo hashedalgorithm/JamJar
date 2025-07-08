@@ -21,7 +21,7 @@ def ascii_art():
               \/      \/               \/             ⣿⡇⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⣿⠀⢸⣿
         © Jamjar v2.0                                 ⣿⡇⠀⠀⣇⠈⠉⡿⢿⠉⠁⣸⠀⠀⣿⠀⢸⣿
         by Sanjay Kumar Kumaravelan, Nivedhidha       ⣿⡇⠀⠀⠙⠛⢻⣷⣾⡟⠛⠋⠀⠀⣿⠀⢸⣿
-        Ilangovan & Monisha Vanamuthu                 ⣿⡇⠀   ⡏   ⢹⠀⠀⠀⠀⣿⠀⢸⣿
+        Ilangovan & Monisha Vanamuthu                 ⣿⡇⠀   ⡏   ⢹⠀⠀⠀⣿⠀⢸⣿
                                                       ⢻⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠟⠀⣸⡟
                                                        ⠛⢷⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⡾⠛
     """
