@@ -28,7 +28,7 @@ class FileSystem:
         self.root.add(Directory("dev", perm="drwxr-xr-x"))
 
         home = self.root.children["home"]
-        username = get_username_by_uid() or "user"
+        username = "strawberry"
         home.add(Directory(username, perm="drwxr-xr-x"))
         a_folder = home.children[username]
 
@@ -71,3 +71,7 @@ class FileSystem:
         subB.add(File("b2.txt", perm="-rw-r--r--"))
         dirB.add(subB)
         a_folder.add(dirB)
+
+        dirC = Directory("dirC", perm="drwxr-xr-x")
+        a_folder.add(dirC)
+        self.cwd = self.cwd.children["home"].children["strawberry"].children["a"]
