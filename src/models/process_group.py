@@ -1,8 +1,9 @@
 import subprocess
 from models.process import Process
+from utils.logger import Logger
 
 
-class ProcessGroup:
+class ProcessGroup(Logger):
     def __init__(self):
         self.processes: dict[int, Process] = {}
         self.create_fake_processes()
@@ -346,7 +347,7 @@ class ProcessGroup:
             return len(unique_terminals)
 
         except Exception as e:
-            print(f"Error checking active terminals: {e}")
+            self.logger.warning(f"Error checking active terminals: {e}")
             return 0
 
     def add_process(self, process: Process) -> None:
