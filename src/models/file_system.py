@@ -4,17 +4,25 @@ from models.file import File
 from utils.helper import get_username_by_uid
 
 
+class ParsedPath:
+    def __init__(self, path: str):
+        self.path: list[str] = path.split("/")
+        self.is_absolute: bool = path.startswith("/")
+
+    def __repr__(self):
+        return f"ParsedPath(path={self.path}, isAbsolute={self.is_absolute})"
+
+
 class FileSystem:
-    def __init__(self) -> None:
-        self.root = Directory("root")
-        self.cwd = self.root  # Current working directory
-        self.path_stack = ['root']
-
-        self.oldpwd = None              # Previous working directory (Directory object)
-        self.oldpwd_path_stack = None   # Previous path stack (list of strings)
-
+    def __init__(self, uid: int = 1000) -> None:
+        self.root: Directory = Directory(name="root", parent="/")
         self.create_fake_dir_data_helper()
 
+        self.cwd: Directory = self.get_default_cwd(uid)  # Current working directory
+        self.path_stack: str[list] = ["root"]
+
+        self.oldpwd = None  # Previous working directory (Directory object)
+        self.oldpwd_path_stack = None  # Previous path stack (list of strings)
 
     def get_default_cwd(self, uid: int = 1000) -> Directory | None:
         username = get_username_by_uid(uid)
@@ -48,17 +56,72 @@ class FileSystem:
         a_folder = a_folder.children["a"]
 
         # Add files to 'a'
-        a_folder.add(File(".bash_history", perm="-rw-------"))
-        a_folder.add(File("abc.txt", perm="-rwx-w--wx"))
-        a_folder.add(File("test_file.txt", perm="-r--r--r--"))
-        a_folder.add(File("test1.txt", perm="-rw-rw-rw-"))
-        a_folder.add(File("test2.txt", perm="-rw-r--rw-"))
-        a_folder.add(File("notes.txt", perm="-rw-r--r--"))
-        a_folder.add(File("data.csv", perm="-rw-r--r--"))
-        a_folder.add(File("protected.txt", perm="-r--r--r--"))
-        a_folder.add(Directory("b", perm="drw-r--r-x"))
-        a_folder.add(Directory("d", perm="drw-r--r-x"))
-        a_folder.add(Directory("emptydir", perm="drwxr-xr-x"))
+        a_folder.add(
+            File(
+                ".bash_history",
+                perm="-rw-------",
+            )
+        )
+        a_folder.add(
+            File(
+                "abc.txt",
+                perm="-rwx-w--wx",
+            )
+        )
+        a_folder.add(
+            File(
+                "test_file.txt",
+                perm="-r--r--r--",
+            )
+        )
+        a_folder.add(
+            File(
+                "test1.txt",
+                perm="-rw-rw-rw-",
+            )
+        )
+        a_folder.add(
+            File(
+                "test2.txt",
+                perm="-rw-r--rw-",
+            )
+        )
+        a_folder.add(
+            File(
+                "notes.txt",
+                perm="-rw-r--r--",
+            )
+        )
+        a_folder.add(
+            File(
+                "data.csv",
+                perm="-rw-r--r--",
+            )
+        )
+        a_folder.add(
+            File(
+                "protected.txt",
+                perm="-r--r--r--",
+            )
+        )
+        a_folder.add(
+            Directory(
+                "b",
+                perm="drw-r--r-x",
+            )
+        )
+        a_folder.add(
+            Directory(
+                "d",
+                perm="drw-r--r-x",
+            )
+        )
+        a_folder.add(
+            Directory(
+                "emptydir",
+                perm="drwxr-xr-x",
+            )
+        )
 
         b_folder = a_folder.children["b"]
         b_folder.add(Directory("c", perm="drw-r--r--"))
@@ -83,3 +146,27 @@ class FileSystem:
         subB.add(File("b2.txt", perm="-rw-r--r--"))
         dirB.add(subB)
         a_folder.add(dirB)
+
+    def check_directory_exists(self, path: str) -> bool:
+        directory = self.get_directory(path)
+
+        if directory is None:
+            raise ValueError(f"No file/directory exists")
+
+        return directory
+
+    def get_directory(self, path: str) -> Directory:
+        parsed_path = ParsedPath(path if path.__len__() > 0 else self.cwd.get_path())
+
+        target_dir = self.root if parsed_path.is_absolute else self.cwd
+
+        if target_dir is None:
+            raise ValueError(f"No root/cwd found!")
+
+        for path in parsed_path.path:
+            target_dir = target_dir.find_entry(path)
+
+        if target_dir is None:
+            raise ValueError(f"No file/directory exists as {parsed_path.path[-1]}")
+
+        return target_dir
