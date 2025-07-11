@@ -15,6 +15,18 @@ class FileSystem:
 
         self.create_fake_dir_data_helper()
 
+
+    def get_default_cwd(self, uid: int = 1000) -> Directory | None:
+        username = get_username_by_uid(uid)
+
+        home = self.root.children.get("home")
+        if home is None:
+            raise KeyError("Home directory does not exist in the file system.")
+        user_dir = home.children.get(username)
+        if user_dir is None:
+            raise KeyError(f"User directory '{username}' does not exist in /home.")
+        return user_dir
+
     def create_fake_dir_data_helper(self) -> None:
         # Setup fake FS environment (similar to your original)
         self.root.add(Directory("home", perm="drwxr-xr-x"))
