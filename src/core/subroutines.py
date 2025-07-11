@@ -1,6 +1,7 @@
 import os
 import time
 import errno
+import traceback
 
 from handlers.command_handler import CommandHandler
 from core.process_tracer import ProcessTracer, Process
@@ -25,14 +26,37 @@ class Subroutines(Logger):
             case "ps" | "kill" | "killall":
                 return self.process_routine(process, username)
 
-            case "cat" | "grep" | "echo" | "unzip" | "chmod" | "nano" | "vi" | "ln" | "crontab" | "touch":
+            case (
+                "cat"
+                | "grep"
+                | "echo"
+                | "unzip"
+                | "chmod"
+                | "nano"
+                | "vi"
+                | "ln"
+                | "crontab"
+                | "touch"
+            ):
                 return self.file_ops_routine(process)
 
-            case "df" | "history" | "php" | "uname" | "whoami" | "w" | "id" | "last" | "uptime":
+            case (
+                "df"
+                | "history"
+                | "php"
+                | "uname"
+                | "whoami"
+                | "w"
+                | "id"
+                | "last"
+                | "uptime"
+            ):
                 return self.system_routine(process)
 
             case _:
-                self.logger.warning(f"Subroutine for command {process.command} is not implemented yet!")
+                self.logger.warning(
+                    f"Subroutine for command {process.command} is not implemented yet!"
+                )
                 self.release_process(process.pid)
                 return
 
@@ -43,18 +67,24 @@ class Subroutines(Logger):
     def directory_routine(self, process: Process) -> None:
         try:
             full_command = process.get_full_command(process.pid)
-            raw_output = self.command_handler.invoke_directory_handler(process.command, full_command)
+            raw_output = self.command_handler.invoke_directory_handler(
+                process.command, full_command, process.cwd
+            )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
 
         except Exception as e:
-            self.logger.error(f"Error in Directory Handler: {e}")
+            self.logger.error(
+                f"Error in Directory Handler: {e}\n{traceback.format_exc()}"
+            )
             self.release_process(process.pid)
 
     def network_routine(self, process: Process) -> None:
         try:
             full_command = process.get_full_command(process.pid)
-            raw_output = self.command_handler.invoke_directory_handler(process.command, full_command)
+            raw_output = self.command_handler.invoke_directory_handler(
+                process.command, full_command
+            )
             output = self.sanitize_string(raw_output)
 
             if isinstance(output, list):  # Special case: ping or similar
@@ -66,7 +96,9 @@ class Subroutines(Logger):
                 self.inject_output(process.pid, process.ppid, output, True)
 
         except Exception as e:
-            self.logger.error(f"Error in Network Handler: {e}")
+            self.logger.error(
+                f"Error in Network Handler: {e}\n{traceback.format_exc()}"
+            )
             self.release_process(process.pid)
 
     def process_routine(self, process: Process, username: str) -> None:
@@ -79,29 +111,37 @@ class Subroutines(Logger):
             self.inject_output(process.pid, process.ppid, output, False)
 
         except Exception as e:
-            self.logger.error(f"Error in Process Handler: {e}")
+            self.logger.error(
+                f"Error in Process Handler: {e}\n{traceback.format_exc()}"
+            )
             self.release_process(process.pid)
 
     def system_routine(self, process: Process) -> None:
         try:
             full_command = process.get_full_command(process.pid)
-            raw_output = self.command_handler.invoke_system_handler(process.command, full_command)
+            raw_output = self.command_handler.invoke_system_handler(
+                process.command, full_command
+            )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
 
         except Exception as e:
-            self.logger.error(f"Error in System Handler: {e}")
+            self.logger.error(f"Error in System Handler: {e}\n{traceback.format_exc()}")
             self.release_process(process.pid)
 
     def file_ops_routine(self, process: Process) -> None:
         try:
             full_command = process.get_full_command(process.pid)
-            raw_output = self.command_handler.invoke_file_ops_handler(process.command, full_command)
+            raw_output = self.command_handler.invoke_file_ops_handler(
+                process.command, full_command
+            )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
 
         except Exception as e:
-            self.logger.error(f"Error in File Operations Handler: {e}")
+            self.logger.error(
+                f"Error in File Operations Handler: {e}\n{traceback.format_exc()}"
+            )
             self.release_process(process.pid)
 
     def sanitize_string(self, message: str) -> str:
@@ -123,12 +163,14 @@ class Subroutines(Logger):
                 fd.write(message)
 
         except FileNotFoundError:
-            print(f"[!] Cannot open {fd_path} — process might have exited.")
+            self.logger.error(f"Cannot open {fd_path} — process might have exited.")
         except OSError as e:
             if e.errno == errno.EFAULT:
-                print(f"[!] Kernel EFAULT writing to {fd_path}")
+                self.logger.critical(f"Kernel EFAULT writing to {fd_path}")
             else:
-                raise Exception(f"Error injecting output : {e}")
+                raise Exception(
+                    f"Error injecting output : {e} \n{traceback.format_exc()}"
+                )
         finally:
             fd.close()
 
