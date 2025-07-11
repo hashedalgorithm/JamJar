@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .directory import Directory
-from .file import File
+from models.file import File
 from utils.helper import get_username_by_uid
 
 
