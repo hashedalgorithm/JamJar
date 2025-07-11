@@ -26,3 +26,6 @@ class File(FileSystemEntryProperties):
 
     def rename(self, new_name: str) -> None:
         self.name = new_name
+
+    def __repr__(self) -> str:
+        return f"File(name={self.name!r}, file_type={self.file_type!r}, content={self.content!r})"
