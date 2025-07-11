@@ -53,6 +53,18 @@ class ParsedCommand:
                 return True
         return False
 
+    def group(self, type: list[ParsedArgumentType], values: set[str]):
+        group: list[ParsedArgument] = []
+        for arg in self.args:
+            if arg.type in type:
+                if "positional" != arg.type:
+                    group.append(arg)
+                    continue
+
+                if arg.name in values:
+                    group.append(arg)
+        return group
+
 
 class CommandParser:
     def __init__(self, options_with_values: Optional[List[str]] = None):
