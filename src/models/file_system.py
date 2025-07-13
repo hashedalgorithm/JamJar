@@ -6,7 +6,9 @@ from utils.helper import get_username_by_uid
 
 class ParsedPath:
     def __init__(self, path: str):
-        self.path: list[str] = path.split("/")
+        self.path: list[str] = (
+            path.split("/") if not path.startswith("/") else path.strip("/").split("/")
+        )
         self.is_absolute: bool = path.startswith("/")
 
     def __repr__(self):
