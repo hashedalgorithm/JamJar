@@ -177,6 +177,7 @@ class LS(CommandBase):
         _D: bool = False,
         _dired: bool = False,
         _F: bool = False,
+        _classify: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -186,7 +187,7 @@ class LS(CommandBase):
             "dir" if isinstance(entry, Directory) else entry.extension,
             True if _color == "never" else False,
         )
-        if _F:
+        if _F or _classify:
             name = formatter._F(name, entry.extension)
         size = (
             formatter._block_size(entry.size, _block_size)
@@ -305,6 +306,7 @@ class LS(CommandBase):
                     _C=self.parsed.find("-C"),
                     _l=self.parsed.find("-l"),
                     _F=self.parsed.find("-F"),
+                    _classify=self.parsed.find("--classify"),
                 )
             )
 
