@@ -1,9 +1,157 @@
 from models.file_system import FileSystem
 from commands.base import CommandBase
-from utils.parser import CommandParser, ParsedCommand
+from utils.parser import (
+    ParsedCommand,
+)
+from models.file import File
+from models.directory import Directory
+from typing import TypedDict, Literal
+
+
+# Types
+class MaxWidths(TypedDict):
+    perm: int
+    owner: int
+    group: int
+    author: int
+    size: int
+    month: int
+    day: int
+    time: int
+    name: int
+
+
+OptionColorLiteral = Literal["auto", "always", "never"]
+
+# Default Values
+DEFAULT_MAX_WIDTHS: MaxWidths = {
+    "perm": 13,
+    "link": 3,
+    "owner": 10,
+    "group": 10,
+    "author": 10,
+    "size": 8,
+    "month": 4,
+    "day": 3,
+    "time": 7,
+    "name": 15,
+}
+
+DEFAULT_COLORS = {
+    "default": "\033[0m",  # Reset
+    "blue": "\033[34m",  # Directory
+    "green": "\033[32m",  # Executable file
+    "cyan": "\033[36m",  # Symbolic link
+    "red": "\033[31m",  # Compressed file
+    "magenta": "\033[35m",  # Image, FIFO, Socket
+    "yellow": "\033[33m",  # Block/Character device
+    "blinking_red": "\033[5;31m",  # Blinking red for broken symbolic link
+}
 
 
 class LS(CommandBase):
+
+    filter_flags: set[str] = {
+        # Filtering Options
+        "-a",  # do not ignore entries starting with .
+        "--all",  # do not igno# -rw-r--r--  1 hashedalgorithm hashedalgorithm   807 Mar 31  2024 .profilere entries starting with .
+        "-A",  # do not list implied . and ..
+        "--almost-all",  # do not list implied . and ..
+        "--ignore-backups",  # do not list implied entries ending with ~
+        "-B",  # do not list implied entries ending with ~
+        "-f",  # same as -a -U
+    }
+
+    format_flags: set[str] = {
+        # Formatting Options
+        "-1",  # prints each item in 1 column
+        "--author",  # with -l, print the author of each file
+        "-b",  # print C-style escapes for nongraphic characters
+        "--escape",  # print C-style escapes for nongraphic characters
+        "--block-size",  # with -l, scale sizes by SIZE when printing them
+        "-c",  # with -lt: sort by, and show, ctime; with -l: show ctime and sort by name; otherwise: sort by ctime, newest first
+        "-C",  # list entries by columns
+        "--color",  # color the output WHEN
+        "-D",  # generate output designed for Emacs' dired mode
+        "--dired",  # generate output designed for Emacs' dired mode
+        "-F",  # append indicator (one of */=>@|) to entries WHEN
+        "--classify",  # append indicator (one of */=>@|) to entries WHEN
+        "--file-type",  # likewise, except do not append '*'
+        "--format",  # set output format: across, commas, horizontal, long, single-column, verbose, vertical
+        "--full-time",  # like -l --time-style=full-iso
+        "-g",  # like -l, but do not list owner
+        "--group-directories-first",  # group directories before files
+        "-G",  # in a long listing, don't print group names
+        "--no-group",  # in a long listing, don't print group names
+        "-h",  # with -l and -s, print sizes like 1K 234M 2G etc.
+        "--human-readable",  # with -l and -s, print sizes like 1K 234M 2G etc.
+        "--si",  # likewise, but use powers of 1000 not 1024
+        "-H",  # follow symbolic links listed on the command line
+        "--dereference-command-line",  # follow symbolic links listed on the command line
+        "--dereference-command-line-symlink-to-dir",  # follow each command line symbolic link that points to a directory
+        "--hide",  # do not list implied entries matching shell PATTERN
+        "--hyperlink",  # hyperlink file names WHEN
+        "--indicator-style",  # append indicator with style WORD to entry names
+        "-i",  # print the index number of each file
+        "--inode",  # print the index number of each file
+        "-I",  # do not list implied entries matching shell PATTERN
+        "--ignore",  # do not list implied entries matching shell PATTERN
+        "-k",  # default to 1024-byte blocks for file system usage
+        "--kibibytes",  # default to 1024-byte blocks for file system usage
+        "-l",  # use a long listing format
+        "-L",  # show info for the file the link references rather than for the link itself
+        "--dereference",  # show info for the file the link references rather than for the link itself
+        "-m",  # fill width with a comma separated list of entries
+        "-n",  # like -l, but list numeric user and group IDs
+        "--numeric-uid-gid",  # like -l, but list numeric user and group IDs
+        "-N",  # print entry names without quoting
+        "--literal",  # print entry names without quoting
+        "-o",  # like -l, but do not list group information
+        "-p",  # append / indicator to directories
+        "--indicator-style=slash",  # append / indicator to directories
+        "-q",  # print ? instead of nongraphic characters
+        "--hide-control-chars",  # print ? instead of nongraphic characters
+        "--show-control-chars",  # show nongraphic characters as-is
+        "-Q",  # enclose entry names in double quotes
+        "--quote-name",  # enclose entry names in double quotes
+        "--quoting-style",  # use quoting style WORD for entry names
+        "-r",  # reverse order while sorting
+        "--reverse",  # reverse order while sorting
+        "-R",  # list subdirectories recursively
+        "--recursive",  # list subdirectories recursively
+        "-s",  # print the allocated size of each file, in blocks
+        "--size",  # print the allocated size of each file, in blocks
+        "-S",  # sort by file size, largest first
+        "--sort",  # change default 'name' sort to WORD
+        "--time",  # select which timestamp used to display or sort
+        "--time-style",  # time/date format with -l
+        "-t",  # sort by time, newest first
+        "-T",  # assume tab stops at each COLS instead of 8
+        "--tabsize",  # assume tab stops at each COLS instead of 8
+        "-u",  # with -lt: sort by, and show, access time; with -l: show access time and sort by name; otherwise: sort by access time, newest first
+        "-U",  # do not sort directory entries
+        "-v",  # natural sort of (version) numbers within text
+        "-w",  # set output width to COLS. 0 means no limit
+        "--width",  # set output width to COLS. 0 means no limit
+        "-x",  # list entries by lines instead of by columns
+        "-X",  # sort alphabetically by entry extension
+        "-Z",  # print any security context of each file
+        "--context",  # print any security context of each file
+        "--zero",  # end each output line with NUL, not newline
+        "-1",  # list one file per line
+    }
+
+    sort_flags: set[str] = {
+        "-c",  # with -lt: sort by, and show, ctime; with -l: show ctime and sort by name; otherwise: sort by ctime, newest first
+    }
+
+    other_flags: set[str] = {
+        # Others
+        "-d",  # list directories themselves, not their contents
+        "--directory",  # list directories themselves, not their contents
+        "--help",  # display this help and exit
+        "--version",  # output version information and exit
+    }
 
     def __init__(
         self, file_system: FileSystem, parsed: ParsedCommand, cwd: str
@@ -13,6 +161,172 @@ class LS(CommandBase):
         self.parsed = parsed
         self.cwd = cwd
 
+    def print_entry(
+        self,
+        entry: File | Directory,
+        max_widths: MaxWidths = DEFAULT_MAX_WIDTHS,
+        _1: bool = False,
+        _author: bool = False,
+        _b: bool = False,
+        _escape: bool = False,
+        _block_size: str = "",
+        _l: bool = False,
+        _c: bool = False,
+        _C: bool = False,  # TODO
+        _color: OptionColorLiteral = "auto",
+        _D: bool = False,
+        _dired: bool = False,
+        _F: bool = False,
+        _t: bool = False,
+    ):
+        formatter = Formatter()
+        name = formatter._b(entry.name) if _b or _escape else entry.name
+        name = formatter.colorize(
+            name,
+            "dir" if isinstance(entry, Directory) else entry.extension,
+            True if _color == "never" else False,
+        )
+        if _F:
+            name = formatter._F(name, entry.extension)
+        size = (
+            formatter._block_size(entry.size, _block_size)
+            if _block_size
+            else entry.size
+        )
+        time = (
+            entry.ctime
+            if _l and _c
+            else entry.mtime if _l and _t else entry.created_time
+        )
+
+        if _D or _dired:
+            max_widths = {
+                "perm": DEFAULT_MAX_WIDTHS.get("perm") + 2,
+                "link": DEFAULT_MAX_WIDTHS.get("link") + 1,
+                "owner": DEFAULT_MAX_WIDTHS.get("owner") + 2,
+                "group": DEFAULT_MAX_WIDTHS.get("group") + 2,
+                "author": DEFAULT_MAX_WIDTHS.get("author") + 2,
+                "size": DEFAULT_MAX_WIDTHS.get("size") + 2,
+                "month": DEFAULT_MAX_WIDTHS.get("month") + 2,
+                "day": DEFAULT_MAX_WIDTHS.get("day") + 2,
+                "time": DEFAULT_MAX_WIDTHS.get("time") + 2,
+                "name": DEFAULT_MAX_WIDTHS.get("name") + 2,
+            }
+
+        link_count = entry.get_link()
+
+        if _l:
+            return f"{entry.perm:<{max_widths.get("perm")}}{link_count:<{max_widths.get("link")}}{entry.owner:<{max_widths.get("owner")}}{entry.group:<{max_widths.get("author")}}{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}{size:<{max_widths.get("size")}}{entry.created_month:<{max_widths.get("month")}}{entry.created_day:<{max_widths.get("day")}}{time:<{max_widths.get("time")}}{name:<{max_widths.get("name")}}"
+        else:
+            return f"{name:<{max_widths.get("name")}}"
+
+    def _no_args(self):
+        output = ""
+        for child in self.file_system.cwd.children.values():
+            output = (
+                output
+                + f"{self.print_entry(
+                child,
+            )}\t"
+            )
+
+        return output
+
+    def filter(self, directory: Directory) -> list[Directory | File]:
+        filtered_args = self.parsed.group(["flag"], self.filter_flags)
+
+        if filtered_args.__len__() == 0:
+            return list(
+                filter(
+                    lambda child: not child.name.startswith("."),
+                    directory.children.values(),
+                )
+            )
+
+        filtered_entries: list[Directory | File] = []
+
+        for child in directory.children.values():
+
+            atleast_one: bool = False
+            for arg in filtered_args:
+                if arg.name == "-a" or arg.name == "-all" or arg.name == "-f":
+                    atleast_one = True
+                    continue
+                if arg.name == "-A" or arg.name == "--almost-all":
+                    if not child.name.startswith("."):
+                        atleast_one = True
+                    continue
+                if arg.name == "--ignore-backups" or arg.name == "-B":
+                    if not child.name.endswith("~"):
+                        atleast_one = True
+                    continue
+
+            if atleast_one:
+                filtered_entries.append(child)
+
+        return filtered_entries
+
+    def format(self, filtered_entries: list[Directory], output: list[str]) -> list[str]:
+        filtered_args = self.parsed.group(
+            ["flag", "positional", "option"], self.format_flags
+        )
+
+        max_widths: MaxWidths = {
+            "perm": max(len(entry.perm) for entry in filtered_entries) + 2,
+            "link": max(len(str(entry.get_link())) for entry in filtered_entries) + 1,
+            "owner": max(len(entry.owner) for entry in filtered_entries) + 2,
+            "group": max(len(entry.group) for entry in filtered_entries) + 2,
+            "author": max(len(entry.owner) for entry in filtered_entries) + 2,
+            "size": max(len(str(entry.size)) for entry in filtered_entries) + 2,
+            "month": max(len(entry.created_month) for entry in filtered_entries) + 2,
+            "day": max(len(str(entry.created_day)) for entry in filtered_entries) + 2,
+            "time": max(len(entry.created_time) for entry in filtered_entries) + 2,
+            "name": max(len(entry.name) for entry in filtered_entries) + 2,
+        }
+
+        if filtered_args.__len__() == 0:
+            return []
+
+        if self.parsed.find("-l"):
+            output.append(
+                f"{self.calculate_block_size([entry.size for entry in filtered_entries])}"
+            )
+
+        for entry in filtered_entries:
+            output.append(
+                self.print_entry(
+                    entry=entry,
+                    max_widths=max_widths,
+                    _1=False,
+                    _author=self.parsed.find("--author"),
+                    _b=self.parsed.find("-b"),
+                    _escape=self.parsed.find("--escape"),
+                    _c=self.parsed.find("-c"),
+                    _C=self.parsed.find("-C"),
+                    _l=self.parsed.find("-l"),
+                    _F=self.parsed.find("-F"),
+                )
+            )
+
+    def calculate_block_size(self, file_sizes: list[int], block_size: int = 512) -> int:
+        """
+        Calculates the total block size used by a list of files.
+
+        Args:
+            file_sizes (list[int]): A list of file sizes in bytes.
+            block_size (int): The size of a single block in bytes (default is 512).
+
+        Returns:
+            int: The total number of blocks used by the files.
+        """
+        total_blocks = 0
+
+        for size in file_sizes:
+            # Calculate the number of blocks required for each file
+            blocks = (size + block_size - 1) // block_size  # Ceiling division
+            total_blocks += blocks
+
+        return f"total {total_blocks}"
 
     def run(self) -> str | None:
         output: list[str] = []
@@ -26,9 +340,16 @@ class LS(CommandBase):
         if self.parsed.find("--version"):
             return self.get_version()
 
+        positional_args = self.parsed.group(["positional"], {})
+        source_paths = [self.cwd if positional_args.__len__() == 0 else positional_args]
+
+        is_multiple_source: bool = source_paths.__len__() > 1
+
         for source_path in source_paths:
             directory = self.file_system.get_directory(source_path)
 
+            filtered_entries = self.filter(directory)
+            self.format(filtered_entries, output)
 
         return self.print(output)
 
@@ -186,3 +507,177 @@ Full documentation <https://www.gnu.org/software/coreutils/ls>
 or available locally via: info '(coreutils) ls invocation'
         """
 
+
+class Formatter:
+    def __init__(self):
+        pass
+
+    def _b(input: str) -> str:
+        """
+        Finds and replaces non-graphic characters and special Unicode characters
+        in a string with their corresponding escape sequences.
+
+        Args:
+            input_string (str): The input string to process.
+
+        Returns:
+            str: The string with non-graphic and special characters replaced by escape sequences.
+        """
+        escape_map = {
+            " ": r"\ ",  # Space
+            "\t": r"\t",  # Tab
+            "\n": r"\n",  # Newline
+            "\r": r"\r",  # Carriage return
+            "\v": r"\v",  # Vertical tab
+            "\f": r"\f",  # Form feed
+        }
+
+        escaped_string = ""
+        for char in input:
+            if char in escape_map:
+                escaped_string += escape_map[char]
+            elif ord(char) < 32 or ord(char) == 127:  # Non-printable ASCII
+                escaped_string += f"\\x{ord(char):02x}"
+            elif ord(char) > 127:  # Non-ASCII characters (e.g., Unicode)
+                for byte in char.encode("utf-8"):
+                    escaped_string += f"\\x{byte:02x}"
+            else:
+                escaped_string += char
+
+        return escaped_string
+
+    def _block_size(size_in_bytes: int, block_size: str) -> str:
+        """
+        Converts a size in bytes to a specified block size format, similar to the
+        behavior of the `--block-size` flag in the `ls` command.
+
+        Args:
+            size_in_bytes (int): The size in bytes to be converted.
+            block_size (str): The block size format. Can be one of:
+                                "K", "M", "G", "T", "P", "E" (powers of 1024),
+                                "KB", "MB", "GB", "TB", "PB", "EB" (powers of 1000),
+                                or a custom block size (e.g., "512").
+
+        Returns:
+            str: The converted size as a formatted string.
+
+        Raises:
+            ValueError: If the block size format is invalid.
+        """
+        # Define conversion factors for powers of 1024
+        power_of_1024 = {
+            "K": 1024,
+            "M": 1024**2,
+            "G": 1024**3,
+            "T": 1024**4,
+            "P": 1024**5,
+            "E": 1024**6,
+        }
+
+        # Define conversion factors for powers of 1000
+        power_of_1000 = {
+            "KB": 1000,
+            "MB": 1000**2,
+            "GB": 1000**3,
+            "TB": 1000**4,
+            "PB": 1000**5,
+            "EB": 1000**6,
+        }
+
+        # Check if the block size is a power of 1024
+        if block_size in power_of_1024:
+            converted_size = size_in_bytes / power_of_1024[block_size]
+            return f"{converted_size:.2f} {block_size}"
+
+        # Check if the block size is a power of 1000
+        elif block_size in power_of_1000:
+            converted_size = size_in_bytes / power_of_1000[block_size]
+            return f"{converted_size:.2f} {block_size}"
+
+        # Check if the block size is a custom numeric value
+        elif block_size.isdigit():
+            block_size_value = int(block_size)
+            converted_size = size_in_bytes / block_size_value
+            return f"{converted_size:.2f} (blocks of {block_size} bytes)"
+
+        # If the block size format is invalid, raise an error
+        else:
+            raise ValueError(
+                f"Invalid block size format '{block_size}'. Must be one of: "
+                f"{', '.join(power_of_1024.keys())}, {', '.join(power_of_1000.keys())}, or a numeric value."
+            )
+
+    def colorize(self, file_name: str, file_extension: str, is_neutral: bool) -> str:
+        """
+        Returns a color-formatted string based on the file type.
+
+        Args:
+            file_name (str): The name of the file.
+            file_extension (str): The extension of the file (e.g., '.txt', '.png').
+
+        Returns:
+            str: The file name wrapped in the appropriate color code.
+        """
+        if is_neutral:
+            return f"\033[0m{file_name}\033[0m"
+
+        # Determine the color based on file type
+        if file_extension in [".sh", ".exe", ".bin"]:
+            color = DEFAULT_COLORS["green"]  # Executable file
+        elif file_extension in [".tar", ".gz", ".zip", ".rar", ".7z"]:
+            color = DEFAULT_COLORS["red"]  # Compressed file
+        elif file_extension in [".png", ".jpg", ".jpeg", ".gif", ".bmp"]:
+            color = DEFAULT_COLORS["magenta"]  # Image file
+        elif file_extension in [".fifo", ".pipe"]:
+            color = DEFAULT_COLORS["magenta"]  # FIFO (named pipe)
+        elif file_extension in [".socket"]:
+            color = DEFAULT_COLORS["magenta"]  # Socket
+        elif file_extension in [".sda", ".tty"]:
+            color = DEFAULT_COLORS["yellow"]  # Block/Character device
+        elif file_extension == "symlink":
+            color = DEFAULT_COLORS["cyan"]  # Symbolic link
+        elif file_extension == "broken_symlink":
+            color = DEFAULT_COLORS["blinking_red"]  # Broken symbolic link
+        elif file_extension == "dir":
+            color = DEFAULT_COLORS["blue"]  # Directory
+        else:
+            color = DEFAULT_COLORS["default"]  # Regular file or unknown type
+
+        # Return the color-formatted string
+        return f"\033[1m{color}{file_name}\033[0m"
+
+    def _F(self, name: str, extension: str) -> str:
+        """
+        Modifies a folder/file name by appending a specific character based on its type.
+
+        Args:
+            name (str): The name of the folder or file (without extension).
+            extension (str): The file extension (e.g., "txt", "sh", "py").
+
+        Returns:
+            str: The modified name with an appended character.
+        """
+        # Define the mapping of extensions/types to appended characters
+        append_map = {
+            "dir": "/",  # For directories
+            "executable": "*",  # For executable files
+            "symlink": "@",  # For symbolic links
+            "socket": "=",  # For sockets
+            "pipe": "|",  # For named pipes
+            "txt": "",  # Regular text files (no special character)
+            "sh": "*",  # Shell scripts (executable)
+            "py": "*",  # Python scripts (executable)
+            "tar.gz": "=",  # Compressed archives
+            "zip": "=",  # Compressed archives
+        }
+
+        # Determine the type of the file/folder
+        if extension == "dir":
+            append_char = append_map["dir"]
+        elif extension in append_map:
+            append_char = append_map[extension]
+        else:
+            append_char = ""  # Default: no special character for unknown types
+
+        # Return the modified name
+        return f"{name}{append_char}"
