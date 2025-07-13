@@ -13,12 +13,16 @@ class CommandBase:
         """
         raise NotImplementedError("Subclasses must implement this method.")
 
-    def help(self) -> list[str]:
+    def get_help(self) -> list[str]:
         """
         Return help readme
         """
         raise NotImplementedError("Subclasses must implement this method")
 
-    def version(self) -> list[str]:
+    def get_version(self) -> list[str]:
         """Return version readme"""
         raise NotImplementedError("Subclasses must implement this method")
+
+    def print(self, output: list[str]) -> str:
+        """Returns single string"""
+        return "\n".join(output)
