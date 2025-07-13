@@ -512,6 +512,16 @@ or available locally via: info '(coreutils) ls invocation'
 
 
 class Formatter:
+
+    executable = [".sh", ".exe", ".bin", ".out", ".py", ".java", ".dmg"]
+    compressed = [".tar", ".gz", ".zip", ".rar", ".7z"]
+    images = [".png", ".jpg", ".jpeg", ".gif", ".bmp"]
+    pipe = [".fifo", ".pipe"]
+    socket = [".socket"]
+    other = [".sda", ".tty"]
+    symlink = ["symlink"]
+    broken_symlink = ["broken_symlink"]
+
     def __init__(self):
         pass
 
@@ -625,21 +635,21 @@ class Formatter:
             return f"\033[0m{file_name}\033[0m"
 
         # Determine the color based on file type
-        if file_extension in [".sh", ".exe", ".bin"]:
+        if file_extension in self.executable:
             color = DEFAULT_COLORS["green"]  # Executable file
-        elif file_extension in [".tar", ".gz", ".zip", ".rar", ".7z"]:
+        elif file_extension in self.compressed:
             color = DEFAULT_COLORS["red"]  # Compressed file
-        elif file_extension in [".png", ".jpg", ".jpeg", ".gif", ".bmp"]:
+        elif file_extension in self.images:
             color = DEFAULT_COLORS["magenta"]  # Image file
-        elif file_extension in [".fifo", ".pipe"]:
+        elif file_extension in self.pipe:
             color = DEFAULT_COLORS["magenta"]  # FIFO (named pipe)
-        elif file_extension in [".socket"]:
+        elif file_extension in self.socket:
             color = DEFAULT_COLORS["magenta"]  # Socket
-        elif file_extension in [".sda", ".tty"]:
+        elif file_extension in self.other:
             color = DEFAULT_COLORS["yellow"]  # Block/Character device
-        elif file_extension == "symlink":
+        elif file_extension in self.symlink:
             color = DEFAULT_COLORS["cyan"]  # Symbolic link
-        elif file_extension == "broken_symlink":
+        elif file_extension in self.broken_symlink:
             color = DEFAULT_COLORS["blinking_red"]  # Broken symbolic link
         elif file_extension == "dir":
             color = DEFAULT_COLORS["blue"]  # Directory
@@ -663,15 +673,15 @@ class Formatter:
 
         if extension == "dir":
             append_char = "/"
-        elif extension in [".sh", ".exe", ".bin", ".py"]:
+        elif extension in self.executable:
             append_char = "*"
-        elif extension in [".tar", ".gz", ".zip", ".rar", ".7z"]:
+        elif extension in self.executable:
             append_char = "="  # Compressed file
-        elif extension in [".fifo", ".pipe"]:
+        elif extension in self.pipe:
             append_char = "|"  # FIFO (named pipe)
-        elif extension in [".socket"]:
+        elif extension in self.socket:
             append_char = "="  # Socket
-        elif extension == "symlink":
+        elif extension in self.symlink:
             append_char = "@"  # Symbolic link
 
         else:
