@@ -165,8 +165,8 @@ class FileSystem:
         if target_dir is None:
             raise ValueError(f"No root/cwd found!")
 
-        for path in parsed_path.path:
-            target_dir = target_dir.find_entry(path)
+        for _path in parsed_path.path:
+            target_dir = target_dir.find_entry(_path)
 
         if target_dir is None:
             raise ValueError(f"No file/directory exists as {parsed_path.path[-1]}")
