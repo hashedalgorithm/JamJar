@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .directory import Directory
+from models.directory import Directory
 from models.file import File
 from utils.helper import get_username_by_uid
 
@@ -51,103 +51,108 @@ class FileSystem:
 
         home = self.root.children["home"]
         username = get_username_by_uid() or "user"
-        home.add(Directory(username, perm="drwxr-xr-x"))
-        a_folder = home.children[username]
 
-        a_folder.add(Directory("a", perm="drw-r--rwx"))
-        a_folder = a_folder.children["a"]
+        home.add(Directory(username, perm="drwxr-xr-x"))
+
+        user = home.children[username]
+
+        user.add(Directory(".bash_history", perm="-rw------"))
+        user.add(Directory(".bashrc", perm="-rw-r--r--"))
+        user.add(Directory(".cache", perm="drwx------"))
+        user.add(Directory("Desktop", perm="drwxr-xr-x"))
+        user.add(Directory("Documents", perm="drwxr-xr-x"))
+        user.add(Directory("Downloads", perm="drwxr-xr-x"))
+        user.add(Directory("Music", perm="drwxr-xr-x"))
+        user.add(Directory("Pictures", perm="drwxr-xr-x"))
+        user.add(Directory("Puvlic", perm="drwxr-xr-x"))
+        user.add(Directory("Templates", perm="drwxr-xr-x"))
+        user.add(Directory("Videos", perm="drwxr-xr-x"))
+        user.add(Directory(".ssh", perm="drwx------"))
+        user.add(Directory(".profile", perm="-rw-r--r--"))
+        user.add(Directory("a", perm="drw-r--rwx"))
+        user.add(Directory("b", perm="drw-r--rwx"))
+
+        a_folder = user.children["a"]
 
         # Add files to 'a'
-        a_folder.add(
-            File(
-                ".bash_history",
-                perm="-rw-------",
-            )
-        )
-        a_folder.add(
+        user.add(
             File(
                 "abc.txt",
                 perm="-rwx-w--wx",
             )
         )
-        a_folder.add(
+        user.add(
             File(
                 "test_file.txt",
                 perm="-r--r--r--",
             )
         )
-        a_folder.add(
+        user.add(
             File(
                 "test1.txt",
                 perm="-rw-rw-rw-",
             )
         )
-        a_folder.add(
+        user.add(
             File(
                 "test2.txt",
                 perm="-rw-r--rw-",
             )
         )
-        a_folder.add(
+        user.add(
             File(
                 "notes.txt",
                 perm="-rw-r--r--",
             )
         )
-        a_folder.add(
+        user.add(
             File(
                 "data.csv",
                 perm="-rw-r--r--",
             )
         )
-        a_folder.add(
+        user.add(
             File(
                 "protected.txt",
                 perm="-r--r--r--",
             )
         )
-        a_folder.add(
-            Directory(
-                "b",
-                perm="drw-r--r-x",
-            )
-        )
-        a_folder.add(
+        user.add(
             Directory(
                 "d",
                 perm="drw-r--r-x",
             )
         )
-        a_folder.add(
+        user.add(
             Directory(
                 "emptydir",
                 perm="drwxr-xr-x",
             )
         )
 
-        b_folder = a_folder.children["b"]
+        b_folder = user.children["b"]
         b_folder.add(Directory("c", perm="drw-r--r--"))
 
         mydir = Directory("mydir", perm="drwxr-xr-x")
         mydir.add(File("file_in_mydir.txt", perm="-rw-r--r--"))
-        a_folder.add(mydir)
+        user.add(mydir)
 
         myfolder = Directory("myfolder", perm="drwxr-xr-x")
         myfolder.add(File("file1.txt", perm="-rw-r--r--"))
         myfolder.add(File("file2.txt", perm="-rw-r--r--"))
-        a_folder.add(myfolder)
+        user.add(myfolder)
 
         dirA = Directory("dirA", perm="drwxr-xr-x")
         dirA.add(File("a1.txt", perm="-rw-r--r--"))
         dirA.add(File("a2.txt", perm="-rw-r--r--"))
-        a_folder.add(dirA)
+        user.add(dirA)
 
         dirB = Directory("dirB", perm="drwxr-xr-x")
         dirB.add(File("b1.txt", perm="-rw-r--r--"))
         subB = Directory("subB", perm="drwxr-xr-x")
         subB.add(File("b2.txt", perm="-rw-r--r--"))
         dirB.add(subB)
-        a_folder.add(dirB)
+        user.add(dirB)
 
     def check_directory_exists(self, path: str) -> bool:
         directory = self.get_directory(path)
