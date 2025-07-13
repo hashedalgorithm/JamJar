@@ -11,7 +11,7 @@ class Directory(FileSystemEntryProperties):
         **kwargs: Optional[dict[str, str]],
     ) -> None:
 
-        super().__init__(name=name, **kwargs)
+        super().__init__(name=name, extension="dir", **kwargs)
         self.children: dict[str, File | "Directory"] = {}
 
     def add(self, doc: File | "Directory") -> None:
