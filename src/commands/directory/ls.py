@@ -178,6 +178,7 @@ class LS(CommandBase):
         _dired: bool = False,
         _F: bool = False,
         _classify: bool = False,
+        _file_type: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -188,7 +189,7 @@ class LS(CommandBase):
             True if _color == "never" else False,
         )
         if _F or _classify:
-            name = formatter._F(name, entry.extension)
+            name = formatter._F(name, entry.extension, _file_type)
         size = (
             formatter._block_size(entry.size, _block_size)
             if _block_size
@@ -648,7 +649,7 @@ class Formatter:
         # Return the color-formatted string
         return f"\033[1m{color}{file_name}\033[0m"
 
-    def _F(self, name: str, extension: str) -> str:
+    def _F(self, name: str, extension: str, file_type: bool) -> str:
         """
         Modifies a folder/file name by appending a specific character based on its type.
 
@@ -659,27 +660,22 @@ class Formatter:
         Returns:
             str: The modified name with an appended character.
         """
-        # Define the mapping of extensions/types to appended characters
-        append_map = {
-            "dir": "/",  # For directories
-            "executable": "*",  # For executable files
-            "symlink": "@",  # For symbolic links
-            "socket": "=",  # For sockets
-            "pipe": "|",  # For named pipes
-            "txt": "",  # Regular text files (no special character)
-            "sh": "*",  # Shell scripts (executable)
-            "py": "*",  # Python scripts (executable)
-            "tar.gz": "=",  # Compressed archives
-            "zip": "=",  # Compressed archives
-        }
 
-        # Determine the type of the file/folder
         if extension == "dir":
-            append_char = append_map["dir"]
-        elif extension in append_map:
-            append_char = append_map[extension]
+            append_char = "/"
+        elif extension in [".sh", ".exe", ".bin", ".py"]:
+            append_char = "*"
+        elif extension in [".tar", ".gz", ".zip", ".rar", ".7z"]:
+            append_char = "="  # Compressed file
+        elif extension in [".fifo", ".pipe"]:
+            append_char = "|"  # FIFO (named pipe)
+        elif extension in [".socket"]:
+            append_char = "="  # Socket
+        elif extension == "symlink":
+            append_char = "@"  # Symbolic link
+
         else:
-            append_char = ""  # Default: no special character for unknown types
+            append_char = ""  # Regular file or unknown type
 
         # Return the modified name
         return f"{name}{append_char}"

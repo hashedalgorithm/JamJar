@@ -13,3 +13,12 @@ If the file exists, it will list the file. If it does not exist, you will see an
 sudo cat /sys/kernel/debug/tracing/trace_pipe
 
 echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+
+rm
+cd
+ls
+ifconfig
+ip - ongoing
+ps
+
+
