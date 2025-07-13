@@ -1,4 +1,5 @@
 import datetime
+from typing import Literal
 
 
 class FileSystemEntryProperties:
@@ -13,11 +14,11 @@ class FileSystemEntryProperties:
         size: str = 4096,
         extension: str = "",
         parent: str = "",
-        created_month: str = datetime.datetime.now().strftime("%b"),
-        created_day: str = datetime.datetime.now().strftime("%d"),
-        created_time: str = datetime.datetime.now().strftime("%H:%M"),
-        ctime: str = datetime.datetime.now().strftime("%H:%M"),
-        mtime: str = datetime.datetime.now().strftime("%H:%M"),
+        created_month: datetime = datetime.datetime.now(),
+        created_day: datetime = datetime.datetime.now(),
+        created_time: datetime = datetime.datetime.now(),
+        ctime: str = datetime.datetime.now(),
+        mtime: str = datetime.datetime.now(),
     ) -> None:
 
         self.perm: str = perm
@@ -25,18 +26,51 @@ class FileSystemEntryProperties:
         self.owner: str = owner
         self.group: str = group
         self.size: str = size
-        self.created_month: str = created_month
-        self.created_day: str = created_day
-        self.created_time: str = created_time
+        self.created_month: datetime = created_month
+        self.created_day: datetime = created_day
+        self.created_time: datetime = created_time
         self.name: str = name
         self.extension: str = extension
         self.parent: str = parent
         self.path: str = f"{name}{"." if extension else ""}{extension}"
-        self.ctime: str = (ctime,)
-        self.mtime: str = mtime
+        self.ctime: datetime = ctime
+        self.mtime: datetime = mtime
 
     def get_link(self) -> int:
         return 2
+
+    def formatted_time(
+        self,
+        attribute: Literal[
+            "created_month", "created_day", "created_time", "ctime", "mtime"
+        ],
+        format: str,
+    ) -> str:
+        if attribute == "created_month":
+            return self.created_month.strftime(format)
+        elif attribute == "created_day":
+            return self.created_day.strftime(format)
+        elif attribute == "created_time":
+            return self.created_time.strftime(format)
+        elif attribute == "ctime":
+            return self.ctime.strftime(format)
+        elif attribute == "mtime":
+            return self.mtime.strftime(format)
+
+    def get_created_day(self) -> str:
+        return self.formatted_time("created_day", "%d")
+
+    def get_created_month(self) -> str:
+        return self.formatted_time("created_month", "%b")
+
+    def get_created_time(self) -> str:
+        return self.formatted_time("created_time", "%H:%M")
+
+    def get_ctime(self) -> str:
+        return self.formatted_time("ctime", "%H:%M")
+
+    def get_mtime(self) -> str:
+        return self.formatted_time("mtime", "%H:%M")
 
     def __repr__(self) -> str:
         return (
