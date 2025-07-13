@@ -14,7 +14,7 @@ class Directory(FileSystemEntryProperties):
         super().__init__(name=name, **kwargs)
         self.children: dict[str, File | "Directory"] = {}
 
-    def add(self, doc: File) -> None:
+    def add(self, doc: File | "Directory") -> None:
         if doc.name in self.children:
             raise ValueError(f"'{doc.name}' already exists in '{self.name}'.")
         self.children[doc.name] = doc
@@ -36,7 +36,6 @@ class Directory(FileSystemEntryProperties):
 
     def find_entry(self, name: str) -> File | "Directory" | None:
         for child in self.children.values():
-            print("Find:", child.name, name)
             if child.name == name:
                 return child
         return None
