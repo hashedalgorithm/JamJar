@@ -186,6 +186,7 @@ class LS(CommandBase):
         _file_type: bool = False,
         _format: OptionFormatLiteral | None = None,
         _full_time: bool = False,
+        _g: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -230,7 +231,7 @@ class LS(CommandBase):
         if _l or _format == "long" or _format == "verbose":
             _fperm = f"{entry.perm:<{max_widths.get("perm")}}"
             _flink_count = f"{link_count:<{max_widths.get("link")}}"
-            _fowner = f"{entry.owner:<{max_widths.get("owner")}}"
+            _fowner = f"{entry.owner:<{max_widths.get("owner")}}" if not _g else ""
             _fgroup = f"{entry.group:<{max_widths.get("author")}}"
             _fauthor = (
                 f"{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}"
@@ -353,6 +354,7 @@ class LS(CommandBase):
                 _classify=self.parsed.find("--classify"),
                 _format=self.parsed.find("--format"),
                 _full_time=self.parsed.find("--full-time"),
+                _g=self.parsed.find("-g"),
             )
 
         return output
