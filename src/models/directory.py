@@ -41,5 +41,14 @@ class Directory(FileSystemEntryProperties):
                 return child
         return None
 
+    def get_link(
+        self,
+    ) -> int:
+        count = 2
+        for child in self.children.values():
+            if child.extension == "dir":
+                count += 1
+        return count
+
     def __repr__(self) -> str:
         return f"<Directory name='{self.name}' children={[child for child in self.children]}>"

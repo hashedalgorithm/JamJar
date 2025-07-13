@@ -31,6 +31,9 @@ class FileSystemEntryProperties:
         self.parent: str = parent
         self.path: str = f"{name}{"." if extension else ""}{extension}"
 
+    def get_link(self) -> int:
+        return 2
+
     def __repr__(self) -> str:
         return (
             f"FileSystemEntryProperties("

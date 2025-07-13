@@ -8,11 +8,13 @@ class File(FileSystemEntryProperties):
         name: str,
         file_type: str = "",
         content: str = "",
+        link: int = 2,
         **kwargs: Optional[dict[str, str]],
     ) -> None:
 
         super().__init__(name=name, **kwargs)
         self.content = content
+        self.link = link
         self.file_type = file_type
 
     def write(self, content: str) -> None:
