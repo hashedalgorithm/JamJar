@@ -16,6 +16,8 @@ class FileSystemEntryProperties:
         created_month: str = datetime.datetime.now().strftime("%b"),
         created_day: str = datetime.datetime.now().strftime("%d"),
         created_time: str = datetime.datetime.now().strftime("%H:%M"),
+        ctime: str = datetime.datetime.now().strftime("%H:%M"),
+        mtime: str = datetime.datetime.now().strftime("%H:%M"),
     ) -> None:
 
         self.perm: str = perm
@@ -30,6 +32,8 @@ class FileSystemEntryProperties:
         self.extension: str = extension
         self.parent: str = parent
         self.path: str = f"{name}{"." if extension else ""}{extension}"
+        self.ctime: str = (ctime,)
+        self.mtime: str = mtime
 
     def get_link(self) -> int:
         return 2
