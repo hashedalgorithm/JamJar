@@ -64,6 +64,13 @@ class ParsedCommand:
                 continue
         return group
 
+    def find(self, name: str, value: str = None) -> ParsedArgument | None:
+        for arg in self.args:
+            if arg.value == value and arg.name == name:
+                return arg
+
+        return None
+
 
 class CommandParser:
     def __init__(self, options_with_values: Optional[List[str]] = None):
