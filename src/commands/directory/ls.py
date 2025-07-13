@@ -188,6 +188,7 @@ class LS(CommandBase):
         _full_time: bool = False,
         _g: bool = False,
         _G: bool = False,
+        _no_group=False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -233,7 +234,11 @@ class LS(CommandBase):
             _fperm = f"{entry.perm:<{max_widths.get("perm")}}"
             _flink_count = f"{link_count:<{max_widths.get("link")}}"
             _fowner = f"{entry.owner:<{max_widths.get("owner")}}" if not _g else ""
-            _fgroup = f"{entry.group:<{max_widths.get("author")}}" if not _G else ""
+            _fgroup = (
+                f"{entry.group:<{max_widths.get("author")}}"
+                if not _G and not _no_group
+                else ""
+            )
             _fauthor = (
                 f"{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}"
             )
@@ -357,6 +362,7 @@ class LS(CommandBase):
                 _full_time=self.parsed.find("--full-time"),
                 _g=self.parsed.find("-g"),
                 _G=self.parsed.find("-G"),
+                _no_group=self.parsed.find("--no-group"),
             )
 
         return output
