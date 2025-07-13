@@ -57,20 +57,25 @@ class FileSystemEntryProperties:
         elif attribute == "mtime":
             return self.mtime.strftime(format)
 
-    def get_created_day(self) -> str:
-        return self.formatted_time("created_day", "%d")
+    def get_created_day(self, format: str = "%d") -> str:
+        format = format or "%d"
+        return self.formatted_time("created_day", format)
 
-    def get_created_month(self) -> str:
-        return self.formatted_time("created_month", "%b")
+    def get_created_month(self, format: str = "%b") -> str:
+        format = format or "%b"
+        return self.formatted_time("created_month", format)
 
-    def get_created_time(self) -> str:
-        return self.formatted_time("created_time", "%H:%M")
+    def get_created_time(self, format: str = "%H:%M") -> str:
+        format = format or "%H:%M"
+        return self.formatted_time("created_time", format)
 
-    def get_ctime(self) -> str:
-        return self.formatted_time("ctime", "%H:%M")
+    def get_ctime(self, format: str = "%H:%M") -> str:
+        format = format or "%H:%M"
+        return self.formatted_time("ctime", format)
 
-    def get_mtime(self) -> str:
-        return self.formatted_time("mtime", "%H:%M")
+    def get_mtime(self, format: str = "%H:%M") -> str:
+        format = format or "%H:%M"
+        return self.formatted_time("mtime", format)
 
     def __repr__(self) -> str:
         return (

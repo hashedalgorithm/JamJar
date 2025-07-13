@@ -7,6 +7,8 @@ from models.file import File
 from models.directory import Directory
 from typing import TypedDict, Literal
 
+import datetime
+
 
 # Types
 class MaxWidths(TypedDict):
@@ -35,11 +37,10 @@ DEFAULT_MAX_WIDTHS: MaxWidths = {
     "author": 10,
     "size": 8,
     "month": 4,
-    "day": 3,
+    "day": 2,
     "time": 7,
     "name": 15,
 }
-
 DEFAULT_COLORS = {
     "default": "\033[0m",  # Reset
     "blue": "\033[34m",  # Directory
@@ -50,6 +51,7 @@ DEFAULT_COLORS = {
     "yellow": "\033[33m",  # Block/Character device
     "blinking_red": "\033[5;31m",  # Blinking red for broken symbolic link
 }
+DEFAULT_FULL_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class LS(CommandBase):
@@ -183,9 +185,11 @@ class LS(CommandBase):
         _classify: bool = False,
         _file_type: bool = False,
         _format: OptionFormatLiteral | None = None,
+        _full_time: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
+
         name = formatter._b(entry.name) if _b or _escape else entry.name
         name = formatter.colorize(
             name,
@@ -194,16 +198,18 @@ class LS(CommandBase):
         )
         if _F or _classify:
             name = formatter._F(name, entry.extension, _file_type)
+
         size = (
             formatter._block_size(entry.size, _block_size)
             if _block_size
             else entry.size
         )
-        time = (
-            entry.ctime
-            if _l and _c
-            else entry.mtime if _l and _t else entry.created_time
-        )
+
+        time = entry.created_time.utcnow() if _full_time else entry.get_created_time()
+        if _l and _c:
+            time = entry.ctime.utcnow() if _full_time else entry.get_ctime()
+        elif _l and _t:
+            time = entry.mtime.utcnow() if _full_time else entry.get_mtime()
 
         if _D or _dired:
             max_widths = {
@@ -214,21 +220,41 @@ class LS(CommandBase):
                 "author": DEFAULT_MAX_WIDTHS.get("author") + 2,
                 "size": DEFAULT_MAX_WIDTHS.get("size") + 2,
                 "month": DEFAULT_MAX_WIDTHS.get("month") + 2,
-                "day": DEFAULT_MAX_WIDTHS.get("day") + 2,
-                "time": DEFAULT_MAX_WIDTHS.get("time") + 2,
+                "day": DEFAULT_MAX_WIDTHS.get("day") + 1,
+                "time": 10 if _full_time else DEFAULT_MAX_WIDTHS.get("time") + 2,
                 "name": DEFAULT_MAX_WIDTHS.get("name") + 2,
             }
 
         link_count = entry.get_link()
 
         if _l or _format == "long" or _format == "verbose":
-            return f"{entry.perm:<{max_widths.get("perm")}}{link_count:<{max_widths.get("link")}}{entry.owner:<{max_widths.get("owner")}}{entry.group:<{max_widths.get("author")}}{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}{size:<{max_widths.get("size")}}{entry.created_month:<{max_widths.get("month")}}{entry.created_day:<{max_widths.get("day")}}{time:<{max_widths.get("time")}}{name:<{max_widths.get("name")}}\n"
+            _fperm = f"{entry.perm:<{max_widths.get("perm")}}"
+            _flink_count = f"{link_count:<{max_widths.get("link")}}"
+            _fowner = f"{entry.owner:<{max_widths.get("owner")}}"
+            _fgroup = f"{entry.group:<{max_widths.get("author")}}"
+            _fauthor = (
+                f"{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}"
+            )
+            _fsize = f"{size:<{max_widths.get("size")}}"
+            _fmonth = f"{entry.get_created_month():<{max_widths.get("month")}}"
+            _fday = f"{entry.get_created_day():<{max_widths.get("day")}}"
+            _ftime = (
+                f"{str(time):<{max_widths.get("time")}}{"  " if _full_time else ""}"
+            )
+            _fname = f"{name:<{max_widths.get("name")}}"
+
+            owner_metadata = f"{_fowner}{_fgroup}{_fauthor}"
+            time_metadata = (
+                f"{f"{_fmonth}{_fday}{_ftime}" if not _full_time else _ftime}"
+            )
+
+            return f"{_fperm}{_flink_count}{owner_metadata}{_fsize}{time_metadata}{_fname}\n"
         elif _format == "commas":
-            return f"{name:<{max_widths.get("name")}},"
+            return f"{_fname},"
         elif _format == "single-column":
-            return f"{name:<{max_widths.get("name")}}\n"
+            return f"{_fname}\n"
         else:
-            return f"{name:<{max_widths.get("name")}}\t"
+            return f"{_fname}\t"
 
     def _no_args(self):
         output = ""
@@ -294,9 +320,12 @@ class LS(CommandBase):
             "group": max(len(entry.group) for entry in filtered_entries) + 2,
             "author": max(len(entry.owner) for entry in filtered_entries) + 2,
             "size": max(len(str(entry.size)) for entry in filtered_entries) + 2,
-            "month": max(len(entry.created_month) for entry in filtered_entries) + 2,
-            "day": max(len(str(entry.created_day)) for entry in filtered_entries) + 2,
-            "time": max(len(entry.created_time) for entry in filtered_entries) + 2,
+            "month": max(len(entry.get_created_month()) for entry in filtered_entries)
+            + 2,
+            "day": max(len(str(entry.get_created_day())) for entry in filtered_entries)
+            + 2,
+            "time": max(len(entry.get_created_time()) for entry in filtered_entries)
+            + 2,
             "name": max(len(entry.name) for entry in filtered_entries) + 2,
         }
 
@@ -323,6 +352,7 @@ class LS(CommandBase):
                 _F=self.parsed.find("-F"),
                 _classify=self.parsed.find("--classify"),
                 _format=self.parsed.find("--format"),
+                _full_time=self.parsed.find("--full-time"),
             )
 
         return output
