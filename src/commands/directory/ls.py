@@ -22,6 +22,9 @@ class MaxWidths(TypedDict):
 
 
 OptionColorLiteral = Literal["auto", "always", "never"]
+OptionFormatLiteral = Literal[
+    "across", "commas", "horizontal", "long", "single-column", "verbose", "vertical"
+]
 
 # Default Values
 DEFAULT_MAX_WIDTHS: MaxWidths = {
@@ -179,6 +182,7 @@ class LS(CommandBase):
         _F: bool = False,
         _classify: bool = False,
         _file_type: bool = False,
+        _format: OptionFormatLiteral | None = None,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -217,10 +221,14 @@ class LS(CommandBase):
 
         link_count = entry.get_link()
 
-        if _l:
-            return f"{entry.perm:<{max_widths.get("perm")}}{link_count:<{max_widths.get("link")}}{entry.owner:<{max_widths.get("owner")}}{entry.group:<{max_widths.get("author")}}{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}{size:<{max_widths.get("size")}}{entry.created_month:<{max_widths.get("month")}}{entry.created_day:<{max_widths.get("day")}}{time:<{max_widths.get("time")}}{name:<{max_widths.get("name")}}"
+        if _l or _format == "long" or _format == "verbose":
+            return f"{entry.perm:<{max_widths.get("perm")}}{link_count:<{max_widths.get("link")}}{entry.owner:<{max_widths.get("owner")}}{entry.group:<{max_widths.get("author")}}{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}{size:<{max_widths.get("size")}}{entry.created_month:<{max_widths.get("month")}}{entry.created_day:<{max_widths.get("day")}}{time:<{max_widths.get("time")}}{name:<{max_widths.get("name")}}\n"
+        elif _format == "commas":
+            return f"{name:<{max_widths.get("name")}},"
+        elif _format == "single-column":
+            return f"{name:<{max_widths.get("name")}}\n"
         else:
-            return f"{name:<{max_widths.get("name")}}"
+            return f"{name:<{max_widths.get("name")}}\t"
 
     def _no_args(self):
         output = ""
@@ -268,9 +276,15 @@ class LS(CommandBase):
 
         return filtered_entries
 
-    def format(self, filtered_entries: list[Directory], output: list[str]) -> list[str]:
+    def format(self, filtered_entries: list[Directory]) -> list[str]:
+        output = ""
         filtered_args = self.parsed.group(
             ["flag", "positional", "option"], self.format_flags
+        )
+
+        is_long = self.parsed.find("-l") or (
+            self.parsed.find("--format")
+            and self.parsed.find("--format").value in ["verbose", "long"]
         )
 
         max_widths: MaxWidths = {
@@ -289,27 +303,29 @@ class LS(CommandBase):
         if filtered_args.__len__() == 0:
             return []
 
-        if self.parsed.find("-l"):
-            output.append(
-                f"{self.calculate_block_size([entry.size for entry in filtered_entries])}"
+        if is_long:
+            output = output + (
+                f"{self.calculate_block_size([entry.size for entry in filtered_entries])}\n"
             )
 
         for entry in filtered_entries:
-            output.append(
-                self.print_entry(
-                    entry=entry,
-                    max_widths=max_widths,
-                    _1=False,
-                    _author=self.parsed.find("--author"),
-                    _b=self.parsed.find("-b"),
-                    _escape=self.parsed.find("--escape"),
-                    _c=self.parsed.find("-c"),
-                    _C=self.parsed.find("-C"),
-                    _l=self.parsed.find("-l"),
-                    _F=self.parsed.find("-F"),
-                    _classify=self.parsed.find("--classify"),
-                )
+
+            output = output + self.print_entry(
+                entry=entry,
+                max_widths=max_widths,
+                _1=False,
+                _author=self.parsed.find("--author"),
+                _b=self.parsed.find("-b"),
+                _escape=self.parsed.find("--escape"),
+                _c=self.parsed.find("-c"),
+                _C=self.parsed.find("-C"),
+                _l=self.parsed.find("-l"),
+                _F=self.parsed.find("-F"),
+                _classify=self.parsed.find("--classify"),
+                _format=self.parsed.find("--format"),
             )
+
+        return output
 
     def calculate_block_size(self, file_sizes: list[int], block_size: int = 512) -> int:
         """
@@ -352,7 +368,7 @@ class LS(CommandBase):
             directory = self.file_system.get_directory(source_path)
 
             filtered_entries = self.filter(directory)
-            self.format(filtered_entries, output)
+            output.append(self.format(filtered_entries))
 
         return self.print(output)
 
