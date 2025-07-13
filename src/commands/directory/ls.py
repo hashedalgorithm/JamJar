@@ -85,7 +85,6 @@ class LS(CommandBase):
         "--format",  # set output format: across, commas, horizontal, long, single-column, verbose, vertical
         "--full-time",  # like -l --time-style=full-iso
         "-g",  # like -l, but do not list owner
-        "--group-directories-first",  # group directories before files
         "-G",  # in a long listing, don't print group names
         "--no-group",  # in a long listing, don't print group names
         "-h",  # with -l and -s, print sizes like 1K 234M 2G etc.
@@ -148,6 +147,7 @@ class LS(CommandBase):
 
     sort_flags: set[str] = {
         "-c",  # with -lt: sort by, and show, ctime; with -l: show ctime and sort by name; otherwise: sort by ctime, newest first
+        "--group-directories-first",  # group directories before files
     }
 
     other_flags: set[str] = {
@@ -187,6 +187,7 @@ class LS(CommandBase):
         _format: OptionFormatLiteral | None = None,
         _full_time: bool = False,
         _g: bool = False,
+        _G: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -232,7 +233,7 @@ class LS(CommandBase):
             _fperm = f"{entry.perm:<{max_widths.get("perm")}}"
             _flink_count = f"{link_count:<{max_widths.get("link")}}"
             _fowner = f"{entry.owner:<{max_widths.get("owner")}}" if not _g else ""
-            _fgroup = f"{entry.group:<{max_widths.get("author")}}"
+            _fgroup = f"{entry.group:<{max_widths.get("author")}}" if not _G else ""
             _fauthor = (
                 f"{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}"
             )
@@ -355,6 +356,7 @@ class LS(CommandBase):
                 _format=self.parsed.find("--format"),
                 _full_time=self.parsed.find("--full-time"),
                 _g=self.parsed.find("-g"),
+                _G=self.parsed.find("-G"),
             )
 
         return output
