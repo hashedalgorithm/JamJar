@@ -22,9 +22,9 @@ class CommandHandler(Logger):
         self.file_ops_handler = FileOpsHandler()
         self.system_handler = SystemHandler()
 
-    def invoke_directory_handler(self, command: str, full_command: str):
-        self.logger.info(f"Captured - {command}")
-        return self.directory_handler.handle(command, full_command)
+    def invoke_directory_handler(self, command: str, full_command: str, cwd: str):
+        self.logger.info(f"Captured - {command} at {cwd}")
+        return self.directory_handler.handle(command, full_command, cwd)
 
     def invoke_network_handler(self, command: str, full_command: str):
         self.logger.info(f"Captured - {command}")

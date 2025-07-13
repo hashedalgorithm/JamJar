@@ -66,7 +66,7 @@ class DirectoryHandler(Logger):
             "rmdir": [],
         }
 
-    def handle(self, command: str, full_command: str) -> str | None:
+    def handle(self, command: str, full_command: str, cwd: str) -> str | None:
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:
@@ -79,7 +79,7 @@ class DirectoryHandler(Logger):
                 return cp.run()
 
             case "ls":
-                ls = LS(self.file_system, parsed)
+                ls = LS(self.file_system, parsed, cwd)
                 return ls.run()
 
             case "mkdir":
@@ -99,5 +99,7 @@ class DirectoryHandler(Logger):
                 return rmdir.run()
 
             case _:
-                print(f"Command '{command}' not recognized by DirectoryHandler.")
+                self.logger.error(
+                    f"Command '{command}' not recognized by DirectoryHandler."
+                )
                 return None
