@@ -1,31 +1,29 @@
-from models.file_system import Directory, FileSystem
-from utils.parser import CommandParser, ParsedCommand
+from utils.parser import ParsedCommand
 from commands.base import CommandBase
+from models.file_system import FileSystem, Directory
 
 
 class CD(CommandBase):
-    def __init__(self, file_system: FileSystem) -> None:
+    def __init__(self, file_system: FileSystem, parsed: ParsedCommand) -> None:
         super().__init__("cd")
         self.file_system = file_system
-        self.parser = CommandParser()
-
-    def run(self, full_command: str) -> str | None:
-        parsed: ParsedCommand = self.parser.parse(full_command)
-
+        self.parsed = parsed
+        
+    def run(self) -> str | None:
         valid_flags = {"-@", "-L", "-P", "-e", "--help"}
 
         # Validate flags/options presence
-        if not parsed.has_only_valid_args(valid_flags, set()):
+        if not self.parsed.has_only_valid_args(valid_flags, set()):
             invalid_flags = [
-                arg.name for arg in parsed.args if arg.type == "flag" and arg.name not in valid_flags
+                arg.name for arg in self.parsed.args if arg.type == "flag" and arg.name not in valid_flags
             ]
             return (
                 f"bash: cd: {invalid_flags[0]}: invalid option\n"
                 "cd: usage: cd [-L|[-P [-e]] [-@]] [dir]"
             )
 
-        flags = [arg.name for arg in parsed.args if arg.type == "flag"]
-        positional_args = [arg.value for arg in parsed.args if arg.type == "positional"]
+        flags = [arg.name for arg in self.parsed.args if arg.type == "flag"]
+        positional_args = [arg.value for arg in self.parsed.args if arg.type == "positional"]
 
         # Too many positional args error
         if len(positional_args) > 1:
@@ -87,7 +85,7 @@ Returns 0 if the directory is changed, and if $PWD is set successfully when
         input_path = positional_args[0] if positional_args else "~"
 
         # Handle special token "-" (OLDPWD)
-        for arg in parsed.args:
+        for arg in self.parsed.args:
             if arg.type == "special" and arg.value == "-":
                 if hasattr(self.file_system, "oldpwd") and self.file_system.oldpwd:
                     # swap cwd and oldpwd
