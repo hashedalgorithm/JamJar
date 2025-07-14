@@ -189,6 +189,7 @@ class LS(CommandBase):
         _g: bool = False,
         _G: bool = False,
         _no_group=False,
+        _h: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -205,7 +206,7 @@ class LS(CommandBase):
         size = (
             formatter._block_size(entry.size, _block_size)
             if _block_size
-            else entry.size
+            else formatter._h(entry.size)
         )
 
         time = entry.created_time.utcnow() if _full_time else entry.get_created_time()
@@ -231,6 +232,9 @@ class LS(CommandBase):
         if _full_time:
             max_widths["time"] = 28
 
+        if _h:
+            max_widths["size"] = 8
+
         link_count = entry.get_link()
 
         if _l or _format == "long" or _format == "verbose":
@@ -245,7 +249,7 @@ class LS(CommandBase):
             _fauthor = (
                 f"{f"{entry.owner:<{max_widths.get("owner")}}" if _author else ""}"
             )
-            _fsize = f"{size:<{max_widths.get("size")}}"
+            _fsize = f"{str(size):<{max_widths.get("size")}}"
             _fmonth = f"{entry.get_created_month():<{max_widths.get("month")}}"
             _fday = f"{entry.get_created_day():<{max_widths.get("day")}}"
             _ftime = f"{str(time):<{max_widths.get("time")}}"
@@ -364,6 +368,7 @@ class LS(CommandBase):
                 _g=self.parsed.find("-g"),
                 _G=self.parsed.find("-G"),
                 _no_group=self.parsed.find("--no-group"),
+                _h=self.parsed.find("-h"),
             )
 
         return output
@@ -746,3 +751,26 @@ class Formatter:
 
         # Return the modified name
         return f"{name}{append_char}"
+
+    def _h(self, size: int) -> str:
+        """
+        Converts a size in bytes to a human-readable format (e.g., KB, MB, GB).
+
+        Args:
+            size_in_bytes (int): The size in bytes.
+
+        Returns:
+            str: The size in a human-readable format with appropriate units.
+        """
+        # Define the units and their corresponding thresholds
+        units = ["B", "KB", "MB", "GB", "TB", "PB", "EB"]
+        size = float(size)  # Convert to float for division
+
+        # Iterate through the units, dividing the size until it's less than 1024
+        for unit in units:
+            if size < 1024:
+                return f"{size:.1f} {unit}"  # Format with 1 decimal place
+            size /= 1024  # Divide by 1024 to move to the next unit
+
+        # If the size is extremely large, return it in the largest unit (EB)
+        return f"{size:.1f} {units[-1]}"
