@@ -13,6 +13,12 @@ class CommandBase:
         """
         raise NotImplementedError("Subclasses must implement this method.")
 
+    def default(self):
+        """
+        Return default behaviour of the command without any args
+        """
+        raise NotImplementedError("Subclasses must implement this method.")
+
     def get_help(self) -> list[str]:
         """
         Return help readme

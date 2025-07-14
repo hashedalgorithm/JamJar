@@ -16,12 +16,12 @@ class WHOAMI(CommandBase):
         self.parsed = parsed
         self.user: User = user
 
-    def _no_args(self) -> str:
+    def default(self) -> str:
         return self.user.username
 
     def run(self) -> str | None:
         if self.parsed.args.__len__() == 0:
-            return self._no_args()
+            return self.default()
 
         if self.parsed.find("--help"):
             return self.get_help()
@@ -29,7 +29,7 @@ class WHOAMI(CommandBase):
         if self.parsed.find("--version"):
             return self.get_version()
 
-        return self._no_args()
+        return self.default()
 
     def get_help(self) -> list[str]:
         return f"""

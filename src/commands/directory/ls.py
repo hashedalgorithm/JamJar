@@ -275,7 +275,7 @@ class LS(CommandBase):
         else:
             return f"{name}\t"
 
-    def _no_args(self):
+    def default(self):
         output = ""
         for child in self.file_system.cwd.children.values():
             output = (
@@ -406,7 +406,7 @@ class LS(CommandBase):
         output: list[str] = []
 
         if self.parsed.args.__len__() == 0:
-            return self._no_args()
+            return self.default()
 
         if self.parsed.find("--help"):
             return self.get_help()
