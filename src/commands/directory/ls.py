@@ -269,11 +269,11 @@ class LS(CommandBase):
 
             return f"{_fperm}{_flink_count}{owner_metadata}{_fsize}{time_metadata}{_fname}\n"
         elif _format == "commas":
-            return f"{_fname},"
+            return f"{name},"
         elif _format == "single-column":
-            return f"{_fname}\n"
+            return f"{name}\n"
         else:
-            return f"{_fname}\t"
+            return f"{name}\t"
 
     def _no_args(self):
         output = ""
