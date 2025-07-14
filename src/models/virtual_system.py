@@ -16,7 +16,7 @@ class VirtualSystem:
     def get_terminal(self, id: int) -> Terminal:
         return self.terminals.get(id)
 
-    def get_user(self, uid: int) -> User:
+    def get_user(self, uid: int) -> User | None:
         return self.users.get(uid)
 
     def __repr__(self):

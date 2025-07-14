@@ -24,7 +24,7 @@ class CommandHandler(Logger):
             process_group=self.virtual_system.process_group
         )
         self.file_ops_handler = FileOpsHandler()
-        self.system_handler = SystemHandler()
+        self.system_handler = SystemHandler(virutal_system=self.virtual_system)
 
     def sync_virtual_system(self, id: int, uid: int) -> None:
         is_terminal_exists = self.virtual_system.terminals.is_exists(id)
@@ -62,6 +62,6 @@ class CommandHandler(Logger):
         self.logger.info(f"Captured - {command}")
         return self.file_ops_handler.handle(command, full_command)
 
-    def invoke_system_handler(self, command: str, full_command: str):
-        self.logger.info(f"Captured - {command}")
-        return self.system_handler.handle(command, full_command)
+    def invoke_system_handler(self, command: str, full_command: str, uid: int):
+        self.logger.info(f"{uid} : Captured - {command} ")
+        return self.system_handler.handle(command, full_command, uid)

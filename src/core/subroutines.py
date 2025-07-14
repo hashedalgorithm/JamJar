@@ -128,7 +128,7 @@ class Subroutines(Logger):
             self.sync_terminals(process)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_system_handler(
-                process.command, full_command
+                process.command, full_command, process.uid
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)

@@ -1,6 +1,6 @@
 from utils.logger import Logger
 from utils.parser import CommandParser
-
+from models.virtual_system import VirtualSystem
 from commands.system.df import DF
 from commands.system.history import HISTORY
 from commands.system.id import ID
@@ -13,22 +13,31 @@ from commands.system.whoami import WHOAMI
 
 
 class SystemHandler(Logger):
-    def __init__(self) -> None:
+    def __init__(self, virutal_system: VirtualSystem) -> None:
         super().__init__()
         self.parser = CommandParser()
+        self.virtual_system = virutal_system
         self.command_options_map = {
             "df": ["-T", "--type", "--output"],
             "history": [],
             "id": [],
             "last": ["-n", "--limit"],
-            "php": ["-f", "-r", "--define", "--php-ini", "--syntax-check", "--file", "--run"],
+            "php": [
+                "-f",
+                "-r",
+                "--define",
+                "--php-ini",
+                "--syntax-check",
+                "--file",
+                "--run",
+            ],
             "uname": [],
             "uptime": [],
             "w": [],
-            "whoami": []
+            "whoami": [],
         }
 
-    def handle(self, command: str, full_command: str):
+    def handle(self, command: str, full_command: str, uid: int):
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:
@@ -49,7 +58,12 @@ class SystemHandler(Logger):
                 return uname.run()
 
             case "whoami":
-                whoami = WHOAMI(parsed)
+                user = self.virtual_system.get_user(uid)
+
+                if not user:
+                    raise Exception("Can't find the user!")
+
+                whoami = WHOAMI(user, parsed)
                 return whoami.run()
 
             case "w":
