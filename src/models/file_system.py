@@ -72,51 +72,14 @@ class FileSystem:
         user.add(Directory("a", perm="drw-r--rwx"))
         user.add(Directory("b", perm="drw-r--rwx"))
 
-        a_folder = user.children["a"]
-
         # Add files to 'a'
-        user.add(
-            File(
-                "abc.txt",
-                perm="-rwx-w--wx",
-            )
-        )
-        user.add(
-            File(
-                "test_file.txt",
-                perm="-r--r--r--",
-            )
-        )
-        user.add(
-            File(
-                "test1.txt",
-                perm="-rw-rw-rw-",
-            )
-        )
-        user.add(
-            File(
-                "test2.txt",
-                perm="-rw-r--rw-",
-            )
-        )
-        user.add(
-            File(
-                "notes.txt",
-                perm="-rw-r--r--",
-            )
-        )
-        user.add(
-            File(
-                "data.csv",
-                perm="-rw-r--r--",
-            )
-        )
-        user.add(
-            File(
-                "protected.txt",
-                perm="-r--r--r--",
-            )
-        )
+        user.add(File("abc.txt", perm="-rwx-w--wx", size=0))
+        user.add(File("test_file.txt", perm="-r--r--r--", size=0))
+        user.add(File("test1.txt", perm="-rw-rw-rw-", size=0))
+        user.add(File("test2.txt", perm="-rw-r--rw-", size=0))
+        user.add(File("notes.txt", perm="-rw-r--r--", size=0))
+        user.add(File("data.csv", perm="-rw-r--r--", size=0))
+        user.add(File("protected.txt", perm="-r--r--r--", size=0))
         user.add(
             Directory(
                 "d",
@@ -134,23 +97,23 @@ class FileSystem:
         b_folder.add(Directory("c", perm="drw-r--r--"))
 
         mydir = Directory("mydir", perm="drwxr-xr-x")
-        mydir.add(File("file_in_mydir.txt", perm="-rw-r--r--"))
+        mydir.add(File("file_in_mydir.txt", perm="-rw-r--r--", size=0))
         user.add(mydir)
 
         myfolder = Directory("myfolder", perm="drwxr-xr-x")
-        myfolder.add(File("file1.txt", perm="-rw-r--r--"))
-        myfolder.add(File("file2.txt", perm="-rw-r--r--"))
+        myfolder.add(File("file1.txt", perm="-rw-r--r--", size=0))
+        myfolder.add(File("file2.txt", perm="-rw-r--r--", size=0))
         user.add(myfolder)
 
         dirA = Directory("dirA", perm="drwxr-xr-x")
-        dirA.add(File("a1.txt", perm="-rw-r--r--"))
-        dirA.add(File("a2.txt", perm="-rw-r--r--"))
+        dirA.add(File("a1.txt", perm="-rw-r--r--", size=0))
+        dirA.add(File("a2.txt", perm="-rw-r--r--", size=0))
         user.add(dirA)
 
         dirB = Directory("dirB", perm="drwxr-xr-x")
-        dirB.add(File("b1.txt", perm="-rw-r--r--"))
+        dirB.add(File("b1.txt", perm="-rw-r--r--", size=0))
         subB = Directory("subB", perm="drwxr-xr-x")
-        subB.add(File("b2.txt", perm="-rw-r--r--"))
+        subB.add(File("b2.txt", perm="-rw-r--r--", size=0))
         dirB.add(subB)
         user.add(dirB)
 
