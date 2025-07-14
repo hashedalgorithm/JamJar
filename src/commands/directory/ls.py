@@ -190,6 +190,7 @@ class LS(CommandBase):
         _G: bool = False,
         _no_group=False,
         _h: bool = False,
+        _human_readable: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -206,7 +207,7 @@ class LS(CommandBase):
         size = (
             formatter._block_size(entry.size, _block_size)
             if _block_size
-            else formatter._h(entry.size)
+            else entry.size
         )
 
         time = entry.created_time.utcnow() if _full_time else entry.get_created_time()
@@ -232,8 +233,9 @@ class LS(CommandBase):
         if _full_time:
             max_widths["time"] = 28
 
-        if _h:
+        if _h or _human_readable:
             max_widths["size"] = 8
+            size = formatter._h(entry.size)
 
         link_count = entry.get_link()
 
@@ -368,6 +370,7 @@ class LS(CommandBase):
                 _g=self.parsed.find("-g"),
                 _G=self.parsed.find("-G"),
                 _no_group=self.parsed.find("--no-group"),
+                _human_readable=self.parsed.find("--human-readable"),
                 _h=self.parsed.find("-h"),
             )
 
