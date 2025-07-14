@@ -224,9 +224,12 @@ class LS(CommandBase):
                 "size": DEFAULT_MAX_WIDTHS.get("size") + 2,
                 "month": DEFAULT_MAX_WIDTHS.get("month") + 2,
                 "day": DEFAULT_MAX_WIDTHS.get("day") + 1,
-                "time": 10 if _full_time else DEFAULT_MAX_WIDTHS.get("time") + 2,
+                "time": DEFAULT_MAX_WIDTHS.get("time") + 2,
                 "name": DEFAULT_MAX_WIDTHS.get("name") + 2,
             }
+
+        if _full_time:
+            max_widths["time"] = 28
 
         link_count = entry.get_link()
 
@@ -245,9 +248,7 @@ class LS(CommandBase):
             _fsize = f"{size:<{max_widths.get("size")}}"
             _fmonth = f"{entry.get_created_month():<{max_widths.get("month")}}"
             _fday = f"{entry.get_created_day():<{max_widths.get("day")}}"
-            _ftime = (
-                f"{str(time):<{max_widths.get("time")}}{"  " if _full_time else ""}"
-            )
+            _ftime = f"{str(time):<{max_widths.get("time")}}"
             _fname = f"{name:<{max_widths.get("name")}}"
 
             owner_metadata = f"{_fowner}{_fgroup}{_fauthor}"
