@@ -40,6 +40,11 @@ class SystemHandler(Logger):
     def handle(self, command: str, full_command: str, uid: int):
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
+        user = self.virtual_system.get_user(uid)
+
+        if not user:
+            raise Exception("Can't find the user!")
+
         match command:
             case "df":
                 df = DF(parsed)
@@ -58,11 +63,6 @@ class SystemHandler(Logger):
                 return uname.run()
 
             case "whoami":
-                user = self.virtual_system.get_user(uid)
-
-                if not user:
-                    raise Exception("Can't find the user!")
-
                 whoami = WHOAMI(user, parsed)
                 return whoami.run()
 
