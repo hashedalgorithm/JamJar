@@ -189,5 +189,4 @@ class Subroutines(Logger):
         else:
             self.logger.info(f"No output found to inject for pid - {pid}")
 
-        self.logger.info(f"Killing process {pid} after writing message.")
         self.process_tracer.kill(pid)
