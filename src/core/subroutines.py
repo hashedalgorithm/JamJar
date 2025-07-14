@@ -64,8 +64,13 @@ class Subroutines(Logger):
         self.process_tracer.resume(pid)
         self.process_tracer.detach(pid)
 
+    def sync_terminals(self, process: Process) -> None:
+        id = process.tty.split("/")[-1]
+        self.command_handler.sync_virtual_system(id=id, uid=process.uid)
+
     def directory_routine(self, process: Process) -> None:
         try:
+            self.sync_terminals(process)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_directory_handler(
                 process.command, full_command, process.cwd
@@ -81,6 +86,7 @@ class Subroutines(Logger):
 
     def network_routine(self, process: Process) -> None:
         try:
+            self.sync_terminals(process)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_directory_handler(
                 process.command, full_command
@@ -103,6 +109,7 @@ class Subroutines(Logger):
 
     def process_routine(self, process: Process, username: str) -> None:
         try:
+            self.sync_terminals(process)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_process_handler(
                 process.command, full_command, process.tty, username
@@ -118,6 +125,7 @@ class Subroutines(Logger):
 
     def system_routine(self, process: Process) -> None:
         try:
+            self.sync_terminals(process)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_system_handler(
                 process.command, full_command
@@ -131,6 +139,7 @@ class Subroutines(Logger):
 
     def file_ops_routine(self, process: Process) -> None:
         try:
+            self.sync_terminals(process)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_file_ops_handler(
                 process.command, full_command

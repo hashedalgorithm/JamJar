@@ -3,9 +3,9 @@ from handlers.network_handler import NetworkHandler
 from handlers.process_handler import ProcessHandler
 from handlers.file_ops_handler import FileOpsHandler
 from handlers.system_handler import SystemHandler
-from models.file_system import FileSystem
-from models.process_group import ProcessGroup
-from models.network_system import NetworkSystem
+from models.virtual_system import VirtualSystem
+from models.terminals import Terminal
+from models.users import User
 from utils.logger import Logger
 
 
@@ -13,14 +13,36 @@ class CommandHandler(Logger):
 
     def __init__(self) -> None:
         super().__init__()
-        self.file_system = FileSystem()
-        self.process_group = ProcessGroup()
-        self.network_system = NetworkSystem()
-        self.directory_handler = DirectoryHandler(file_system=self.file_system)
-        self.network_handler = NetworkHandler(network_system=self.network_system)
-        self.process_handler = ProcessHandler(process_group=self.process_group)
+        self.virtual_system = VirtualSystem()
+        self.directory_handler = DirectoryHandler(
+            file_system=self.virtual_system.file_system
+        )
+        self.network_handler = NetworkHandler(
+            network_system=self.virtual_system.network_system
+        )
+        self.process_handler = ProcessHandler(
+            process_group=self.virtual_system.process_group
+        )
         self.file_ops_handler = FileOpsHandler()
         self.system_handler = SystemHandler()
+
+    def sync_virtual_system(self, id: int, uid: int) -> None:
+        is_terminal_exists = self.virtual_system.terminals.is_exists(id)
+        is_user_exists = self.virtual_system.users.is_exists(uid)
+
+        if not is_terminal_exists:
+            self.logger.info(f"New terminal captured, running on uid: {uid}!")
+            self.virtual_system.terminals.add(
+                Terminal(
+                    id=id,
+                    cwd=self.virtual_system.file_system.get_default_cwd(uid),
+                    uid=uid,
+                )
+            )
+
+        if not is_user_exists:
+            self.logger.info(f"New user - {uid} is active")
+            self.virtual_system.users.add(User(uid=uid))
 
     def invoke_directory_handler(self, command: str, full_command: str, cwd: str):
         self.logger.info(f"Captured - {command} at {cwd}")
