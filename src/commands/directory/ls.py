@@ -191,6 +191,7 @@ class LS(CommandBase):
         _no_group=False,
         _h: bool = False,
         _human_readable: bool = False,
+        _si: bool = False,
         _t: bool = False,
     ):
         formatter = Formatter()
@@ -236,6 +237,10 @@ class LS(CommandBase):
         if _h or _human_readable:
             max_widths["size"] = 8
             size = formatter._h(entry.size)
+
+        if _si:
+            max_widths["size"] = 8
+            size = formatter._h(entry.size, 1000)
 
         link_count = entry.get_link()
 
@@ -372,6 +377,7 @@ class LS(CommandBase):
                 _no_group=self.parsed.find("--no-group"),
                 _human_readable=self.parsed.find("--human-readable"),
                 _h=self.parsed.find("-h"),
+                _si=self.parsed.find("--si"),
             )
 
         return output
@@ -755,7 +761,7 @@ class Formatter:
         # Return the modified name
         return f"{name}{append_char}"
 
-    def _h(self, size: int) -> str:
+    def _h(self, size: int, power: int = 1024) -> str:
         """
         Converts a size in bytes to a human-readable format (e.g., KB, MB, GB).
 
@@ -771,9 +777,9 @@ class Formatter:
 
         # Iterate through the units, dividing the size until it's less than 1024
         for unit in units:
-            if size < 1024:
+            if size < power:
                 return f"{size:.1f} {unit}"  # Format with 1 decimal place
-            size /= 1024  # Divide by 1024 to move to the next unit
+            size /= power  # Divide by power to move to the next unit
 
         # If the size is extremely large, return it in the largest unit (EB)
         return f"{size:.1f} {units[-1]}"
