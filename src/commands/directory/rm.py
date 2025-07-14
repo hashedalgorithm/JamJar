@@ -1,7 +1,6 @@
 from models.file_system import FileSystem, Directory, File
-from utils.parser import ParsedCommand, ParsedArgument
+from utils.parser import ParsedCommand, ParsedArgument, CommandParser
 from commands.base import CommandBase
-from utils.parser import CommandParser
 
 class RM(CommandBase):
     def __init__(self, file_system: FileSystem, parsed: ParsedCommand) -> None:
