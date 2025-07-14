@@ -5,6 +5,7 @@ from handlers.file_ops_handler import FileOpsHandler
 from handlers.system_handler import SystemHandler
 from models.virtual_system import VirtualSystem
 from models.terminals import Terminal
+from models.groups import Group
 from models.users import User
 from utils.logger import Logger
 
@@ -26,9 +27,10 @@ class CommandHandler(Logger):
         self.file_ops_handler = FileOpsHandler()
         self.system_handler = SystemHandler(virutal_system=self.virtual_system)
 
-    def sync_virtual_system(self, id: int, uid: int) -> None:
+    def sync_virtual_system(self, id: int, uid: int, gid: int) -> None:
         is_terminal_exists = self.virtual_system.terminals.is_exists(id)
         is_user_exists = self.virtual_system.users.is_exists(uid)
+        is_user_group_exists = self.virtual_system.groups.is_exists(gid)
 
         if not is_terminal_exists:
             self.logger.info(f"New terminal captured, running on uid: {uid}!")
@@ -43,6 +45,11 @@ class CommandHandler(Logger):
         if not is_user_exists:
             self.logger.info(f"New user - {uid} is active")
             self.virtual_system.users.add(User(uid=uid))
+
+        if not is_user_group_exists:
+            self.logger.info(f"New Group - {gid} is created")
+            user = self.virtual_system.users.get(uid)
+            self.virtual_system.groups.add(Group(gid, group_username=user.username))
 
     def invoke_directory_handler(self, command: str, full_command: str, cwd: str):
         self.logger.info(f"Captured - {command} at {cwd}")

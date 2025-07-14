@@ -1,4 +1,5 @@
 from models.users import User, Users
+from models.groups import Group, Groups
 from models.terminals import Terminals, Terminal
 from models.file_system import FileSystem
 from models.process_group import ProcessGroup
@@ -8,6 +9,7 @@ from models.network_system import NetworkSystem
 class VirtualSystem:
     def __init__(self):
         self.users: Users = Users()
+        self.groups: Groups = Groups()
         self.file_system: FileSystem = FileSystem()
         self.terminals: Terminals = Terminals(file_system=self.file_system)
         self.process_group = ProcessGroup()

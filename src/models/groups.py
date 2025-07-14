@@ -27,12 +27,10 @@ class Group:
     def __init_by_uid__(self, uid: int):
         self.gid: int = self.get_gid_by_uid(uid)
         self.group_username: str = getgrgid(self.gid).gr_name
-        self.users = [uid]
 
     def __init_by_gid__(self, gid: int, group_username: str):
         self.gid: int = gid
         self.group_username: str = group_username
-        self.users = []
 
     def get_gid_by_uid(self, uid):
         try:

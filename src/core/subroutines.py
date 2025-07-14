@@ -66,7 +66,9 @@ class Subroutines(Logger):
 
     def sync_terminals(self, process: Process) -> None:
         id = process.tty.split("/")[-1]
-        self.command_handler.sync_virtual_system(id=id, uid=process.uid)
+        self.command_handler.sync_virtual_system(
+            id=id, uid=process.uid, gid=process.gid
+        )
 
     def directory_routine(self, process: Process) -> None:
         try:
