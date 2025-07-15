@@ -7,6 +7,7 @@ from handlers.command_handler import CommandHandler
 from core.process_tracer import ProcessTracer, Process
 from utils.logger import Logger
 from core.exceptions import DelegateProcess
+from models.terminals import Terminal
 
 
 class Subroutines(Logger):
@@ -65,18 +66,23 @@ class Subroutines(Logger):
         self.process_tracer.resume(pid)
         self.process_tracer.detach(pid)
 
-    def sync_terminals(self, process: Process) -> None:
-        id = process.tty.split("/")[-1]
+    def sync_terminals(self, process: Process, terminal: Terminal) -> None:
+
         self.command_handler.sync_virtual_system(
-            id=id, uid=process.uid, gid=process.gid
+            id=terminal.id, uid=process.uid, gid=process.gid
         )
 
     def directory_routine(self, process: Process) -> None:
         try:
-            self.sync_terminals(process)
+            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
+            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_directory_handler(
-                process.command, full_command, process.cwd
+                command=process.command,
+                full_command=full_command,
+                uid=process.uid,
+                tty=terminal.tty,
+                cwd=terminal.cwd,
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
@@ -92,10 +98,12 @@ class Subroutines(Logger):
 
     def network_routine(self, process: Process) -> None:
         try:
-            self.sync_terminals(process)
+            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
+            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
-            raw_output = self.command_handler.invoke_directory_handler(
-                process.command, full_command
+            raw_output = self.command_handler.invoke_network_handler(
+                process.command,
+                full_command,
             )
             output = self.sanitize_string(raw_output)
 
@@ -118,7 +126,8 @@ class Subroutines(Logger):
 
     def process_routine(self, process: Process, username: str) -> None:
         try:
-            self.sync_terminals(process)
+            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
+            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_process_handler(
                 process.command, full_command, process.tty, username
@@ -137,7 +146,8 @@ class Subroutines(Logger):
 
     def system_routine(self, process: Process) -> None:
         try:
-            self.sync_terminals(process)
+            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
+            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_system_handler(
                 process.command, full_command, process.uid, process.gid
@@ -154,10 +164,11 @@ class Subroutines(Logger):
 
     def file_ops_routine(self, process: Process) -> None:
         try:
-            self.sync_terminals(process)
+            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
+            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_file_ops_handler(
-                process.command, full_command
+                process.command, full_command, process.cwd
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
