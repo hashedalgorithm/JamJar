@@ -1,15 +1,13 @@
-from models.users import User, Users
-from models.groups import Group, Groups
 from models.terminals import Terminals, Terminal
 from models.file_system import FileSystem
 from models.process_group import ProcessGroup
 from models.network_system import NetworkSystem
+from models.user_manager import UserManager
 
 
 class VirtualSystem:
     def __init__(self):
-        self.users: Users = Users()
-        self.groups: Groups = Groups()
+        self.user_manager: UserManager = UserManager()
         self.file_system: FileSystem = FileSystem()
         self.terminals: Terminals = Terminals(file_system=self.file_system)
         self.process_group = ProcessGroup()
@@ -18,8 +16,5 @@ class VirtualSystem:
     def get_terminal(self, id: int) -> Terminal:
         return self.terminals.get(id)
 
-    def get_user(self, uid: int) -> User | None:
-        return self.users.get(uid)
-
     def __repr__(self):
-        return f"Virtual System ( users: {len(self.users)}; terminals: {len(self.terminals)} )"
+        return f"Virtual System ( users: {len(self.user_manager.users)}; terminals: {len(self.terminals)} )"

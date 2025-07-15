@@ -47,30 +47,32 @@ class Groups:
         self.groups: dict[int, Group] = {}
 
         for group_username, gid in DEFAULT_USER_GROUPS.items():
-            self.add(Group(gid=gid, group_username=group_username))
+            self.add_group(Group(gid=gid, group_username=group_username))
 
-    def get(self, gid: int) -> Group | None:
+    def get_group(self, gid: int) -> Group | None:
+        print(self.groups)
         return self.groups.get(gid)
 
-    def add(self, group: Group) -> None:
-        if self.get(group.gid):
+    def add_group(self, group: Group) -> None:
+        if self.get_group(group.gid):
             raise ValueError(f"Group with GID '{group.gid}' already exists!")
 
         self.groups[group.gid] = group
 
-    def delete(self, gid: int) -> None:
+    def delete_group(self, gid: int) -> None:
 
-        if not self.get(gid):
+        if not self.get_group(gid):
             raise ValueError(f"User with UID '{gid}' does not exist!")
 
         del self.groups[gid]
 
-    def is_exists(self, gid: int) -> bool:
-        group = self.get(gid)
+    def is_group_exists(self, gid: int) -> bool:
+        group = self.get_group(gid)
 
+        print(group)
         return bool(group)
 
-    def list_uid(self) -> list[int]:
+    def list_gid(self) -> list[int]:
         return [group.gid for group in self.groups.values()]
 
     def __repr__(self):

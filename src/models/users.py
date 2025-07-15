@@ -42,26 +42,26 @@ class User:
 
 class Users:
     def __init__(self, users: dict[int, User] = {}):
-        self.users = users
+        self.users: dict[int, User] = users
 
-    def get(self, uid: int) -> User | None:
+    def get_user(self, uid: int) -> User | None:
         return self.users.get(uid)
 
-    def add(self, user: User) -> None:
-        if self.get(user.uid):
+    def add_user(self, user: User) -> None:
+        if self.get_user(user.uid):
             raise ValueError(f"User with UID '{user.uid}' already exists!")
 
         self.users[user.uid] = user
 
-    def delete(self, uid: int) -> None:
+    def delete_user(self, uid: int) -> None:
 
-        if not self.get(uid):
+        if not self.get_user(uid):
             raise ValueError(f"User with UID '{uid}' does not exist!")
 
         del self.users[uid]
 
-    def is_exists(self, uid: int) -> bool:
-        user = self.get(uid)
+    def is_user_exists(self, uid: int) -> bool:
+        user = self.get_user(uid)
 
         return bool(user)
 

@@ -29,8 +29,9 @@ class CommandHandler(Logger):
 
     def sync_virtual_system(self, id: int, uid: int, gid: int) -> None:
         is_terminal_exists = self.virtual_system.terminals.is_exists(id)
-        is_user_exists = self.virtual_system.users.is_exists(uid)
-        is_user_group_exists = self.virtual_system.groups.is_exists(gid)
+        is_user_exists, is_group_exists = (
+            self.virtual_system.user_manager.is_user_and_group_exists(uid, gid)
+        )
 
         if not is_terminal_exists:
             self.logger.info(f"New terminal captured, running on uid: {uid}!")
@@ -44,12 +45,14 @@ class CommandHandler(Logger):
 
         if not is_user_exists:
             self.logger.info(f"New user - {uid} is active")
-            self.virtual_system.users.add(User(uid=uid))
+            self.virtual_system.user_manager.add_user(User(uid=uid))
 
-        if not is_user_group_exists:
+        if not is_group_exists:
             self.logger.info(f"New Group - {gid} is created")
-            user = self.virtual_system.users.get(uid)
-            self.virtual_system.groups.add(Group(gid, group_username=user.username))
+            user = self.virtual_system.user_manager.get_user(uid)
+            self.virtual_system.user_manager.add_group(
+                Group(gid=gid, group_username=user.username)
+            )
 
     def invoke_directory_handler(self, command: str, full_command: str, cwd: str):
         self.logger.info(f"Captured - {command} at {cwd}")
