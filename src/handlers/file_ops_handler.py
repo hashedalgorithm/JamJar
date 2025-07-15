@@ -22,12 +22,59 @@ class FileOpsHandler(Logger):
             "chmod": ["--reference"],
             "crontab": ["-u"],
             "echo": [],
-            "grep": ["-e", "--regexp", "-f", "--file", "-m", "--max-count", "--label", "--binary-files", "-d", "--directories", "-D", "--devices", "--include", "--exclude", "--exclude-from", "--exclude-dir", "-B", "--before-context", "-A", "--after-context", "-C", "--context", "--group-separator", "--color", "--colour"],
+            "grep": [
+                "-e",
+                "--regexp",
+                "-f",
+                "--file",
+                "-m",
+                "--max-count",
+                "--label",
+                "--binary-files",
+                "-d",
+                "--directories",
+                "-D",
+                "--devices",
+                "--include",
+                "--exclude",
+                "--exclude-from",
+                "--exclude-dir",
+                "-B",
+                "--before-context",
+                "-A",
+                "--after-context",
+                "-C",
+                "--context",
+                "--group-separator",
+                "--color",
+                "--colour",
+            ],
             "ln": ["--backup", "-S", "--suffix", "-t", "--target-directory"],
-            "nano": ["-C", "--backupdir", "-J", "--guidestripe", "-Q", "--quotestr", "-T", "--tabsize", "-X", "--wordchars", "-Y", "--syntax", "-f", "--rcfile", "-o", "--operatingdir", "-r", "--fill", "-s", "--speller"],
+            "nano": [
+                "-C",
+                "--backupdir",
+                "-J",
+                "--guidestripe",
+                "-Q",
+                "--quotestr",
+                "-T",
+                "--tabsize",
+                "-X",
+                "--wordchars",
+                "-Y",
+                "--syntax",
+                "-f",
+                "--rcfile",
+                "-o",
+                "--operatingdir",
+                "-r",
+                "--fill",
+                "-s",
+                "--speller",
+            ],
             "touch": ["-d", "--date", "-r", "--reference", "--time"],
             "unzip": ["-O", "-I"],
-            "vi": ["-T", "-u", "--cmd", "-c", "-S", "-s", "-w", "-W"]
+            "vi": ["-T", "-u", "--cmd", "-c", "-S", "-s", "-w", "-W"],
         }
 
     def handle(self, command: str, full_command: str) -> str | None:
@@ -75,5 +122,7 @@ class FileOpsHandler(Logger):
                 return crontab.run()
 
             case _:
-                print(f"Command '{command}' not recognized by FileOpsHandler.")
+                self.logger.error(
+                    f"Command '{command}' not recognized by FileOpsHandler."
+                )
                 return None

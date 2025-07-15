@@ -50,7 +50,6 @@ class Groups:
             self.add_group(Group(gid=gid, group_username=group_username))
 
     def get_group(self, gid: int) -> Group | None:
-        print(self.groups)
         return self.groups.get(gid)
 
     def add_group(self, group: Group) -> None:
@@ -69,7 +68,6 @@ class Groups:
     def is_group_exists(self, gid: int) -> bool:
         group = self.get_group(gid)
 
-        print(group)
         return bool(group)
 
     def list_gid(self) -> list[int]:

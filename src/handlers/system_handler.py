@@ -85,5 +85,7 @@ class SystemHandler(Logger):
                 return uptime.run()
 
             case _:
-                print(f"Command '{command}' not recognized by SystemHandler.")
+                self.logger.error(
+                    f"Command '{command}' not recognized by SystemHandler."
+                )
                 return None

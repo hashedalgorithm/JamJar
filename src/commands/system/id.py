@@ -40,27 +40,28 @@ class ID(CommandBase):
         self.gid = gid
 
     def print_entry(self) -> str:
-        # user = self.user_manager.get_user()
+        user = self.user_manager.get_user(self.uid)
+        group = self.user_manager.get_group(self.gid)
 
-        # uid = f"uid={self.user.uid}({self.user.username}"
-        # gid = f"gid={self.user.gid}({self.group.group_username})"
-        # groups = f"groups="
+        _uid = f"uid={user.uid}({user.username}"
+        _gid = f"gid={user.gid}({group.group_username})"
+        _groups = f"groups="
 
-        # for group in self.user.groups:
-        #     pass
+        for gid in user.groups:
+            if _groups != "groups=":
+                _group += ","
 
-        return f")"
+            group = self.user_manager.get_group(gid)
+
+            _groups += f"{group.gid}({group.group_username})"
+
+        return f"{_uid} {_gid} {_groups}"
 
     def default(self):
-        # uid=1000(hashedalgorithm) gid=1000(hashedalgorithm)
-        # groups=1000(hashedalgorithm),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),100(users),114(lpadmin)
-
-        # output = f"uid:{self.user.uid}({self.user.username})"
-
-        return f"vankam di mappale"
+        return self.print_entry()
 
     def run(self) -> str | None:
-        output: list[str] = ["vada yen machi"]
+        output: list[str] = []
 
         if len(self.parsed.args) == 0:
             return self.print(self.default())
