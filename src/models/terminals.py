@@ -12,21 +12,20 @@ class Terminal:
     def __init__(
         self,
         id: int,
-        cwd: Directory,
+        cwd: str,
         uid: int,
         type: TerminalType = "pts",
     ):
         self.id: int = id
         self.uid: int = uid
-        self.cwd: Directory = cwd
+        self.cwd: str = cwd
         self.type: TerminalType = type
         self.name: str = f"{type}/{id}"
 
 
 class Terminals:
-    def __init__(self, file_system: FileSystem, terminals: dict[int, Terminal] = {}):
+    def __init__(self, terminals: dict[int, Terminal] = {}):
         self.terminals = terminals
-        self.file_system = file_system
 
     def get(self, id: int) -> Terminal | None:
         return self.terminals.get(id)
