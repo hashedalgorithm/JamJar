@@ -18,11 +18,19 @@ class User:
         gid: int | None = None,
         username: str | None = None,
         groups: list[int] = DEFAULT_USER_GROUPS,
+        terminals: list[int] = [],
     ):
         self.uid: int = uid
         self.gid: int = gid if gid else getpwuid(uid).pw_gid
         self.username: str = username if username else self.get_username_by_uid(uid)
         self.groups: list[int] = groups
+        self.terminals: list[int] = terminals
+
+    def add_terminal(self, id: int) -> None:
+        if id in self.terminals:
+            raise ValueError(f"Terminal - {id} already active for user {self.uid}")
+
+        self.terminals.append(int)
 
     def get_username_by_uid(self, uid):
         try:

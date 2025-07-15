@@ -1,6 +1,4 @@
 from typing import Literal
-from models.file_system import FileSystem
-from models.directory import Directory
 
 TerminalType = Literal[
     "pts"  # Pesudo terminals,
@@ -11,16 +9,24 @@ TerminalType = Literal[
 class Terminal:
     def __init__(
         self,
-        id: int,
         cwd: str,
         uid: int,
+        id: int | None = None,
         type: TerminalType = "pts",
+        tty: str | None = None,
     ):
-        self.id: int = id
+        if id and tty:
+            raise ValueError("Either only id or tty should be present!")
+
+        _id = id if id else self.extract_id_from_tty(tty)
+        self.id: int = _id
         self.uid: int = uid
         self.cwd: str = cwd
         self.type: TerminalType = type
-        self.name: str = f"{type}/{id}"
+        self.tty: str = tty if tty else f"{type}/{_id}"
+
+    def extract_id_from_tty(self, tty: str) -> int:
+        return int(tty.split("/")[-1])
 
 
 class Terminals:

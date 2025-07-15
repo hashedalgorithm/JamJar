@@ -9,7 +9,7 @@ class VirtualSystem:
     def __init__(self):
         self.user_manager: UserManager = UserManager()
         self.file_system: FileSystem = FileSystem()
-        self.terminals: Terminals = Terminals(file_system=self.file_system)
+        self.terminals: Terminals = Terminals()
         self.process_group = ProcessGroup()
         self.network_system = NetworkSystem()
 
