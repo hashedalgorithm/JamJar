@@ -102,8 +102,11 @@ class Subroutines(Logger):
             self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_network_handler(
-                process.command,
-                full_command,
+                command=process.command,
+                full_command=full_command,
+                uid=process.uid,
+                tty=terminal.tty,
+                cwd=terminal.cwd,
             )
             output = self.sanitize_string(raw_output)
 
@@ -130,7 +133,12 @@ class Subroutines(Logger):
             self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_process_handler(
-                process.command, full_command, process.tty, username
+                command=process.command,
+                full_command=full_command,
+                uid=process.uid,
+                pid=process.pid,
+                tty=terminal.tty,
+                cwd=terminal.cwd,
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
@@ -144,31 +152,17 @@ class Subroutines(Logger):
             )
             self.release_process(process.pid)
 
-    def system_routine(self, process: Process) -> None:
-        try:
-            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
-            self.sync_terminals(process, terminal)
-            full_command = process.get_full_command(process.pid)
-            raw_output = self.command_handler.invoke_system_handler(
-                process.command, full_command, process.uid, process.gid
-            )
-            output = self.sanitize_string(raw_output)
-            self.inject_output(process.pid, process.ppid, output, False)
-
-        except DelegateProcess as e:
-            self.logger.info(f"Delegating process - {process.pid} to the system..")
-            self.release_process(process.pid)
-        except Exception as e:
-            self.logger.error(f"Error in System Handler: {e}\n{traceback.format_exc()}")
-            self.release_process(process.pid)
-
     def file_ops_routine(self, process: Process) -> None:
         try:
             terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
             self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_file_ops_handler(
-                process.command, full_command, process.cwd
+                command=process.command,
+                full_command=full_command,
+                uid=process.uid,
+                tty=terminal.tty,
+                cwd=terminal.cwd,
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
@@ -180,6 +174,29 @@ class Subroutines(Logger):
             self.logger.error(
                 f"Error in File Operations Handler: {e}\n{traceback.format_exc()}"
             )
+            self.release_process(process.pid)
+
+    def system_routine(self, process: Process) -> None:
+        try:
+            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
+            self.sync_terminals(process, terminal)
+            full_command = process.get_full_command(process.pid)
+            raw_output = self.command_handler.invoke_system_handler(
+                command=process.command,
+                full_command=full_command,
+                uid=process.uid,
+                gid=process.gid,
+                tty=terminal.tty,
+                cwd=terminal.cwd,
+            )
+            output = self.sanitize_string(raw_output)
+            self.inject_output(process.pid, process.ppid, output, False)
+
+        except DelegateProcess as e:
+            self.logger.info(f"Delegating process - {process.pid} to the system..")
+            self.release_process(process.pid)
+        except Exception as e:
+            self.logger.error(f"Error in System Handler: {e}\n{traceback.format_exc()}")
             self.release_process(process.pid)
 
     def sanitize_string(self, message: str) -> str:

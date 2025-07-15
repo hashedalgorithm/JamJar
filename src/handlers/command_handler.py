@@ -58,28 +58,47 @@ class CommandHandler(Logger):
                 Group(gid=gid, group_username=user.username)
             )
 
+    def log_command_details(self, command: str, uid: int, tty: str, cwd: str) -> None:
+        self.logger.info(f"{uid} : Captured - {command} at {tty}:{cwd}")
+
     def invoke_directory_handler(
         self, command: str, full_command: str, uid: int, tty: str, cwd: str
     ):
-        self.logger.info(f"{uid} : Captured - {command} at {tty}:{cwd}")
+        self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
         return self.directory_handler.handle(command, full_command, cwd)
 
-    def invoke_network_handler(self, command: str, full_command: str):
-        self.logger.info(f"Captured - {command}")
+    def invoke_network_handler(
+        self, command: str, full_command: str, uid: int, tty: str, cwd: str
+    ):
+        self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
         return self.network_handler.handle(command, full_command)
 
     def invoke_process_handler(
-        self, command: str, full_command: str, tty: int, pid: int
+        self,
+        command: str,
+        full_command: str,
+        uid: int,
+        pid: int,
+        tty: int,
+        cwd: str,
     ):
-        self.logger.info(f"Captured - {command}")
+        self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
         return self.process_handler.handle(command, full_command, tty=tty, pid=pid)
 
-    def invoke_file_ops_handler(self, command: str, full_command: str, cwd: str):
-        self.logger.info(f"Captured - {command}")
+    def invoke_file_ops_handler(
+        self, command: str, full_command: str, uid: int, tty: str, cwd: str
+    ):
+        self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
         return self.file_ops_handler.handle(command, full_command, cwd)
 
     def invoke_system_handler(
-        self, command: str, full_command: str, uid: int, gid: int
+        self,
+        command: str,
+        full_command: str,
+        uid: int,
+        gid: int,
+        tty: str,
+        cwd: str,
     ):
-        self.logger.info(f"{uid} : Captured - {command} ")
+        self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
         return self.system_handler.handle(command, full_command, uid, gid)
