@@ -22,7 +22,7 @@ class Process(Logger):
         self.cwd = cwd if cwd is not None else self.get_current_working_directory(pid)
         self.uid = uid if uid is not None else self.get_uid(pid)
         self.ppid = ppid if ppid is not None else self.get_ppid(pid)
-        self.gid = gid if gid is not None else self.get_gid(gid)
+        self.gid = gid if gid is not None else self.get_gid(pid)
 
     def read_file(self, path: str) -> str | None:
         try:
@@ -105,12 +105,9 @@ class Process(Logger):
         content = self.read_file(f"/proc/{pid}/status")
 
         if content:
-            for line in content:
+            for line in content.splitlines():
                 if line.startswith("Gid:"):
-                    gid = int(line.split()[1])
-                    return gid
-
-            raise ValueError(f"GID not found in status")
+                    return int(line.split()[1])  # Extract the GID
 
         return None
 
