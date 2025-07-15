@@ -3,9 +3,10 @@ from models.file_system import FileSystem, Directory
 from utils.parser import ParsedCommand, ParsedArgument
 from commands.base import CommandBase
 
+
 class RM(CommandBase):
     def __init__(self, file_system: FileSystem, parsed: ParsedCommand) -> None:
-        super().__init__("rm")
+        super().__init__("rm", "9.4")
         self.file_system = file_system
         self.parsed = parsed
 
@@ -21,27 +22,10 @@ class RM(CommandBase):
 
         # Handle --version and --help
         if "--version" in flags:
-            return (
-                "rm (GNU coreutils) 9.4\n"
-                "Copyright (C) 2023 Free Software Foundation, Inc.\n"
-                "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
-                "This is free software: you are free to change and redistribute it.\n"
-                "There is NO WARRANTY, to the extent permitted by law.\n\n"
-                "Written by Paul Rubin, David MacKenzie, Richard M. Stallman,\n"
-                "and Jim Meyering.\n"
-            )
+            return self.get_version()
 
         if "--help" in flags:
-            return (
-                "Usage: rm [OPTION]... [FILE]...\n"
-                "Remove (unlink) the FILE(s).\n\n"
-                "  -f, --force           ignore nonexistent files and arguments, never prompt\n"
-                "  -r, -R, --recursive   remove directories and their contents recursively\n"
-                "  -d, --dir             remove empty directories\n"
-                "  -v, --verbose         explain what is being done\n"
-                "      --help            display this help and exit\n"
-                "      --version         output version information and exit\n"
-            )
+            return self.get_help()
 
         recursive = "-r" in flags or "-R" in flags or "--recursive" in flags
         force = "-f" in flags or "--force" in flags
@@ -54,13 +38,17 @@ class RM(CommandBase):
             target = self.file_system.cwd.children.get(name)
             if not target:
                 if not force:
-                    outputs.append(f"rm: cannot remove '{name}': No such file or directory")
+                    outputs.append(
+                        f"rm: cannot remove '{name}': No such file or directory"
+                    )
                 continue
 
             if isinstance(target, Directory):
                 if dir_only:
                     if target.children:
-                        outputs.append(f"rm: cannot remove '{name}': Directory not empty")
+                        outputs.append(
+                            f"rm: cannot remove '{name}': Directory not empty"
+                        )
                         continue
                     del self.file_system.cwd.children[name]
                     if verbose:
@@ -80,6 +68,7 @@ class RM(CommandBase):
                     outputs.append(f"removed '{name}'")
 
         return "\n".join(outputs) if outputs else None
+
 
 # ---------- Inline test harness ----------
 

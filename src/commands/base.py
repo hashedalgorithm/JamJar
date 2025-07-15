@@ -1,9 +1,12 @@
+from core.exceptions import DelegateProcess
+
+
 class CommandBase:
     """
     Base class for all commands.
     """
 
-    def __init__(self, name: str, version: str = "v0"):
+    def __init__(self, name: str, version: str = "9.4"):
         self.name = name
         self.version: str = version
 
@@ -23,11 +26,11 @@ class CommandBase:
         """
         Return help readme
         """
-        raise NotImplementedError("Subclasses must implement this method")
+        raise DelegateProcess()
 
     def get_version(self) -> list[str]:
         """Return version readme"""
-        raise NotImplementedError("Subclasses must implement this method")
+        raise DelegateProcess()
 
     def print(self, output: list[str]) -> str:
         """Returns single string"""

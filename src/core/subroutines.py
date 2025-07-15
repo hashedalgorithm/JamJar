@@ -6,6 +6,7 @@ import traceback
 from handlers.command_handler import CommandHandler
 from core.process_tracer import ProcessTracer, Process
 from utils.logger import Logger
+from core.exceptions import DelegateProcess
 
 
 class Subroutines(Logger):
@@ -80,6 +81,9 @@ class Subroutines(Logger):
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
 
+        except DelegateProcess as e:
+            self.logger.info(f"Delegating process - {process.pid} to the system..")
+            self.release_process(process.pid)
         except Exception as e:
             self.logger.error(
                 f"Error in Directory Handler: {e}\n{traceback.format_exc()}"
@@ -103,6 +107,9 @@ class Subroutines(Logger):
             else:
                 self.inject_output(process.pid, process.ppid, output, True)
 
+        except DelegateProcess as e:
+            self.logger.info(f"Delegating process - {process.pid} to the system..")
+            self.release_process(process.pid)
         except Exception as e:
             self.logger.error(
                 f"Error in Network Handler: {e}\n{traceback.format_exc()}"
@@ -119,6 +126,9 @@ class Subroutines(Logger):
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
 
+        except DelegateProcess as e:
+            self.logger.info(f"Delegating process - {process.pid} to the system..")
+            self.release_process(process.pid)
         except Exception as e:
             self.logger.error(
                 f"Error in Process Handler: {e}\n{traceback.format_exc()}"
@@ -135,6 +145,9 @@ class Subroutines(Logger):
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
 
+        except DelegateProcess as e:
+            self.logger.info(f"Delegating process - {process.pid} to the system..")
+            self.release_process(process.pid)
         except Exception as e:
             self.logger.error(f"Error in System Handler: {e}\n{traceback.format_exc()}")
             self.release_process(process.pid)
@@ -149,6 +162,9 @@ class Subroutines(Logger):
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
 
+        except DelegateProcess as e:
+            self.logger.info(f"Delegating process - {process.pid} to the system..")
+            self.release_process(process.pid)
         except Exception as e:
             self.logger.error(
                 f"Error in File Operations Handler: {e}\n{traceback.format_exc()}"
