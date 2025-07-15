@@ -6,9 +6,10 @@ class UserManager(Users, Groups):
     def __init__(self):
         Users.__init__(self)
         Groups.__init__(self)
+        self.whitelisted_users = []
+        self.blacklisted_users = []
 
     def add(self, uid: int) -> None:
-
         self.add_user(User(uid))
         self.add_group(Group(uid))
 
