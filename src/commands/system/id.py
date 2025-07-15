@@ -49,7 +49,7 @@ class ID(CommandBase):
 
         for gid in user.groups:
             if _groups != "groups=":
-                _group += ","
+                _groups += ","
 
             group = self.user_manager.get_group(gid)
 
@@ -57,15 +57,16 @@ class ID(CommandBase):
 
         return f"{_uid} {_gid} {_groups}"
 
-    def default(self):
+    def default(self) -> str:
         return self.print_entry()
 
     def run(self) -> str | None:
         output: list[str] = []
 
         if len(self.parsed.args) == 0:
-            return self.print(self.default())
+            return self.default()
 
+        output.append(self.print_entry())
         return self.print(output)
 
     def get_version(self):
