@@ -28,6 +28,9 @@ class Terminal:
     def extract_id_from_tty(self, tty: str) -> int:
         return int(tty.split("/")[-1])
 
+    def set_cwd(self, path: str) -> None:
+        self.cwd = path
+
 
 class Terminals:
     def __init__(self, terminals: dict[int, Terminal] = {}):
