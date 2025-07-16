@@ -31,21 +31,25 @@ class CommandHandler(Logger):
             user_manager=self.virtual_system.user_manager
         )
 
-    def sync_virtual_system(self, id: int, uid: int, gid: int) -> None:
-        is_terminal_exists = self.virtual_system.terminals.is_exists(id)
+    def sync_virtual_system(self, id: int, uid: int, gid: int, cwd: str) -> None:
+        terminal = self.virtual_system.terminals.get(id)
         is_user_exists, is_group_exists = (
             self.virtual_system.user_manager.is_user_and_group_exists(uid, gid)
         )
 
-        if not is_terminal_exists:
+        if not terminal:
             self.logger.info(f"New terminal captured, running on uid: {uid}!")
             self.virtual_system.terminals.add(
                 Terminal(
                     id=id,
-                    cwd=self.virtual_system.file_system.get_default_cwd(uid).get_path(),
+                    cwd=cwd,
                     uid=uid,
                 )
             )
+        else:
+            if terminal.cwd != cwd:
+                self.logger.info(f"cwd of {terminal.tty} is changed to {cwd}")
+                self.virtual_system.terminals.set_cwd(id=id, path=cwd)
 
         if not is_user_exists:
             self.logger.info(f"New user captured! - {uid} is active")
