@@ -47,6 +47,14 @@ class Terminals:
 
         self.terminals[terminal.id] = terminal
 
+    def set_cwd(self, id: int, path: str) -> None:
+        terminal = self.terminals.get(id)
+
+        if not terminal:
+            raise ValueError(f"Terminal not found!")
+
+        terminal.set_cwd(path)
+
     def delete(self, id: int) -> None:
 
         is_exists = self.get(id)
