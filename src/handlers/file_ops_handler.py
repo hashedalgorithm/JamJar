@@ -85,7 +85,9 @@ class FileOpsHandler(Logger):
         parsed = self.parser.parse(full_command)
         match command:
             case "touch":
-                touch = TOUCH(parsed, self.file_system, terminal.cwd)
+                touch = TOUCH(
+                    parsed=parsed, file_system=self.file_system, terminal=terminal
+                )
                 return touch.run()
 
             case "cat":
