@@ -57,6 +57,9 @@ class ParsedCommand:
         group: list[ParsedArgument] = []
         for arg in self.args:
             if arg.type in type:
+                if arg.type == "positional":
+                    group.append(arg)
+                    continue
 
                 if arg.name in values or arg.value in values:
                     group.append(arg)
