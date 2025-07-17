@@ -13,8 +13,5 @@ class VirtualSystem:
         self.process_group = ProcessGroup()
         self.network_system = NetworkSystem()
 
-    def get_terminal(self, id: int) -> Terminal:
-        return self.terminals.get(id)
-
     def __repr__(self):
         return f"Virtual System ( users: {len(self.user_manager.users)}; terminals: {len(self.terminals)} )"
