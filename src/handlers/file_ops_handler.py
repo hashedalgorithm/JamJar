@@ -1,5 +1,6 @@
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.file_system import FileSystem
 from models.terminals import Terminal
 
 from commands.file_ops.cat import CAT
@@ -18,6 +19,7 @@ class FileOpsHandler(Logger):
     def __init__(self) -> None:
         super().__init__()
         self.parser = CommandParser()
+        self.file_system = file_system
         self.command_options_map = {
             "cat": [],
             "chmod": ["--reference"],
