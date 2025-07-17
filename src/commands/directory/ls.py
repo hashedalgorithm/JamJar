@@ -1,12 +1,12 @@
 from models.file_system import FileSystem
 from commands.base import CommandBase
-from utils.parser import (
-    ParsedCommand,
-)
+from utils.parser import ParsedCommand, ParsedArgument
 from models.file import File
+from models.terminals import Terminal
 from models.directory import Directory
 from typing import TypedDict, Literal
 from core.exceptions import DelegateProcess
+
 
 import datetime
 
@@ -160,12 +160,12 @@ class LS(CommandBase):
     }
 
     def __init__(
-        self, file_system: FileSystem, parsed: ParsedCommand, cwd: str
+        self, file_system: FileSystem, parsed: ParsedCommand, terminal: Terminal
     ) -> None:
-        super().__init__("ls", "9.4")
+        super().__init__("ls")
         self.file_system = file_system
         self.parsed = parsed
-        self.cwd = cwd
+        self.terminal = terminal
 
     def print_entry(
         self,
@@ -406,7 +406,7 @@ class LS(CommandBase):
     def run(self) -> str | None:
         output: list[str] = []
 
-        if self.parsed.args.__len__() == 0:
+        if len(self.parsed.args) == 0:
             return self.default()
 
         if self.parsed.find("--help"):
@@ -416,12 +416,20 @@ class LS(CommandBase):
             return self.get_version()
 
         positional_args = self.parsed.group(["positional"], {})
-        source_paths = [self.cwd if positional_args.__len__() == 0 else positional_args]
-
-        is_multiple_source: bool = source_paths.__len__() > 1
+        source_paths = (
+            [ParsedArgument(type="positional", value=self.terminal.cwd)]
+            if len(positional_args) == 0
+            else positional_args
+        )
 
         for source_path in source_paths:
-            directory = self.file_system.get_directory(source_path)
+            _path = (
+                source_path.value
+                if source_path.value.startswith("/")
+                else self.terminal.with_cwd(path=source_path.value)
+            )
+
+            directory = self.file_system.get_directory(path=_path)
 
             filtered_entries = self.filter(directory)
             output.append(self.format(filtered_entries))

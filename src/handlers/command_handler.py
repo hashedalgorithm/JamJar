@@ -37,9 +37,7 @@ class CommandHandler(Logger):
         terminal = self.virtual_system.terminals.get(id=terminal_id)
 
         is_user_exists, is_group_exists = (
-            self.virtual_system.user_manager.is_user_and_group_exists(
-                uid=terminal.uid, gid=gid
-            )
+            self.virtual_system.user_manager.is_user_and_group_exists(uid=uid, gid=gid)
         )
 
         if not terminal:
@@ -69,7 +67,9 @@ class CommandHandler(Logger):
                 Group(gid=gid, group_username=user.username)
             )
 
-        return terminal
+        return (
+            terminal if terminal else self.virtual_system.terminals.get(id=terminal_id)
+        )
 
     def log_command_details(self, command: str, uid: int, tty: str, cwd: str) -> None:
         self.logger.info(f"{uid} : Captured - {command} at {tty}:{cwd}")

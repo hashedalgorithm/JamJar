@@ -80,7 +80,7 @@ class DirectoryHandler(Logger):
                 return cp.run()
 
             case "ls":
-                ls = LS(file_system=self.file_system, parsed=parsed, cwd=terminal.cwd)
+                ls = LS(file_system=self.file_system, parsed=parsed, terminal=terminal)
                 return ls.run()
 
             case "mkdir":
