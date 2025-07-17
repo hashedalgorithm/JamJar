@@ -16,7 +16,7 @@ from commands.file_ops.vi import VI
 
 
 class FileOpsHandler(Logger):
-    def __init__(self) -> None:
+    def __init__(self, file_system: FileSystem) -> None:
         super().__init__()
         self.parser = CommandParser()
         self.file_system = file_system
@@ -85,7 +85,7 @@ class FileOpsHandler(Logger):
         parsed = self.parser.parse(full_command)
         match command:
             case "touch":
-                touch = TOUCH(parsed)
+                touch = TOUCH(parsed, self.file_system, terminal.cwd)
                 return touch.run()
 
             case "cat":
