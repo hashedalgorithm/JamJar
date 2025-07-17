@@ -1,6 +1,7 @@
 from utils.logger import Logger
 from utils.parser import CommandParser
 from models.user_manager import UserManager
+from models.terminals import Terminal
 
 from commands.system.df import DF
 from commands.system.history import HISTORY
@@ -38,10 +39,10 @@ class SystemHandler(Logger):
             "whoami": [],
         }
 
-    def handle(self, command: str, full_command: str, uid: int, gid: int):
+    def handle(self, command: str, full_command: str, terminal: Terminal, gid: int):
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
-        user = self.user_manager.get_user(uid)
+        user = self.user_manager.get_user(terminal.uid)
         group = self.user_manager.get_group(gid)
 
         if not user:

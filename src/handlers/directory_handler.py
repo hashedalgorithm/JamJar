@@ -1,6 +1,7 @@
 from models.file_system import FileSystem
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.terminals import Terminal
 
 from commands.directory.cd import CD
 from commands.directory.cp import CP
@@ -66,7 +67,7 @@ class DirectoryHandler(Logger):
             "rmdir": [],
         }
 
-    def handle(self, command: str, full_command: str, cwd: str) -> str | None:
+    def handle(self, command: str, full_command: str, terminal: Terminal) -> str | None:
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:

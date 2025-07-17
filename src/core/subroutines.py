@@ -66,23 +66,16 @@ class Subroutines(Logger):
         self.process_tracer.resume(pid)
         self.process_tracer.detach(pid)
 
-    def sync_terminals(self, process: Process, terminal: Terminal) -> None:
-
-        self.command_handler.sync_virtual_system(
-            id=terminal.id, uid=process.uid, gid=process.gid
-        )
-
     def directory_routine(self, process: Process) -> None:
         try:
-            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
-            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_directory_handler(
                 command=process.command,
                 full_command=full_command,
                 uid=process.uid,
-                tty=terminal.tty,
-                cwd=terminal.cwd,
+                gid=process.gid,
+                tty=process.tty,
+                cwd=process.cwd,
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
@@ -98,15 +91,14 @@ class Subroutines(Logger):
 
     def network_routine(self, process: Process) -> None:
         try:
-            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
-            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_network_handler(
                 command=process.command,
                 full_command=full_command,
                 uid=process.uid,
-                tty=terminal.tty,
-                cwd=terminal.cwd,
+                gid=process.gid,
+                tty=process.tty,
+                cwd=process.cwd,
             )
             output = self.sanitize_string(raw_output)
 
@@ -129,16 +121,15 @@ class Subroutines(Logger):
 
     def process_routine(self, process: Process, username: str) -> None:
         try:
-            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
-            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_process_handler(
                 command=process.command,
                 full_command=full_command,
                 uid=process.uid,
+                gid=process.gid,
                 pid=process.pid,
-                tty=terminal.tty,
-                cwd=terminal.cwd,
+                tty=process.tty,
+                cwd=process.cwd,
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
@@ -154,15 +145,14 @@ class Subroutines(Logger):
 
     def file_ops_routine(self, process: Process) -> None:
         try:
-            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
-            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_file_ops_handler(
                 command=process.command,
                 full_command=full_command,
                 uid=process.uid,
-                tty=terminal.tty,
-                cwd=terminal.cwd,
+                gid=process.gid,
+                tty=process.tty,
+                cwd=process.cwd,
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)
@@ -178,16 +168,14 @@ class Subroutines(Logger):
 
     def system_routine(self, process: Process) -> None:
         try:
-            terminal = Terminal(tty=process.tty, cwd=process.cwd, uid=process.uid)
-            self.sync_terminals(process, terminal)
             full_command = process.get_full_command(process.pid)
             raw_output = self.command_handler.invoke_system_handler(
                 command=process.command,
                 full_command=full_command,
                 uid=process.uid,
                 gid=process.gid,
-                tty=terminal.tty,
-                cwd=terminal.cwd,
+                tty=process.tty,
+                cwd=process.cwd,
             )
             output = self.sanitize_string(raw_output)
             self.inject_output(process.pid, process.ppid, output, False)

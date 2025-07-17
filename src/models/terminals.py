@@ -25,6 +25,11 @@ class Terminal:
         self.type: TerminalType = type
         self.tty: str = tty if tty else f"{type}/{_id}"
 
+    def with_cwd(self, path: str) -> str:
+        """path: is relative path for eg. sample/somefolder"""
+
+        return f"{self.cwd}/{path}"
+
     def extract_id_from_tty(self, tty: str) -> int:
         return int(tty.split("/")[-1])
 
@@ -71,6 +76,9 @@ class Terminals:
 
     def list_terminals(self) -> list[int]:
         return [terminal.id for terminal in self.terminals.values()]
+
+    def extract_id_from_tty(self, tty: str) -> int:
+        return int(tty.split("/")[-1])
 
     def __repr__(self):
         return f"Terminal(name:{self})"

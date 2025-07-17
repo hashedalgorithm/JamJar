@@ -31,17 +31,22 @@ class CommandHandler(Logger):
             user_manager=self.virtual_system.user_manager
         )
 
-    def sync_virtual_system(self, id: int, uid: int, gid: int, cwd: str) -> None:
-        terminal = self.virtual_system.terminals.get(id)
+    def sync_virtual_system(self, tty: str, cwd: str, uid: int, gid: int) -> Terminal:
+        terminal_id = self.virtual_system.terminals.extract_id_from_tty(tty=tty)
+
+        terminal = self.virtual_system.terminals.get(id=terminal_id)
+
         is_user_exists, is_group_exists = (
-            self.virtual_system.user_manager.is_user_and_group_exists(uid, gid)
+            self.virtual_system.user_manager.is_user_and_group_exists(
+                uid=terminal.uid, gid=gid
+            )
         )
 
         if not terminal:
             self.logger.info(f"New terminal captured, running on uid: {uid}!")
             self.virtual_system.terminals.add(
                 Terminal(
-                    id=id,
+                    tty=tty,
                     cwd=cwd,
                     uid=uid,
                 )
@@ -49,11 +54,13 @@ class CommandHandler(Logger):
         else:
             if terminal.cwd != cwd:
                 self.logger.info(f"cwd of {terminal.tty} is changed to {cwd}")
-                self.virtual_system.terminals.set_cwd(id=id, path=cwd)
+                self.virtual_system.terminals.set_cwd(id=terminal.id, path=cwd)
 
         if not is_user_exists:
             self.logger.info(f"New user captured! - {uid} is active")
-            self.virtual_system.user_manager.add_user(User(uid=uid, terminals=[id]))
+            self.virtual_system.user_manager.add_user(
+                User(uid=uid, terminals=[terminal_id])
+            )
 
         if not is_group_exists:
             self.logger.info(f"New Group captured! - {gid} is created")
@@ -62,38 +69,62 @@ class CommandHandler(Logger):
                 Group(gid=gid, group_username=user.username)
             )
 
+        return terminal
+
     def log_command_details(self, command: str, uid: int, tty: str, cwd: str) -> None:
         self.logger.info(f"{uid} : Captured - {command} at {tty}:{cwd}")
 
     def invoke_directory_handler(
-        self, command: str, full_command: str, uid: int, tty: str, cwd: str
+        self, command: str, full_command: str, uid: int, gid: int, tty: str, cwd: str
     ):
-        self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
-        return self.directory_handler.handle(command, full_command, cwd)
+        terminal = self.sync_virtual_system(tty=tty, cwd=cwd, uid=uid, gid=gid)
+        self.log_command_details(
+            command=command, uid=terminal.uid, tty=terminal.tty, cwd=terminal.cwd
+        )
+
+        return self.directory_handler.handle(
+            command=command, full_command=full_command, terminal=terminal
+        )
 
     def invoke_network_handler(
-        self, command: str, full_command: str, uid: int, tty: str, cwd: str
+        self, command: str, full_command: str, uid: int, gid: int, tty: str, cwd: str
     ):
+        terminal = self.sync_virtual_system(tty=tty, cwd=cwd, uid=uid, gid=gid)
         self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
-        return self.network_handler.handle(command, full_command)
+
+        return self.network_handler.handle(
+            command=command, full_command=full_command, terminal=terminal
+        )
 
     def invoke_process_handler(
         self,
         command: str,
         full_command: str,
         uid: int,
+        gid: int,
         pid: int,
         tty: int,
         cwd: str,
     ):
+        terminal = self.sync_virtual_system(tty=tty, cwd=cwd, uid=uid, gid=gid)
         self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
-        return self.process_handler.handle(command, full_command, tty=tty, pid=pid)
+
+        return self.process_handler.handle(
+            command=command,
+            full_command=full_command,
+            terminal=terminal,
+            pid=pid,
+        )
 
     def invoke_file_ops_handler(
-        self, command: str, full_command: str, uid: int, tty: str, cwd: str
+        self, command: str, full_command: str, uid: int, gid: int, tty: str, cwd: str
     ):
+        terminal = self.sync_virtual_system(tty=tty, cwd=cwd, uid=uid, gid=gid)
         self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
-        return self.file_ops_handler.handle(command, full_command, cwd)
+
+        return self.file_ops_handler.handle(
+            command=command, full_command=full_command, terminal=terminal
+        )
 
     def invoke_system_handler(
         self,
@@ -104,5 +135,9 @@ class CommandHandler(Logger):
         tty: str,
         cwd: str,
     ):
+        terminal = self.sync_virtual_system(tty=tty, cwd=cwd, uid=uid, gid=gid)
         self.log_command_details(command=command, uid=uid, tty=tty, cwd=cwd)
-        return self.system_handler.handle(command, full_command, uid, gid)
+
+        return self.system_handler.handle(
+            command=command, full_command=full_command, terminal=terminal, gid=gid
+        )

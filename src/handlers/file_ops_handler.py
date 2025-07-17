@@ -1,5 +1,6 @@
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.terminals import Terminal
 
 from commands.file_ops.cat import CAT
 from commands.file_ops.chmod import CHMOD
@@ -77,7 +78,7 @@ class FileOpsHandler(Logger):
             "vi": ["-T", "-u", "--cmd", "-c", "-S", "-s", "-w", "-W"],
         }
 
-    def handle(self, command: str, full_command: str) -> str | None:
+    def handle(self, command: str, full_command: str, terminal: Terminal) -> str | None:
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:
