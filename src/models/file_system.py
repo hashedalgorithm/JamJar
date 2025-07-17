@@ -16,17 +16,11 @@ class ParsedPath:
 
 
 class FileSystem:
-    def __init__(self, uid: int = 1000) -> None:
+    def __init__(self) -> None:
         self.root: Directory = Directory(name="root", parent="/")
         self.create_fake_dir_data_helper()
 
-        self.cwd: Directory = self.get_default_cwd(uid)  # Current working directory
-        self.path_stack: str[list] = ["root"]
-
-        self.oldpwd = None  # Previous working directory (Directory object)
-        self.oldpwd_path_stack = None  # Previous path stack (list of strings)
-
-    def get_default_cwd(self, uid: int = 1000) -> Directory | None:
+    def get_default_cwd(self, uid: int) -> Directory | None:
         username = get_username_by_uid(uid)
 
         home = self.root.children.get("home")
@@ -117,7 +111,11 @@ class FileSystem:
         dirB.add(subB)
         user.add(dirB)
 
-    def check_directory_exists(self, path: str) -> bool:
+    def check_directory_exists(
+        self,
+        path: str,
+    ) -> bool:
+
         directory = self.get_directory(path)
 
         if directory is None:
@@ -125,18 +123,64 @@ class FileSystem:
 
         return directory
 
+    def get_default_working_directory(self, username: str) -> Directory | None:
+        home: Directory = self.root.children.get("home")
+        user: Directory | None = home.children.get(username)
+
+        if not user:
+            raise ValueError(f"User - {username} not found")
+
+        if not isinstance(user, Directory):
+            raise ValueError(f"Home directory not found!")
+
+        return user
+
     def get_directory(self, path: str) -> Directory:
-        parsed_path = ParsedPath(path if path.__len__() > 0 else self.cwd.get_path())
+        """
+        Args:
+            Path : should be an absolute path. for eg. /root/home/user/sample
+        """
 
-        target_dir = self.root if parsed_path.is_absolute else self.cwd
+        entity = self.get_entity(path)
 
-        if target_dir is None:
+        if not isinstance(entity, Directory):
+            raise ValueError(f"Found file instead of directory")
+
+        return entity
+
+    def get_file(self, path: str) -> File:
+        """
+        Args:
+            Path : should be an absolute path. for eg. /root/home/user/sample
+        """
+
+        entity = self.get_entity(path)
+
+        if not isinstance(entity, File):
+            raise ValueError(f"Found directory instead of file")
+
+        return entity
+
+    def get_entity(self, path: str) -> Directory | File:
+        """
+        Args:
+            Path : should be an absolute path. for eg. /root/home/user/sample
+        """
+
+        if len(path) == 0 or not path.startswith("/"):
+            raise ValueError(f"Path - {path} should be absolute!")
+
+        parsed_path = ParsedPath(path)
+
+        target_entity = self.root
+
+        if target_entity is None:
             raise ValueError(f"No root/cwd found!")
 
         for _path in parsed_path.path:
-            target_dir = target_dir.find_entry(_path)
+            target_entity = target_entity.find_entry(_path)
 
-        if target_dir is None:
+        if target_entity is None:
             raise ValueError(f"No file/directory exists as {parsed_path.path[-1]}")
 
-        return target_dir
+        return target_entity
