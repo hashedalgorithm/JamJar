@@ -12,7 +12,6 @@ class Terminal:
         cwd: str,
         uid: int,
         id: int | None = None,
-        type: TerminalType = "pts",
         tty: str | None = None,
     ):
         if id and tty:
@@ -22,7 +21,7 @@ class Terminal:
         self.id: int = _id
         self.uid: int = uid
         self.cwd: str = cwd
-        self.type: TerminalType = type
+        self.type: TerminalType = tty if self.extract_type_from_tty(tty) else "pts"
         self.tty: str = tty if tty else f"{type}/{_id}"
 
     def with_cwd(self, path: str) -> str:
@@ -32,6 +31,14 @@ class Terminal:
 
     def extract_id_from_tty(self, tty: str) -> int:
         return int(tty.split("/")[-1])
+
+    def extract_type_from_tty(self, tty: str) -> TerminalType:
+        type = tty.split("/")[0]
+
+        if type != "pts" and type != "tty":
+            raise ValueError(f"Invalid tty found! - {tty}")
+
+        return type
 
     def set_cwd(self, path: str) -> None:
         self.cwd = path
