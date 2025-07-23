@@ -22,3 +22,5 @@ ip - ongoing
 ps
 
 
+
+find /path/to/your/folder -type d -name '__pycache__' -exec rm -rf {} +
