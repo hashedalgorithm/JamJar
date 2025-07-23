@@ -1,6 +1,3 @@
-not getting read: echo, cd, kill, history, [ifconfig, nmap, traceroute - maybe because command not found]
+not getting read: echo, cd, kill, history
 
-getting stuck in terminal: cat, ln, nano, unzip, vi, killall, touch, ps, df, id, last, uname, uptime, w, whoami, php
-
-returning back killed since command is getting redirected to directory handler and is not recognised there(in such situations it returns None): ftp, ip, ping
-
+getting stuck in terminal: cat, ln, nano, unzip, vi, killall, ps, df, id, last, uname, uptime, w, php
