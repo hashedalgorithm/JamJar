@@ -19,6 +19,7 @@ class FileSystemEntryProperties:
         created_time: datetime = datetime.datetime.now(),
         ctime: str = datetime.datetime.now(),
         mtime: str = datetime.datetime.now(),
+        symlink: str | None = None,
     ) -> None:
 
         self.perm: str = perm
@@ -35,6 +36,7 @@ class FileSystemEntryProperties:
         self.path: str = f"{name}{"." if extension else ""}{extension}"
         self.ctime: datetime = ctime
         self.mtime: datetime = mtime
+        self.symlink: str = symlink
 
     def get_link(self) -> int:
         return 2
