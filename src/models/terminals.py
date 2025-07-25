@@ -1,4 +1,6 @@
 from typing import Literal
+import struct, termios, fcntl
+from utils.logger import Logger
 
 TerminalType = Literal[
     "pts"  # Pesudo terminals,
@@ -6,7 +8,7 @@ TerminalType = Literal[
 ]
 
 
-class Terminal:
+class Terminal(Logger):
     def __init__(
         self,
         cwd: str,
@@ -14,6 +16,7 @@ class Terminal:
         id: int | None = None,
         tty: str | None = None,
     ):
+        super().__init__()
         if id and tty:
             raise ValueError("Either only id or tty should be present!")
 
@@ -23,6 +26,10 @@ class Terminal:
         self.cwd: str = cwd
         self.type: TerminalType = tty if self.extract_type_from_tty(tty) else "pts"
         self.tty: str = tty if tty else f"{type}/{_id}"
+        self.terminal_path: str = f"/dev/{self.tty}"
+        self.size: tuple[int, int] = self.get_tty_width(
+            self.terminal_path
+        )  # [row, columns]
 
     def with_cwd(self, path: str) -> str:
         """path: is relative path for eg. sample/somefolder"""
@@ -47,6 +54,17 @@ class Terminal:
 
     def set_cwd(self, path: str) -> None:
         self.cwd = path
+
+    def get_tty_width(self, terminal_path: str) -> tuple[int, int]:
+        try:
+            with open(terminal_path) as tty:
+                rows, cols = struct.unpack(
+                    "hh", fcntl.ioctl(tty, termios.TIOCGWINSZ, "1234")
+                )
+                return rows, cols
+        except Exception as e:
+            self.logger.warning(f"Couldn't find terminal -{terminal_path} size:  {e}")
+            return 24, 80
 
 
 class Terminals:
