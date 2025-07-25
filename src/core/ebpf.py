@@ -43,6 +43,10 @@ class EBPF(Logger):
             return
 
         process = self.process_tracer.attach(event.pid)
+
+        if process is None:
+            return
+
         self.handle_attached_process(process)
 
     def handle_attached_process(self, process: Process):
