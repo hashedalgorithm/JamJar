@@ -56,9 +56,6 @@ class Subroutines(Logger):
                 return self.system_routine(process)
 
             case _:
-                if process.command in ["git", "9", "dpkg"]:
-                    self.release_process(process.pid)
-                    return
 
                 self.logger.warning(
                     f"Subroutine for command {process.command} is not implemented yet!"
