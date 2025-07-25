@@ -30,7 +30,12 @@ class Terminal:
         return f"{self.cwd}/{path}"
 
     def extract_id_from_tty(self, tty: str) -> int:
-        return int(tty.split("/")[-1])
+        id = tty.split("/")[-1]
+
+        if id:
+            return int(id)
+        else:
+            return 1
 
     def extract_type_from_tty(self, tty: str) -> TerminalType:
         type = tty.split("/")[0]
