@@ -92,7 +92,7 @@ class DirectoryHandler(Logger):
                 return mv.run()
 
             case "rm":
-                rm = RM(self.file_system, parsed)
+                rm = RM(file_system=self.file_system, parsed=parsed, terminal=terminal)
                 return rm.run()
 
             case "rmdir":

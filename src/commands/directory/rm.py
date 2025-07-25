@@ -2,13 +2,17 @@
 from models.file_system import FileSystem, Directory
 from utils.parser import ParsedCommand, ParsedArgument
 from commands.base import CommandBase
+from models.terminals import Terminal
 
 
 class RM(CommandBase):
-    def __init__(self, file_system: FileSystem, parsed: ParsedCommand) -> None:
+    def __init__(
+        self, file_system: FileSystem, parsed: ParsedCommand, terminal=Terminal
+    ) -> None:
         super().__init__("rm", "9.4")
         self.file_system = file_system
         self.parsed = parsed
+        self.terminal = terminal
 
     def run(self) -> str | None:
         flags = set()
@@ -35,7 +39,12 @@ class RM(CommandBase):
         outputs = []
 
         for name in files:
-            target = self.file_system.cwd.children.get(name)
+            target_directory = self.file_system.get_directory(self.terminal.cwd)
+            if target_directory is None:
+                outputs.append(f"rm: cannot remove '{name}': No such file or directory")
+                continue
+
+            target = target_directory.children.get(name)
             if not target:
                 if not force:
                     outputs.append(
@@ -50,7 +59,7 @@ class RM(CommandBase):
                             f"rm: cannot remove '{name}': Directory not empty"
                         )
                         continue
-                    del self.file_system.cwd.children[name]
+                    del target_directory.children[name]
                     if verbose:
                         outputs.append(f"removed directory: '{name}'")
                 elif recursive:
@@ -63,96 +72,8 @@ class RM(CommandBase):
                 if dir_only:
                     outputs.append(f"rm: cannot remove '{name}': Not a directory")
                     continue
-                del self.file_system.cwd.children[name]
+                del target_directory.children[name]
                 if verbose:
                     outputs.append(f"removed '{name}'")
 
         return "\n".join(outputs) if outputs else None
-
-
-# ---------- Inline test harness ----------
-
-if __name__ == "__rm__":
-    # Minimal mock implementations for testing
-
-    class Directory:
-        def __init__(self, name):
-            self.name = name
-            self.children = {}
-            self.parent = None
-
-        def add_child(self, child):
-            self.children[child.name] = child
-            child.parent = self
-
-        def __repr__(self):
-            return f"Directory({self.name})"
-
-    class File:
-        def __init__(self, name):
-            self.name = name
-
-    class FileSystem:
-        def __init__(self):
-            self.root = Directory("root")
-            self.cwd = self.root
-            self.path_stack = ["root"]
-
-    class ParsedArgument:
-        def __init__(self, type, value=None, name=None):
-            self.type = type
-            self.value = value
-            self.name = name
-
-    class ParsedCommand:
-        def __init__(self, command, args):
-            self.command = command
-            self.args = args
-
-    # Set up virtual file system
-    fs = FileSystem()
-    docs = Directory("docs")
-    file1 = File("note.txt")
-    file2 = File("log.txt")
-    empty_dir = Directory("empty")
-    non_empty_dir = Directory("nonempty")
-    child_file = File("inside.txt")
-
-    non_empty_dir.add_child(child_file)
-    fs.cwd.add_child(docs)
-    fs.cwd.add_child(file1)
-    fs.cwd.add_child(file2)
-    fs.cwd.add_child(empty_dir)
-    fs.cwd.add_child(non_empty_dir)
-
-    def build_parsed(cmd, args):
-        parsed_args = []
-        for arg in args:
-            if arg.startswith("-"):
-                parsed_args.append(ParsedArgument(type="flag", name=arg))
-            else:
-                parsed_args.append(ParsedArgument(type="positional", value=arg))
-        return ParsedCommand(command=cmd, args=parsed_args)
-
-    tests = [
-        ["rm", ["note.txt"]],
-        ["rm", ["-v", "log.txt"]],
-        ["rm", ["-d", "empty"]],
-        ["rm", ["-d", "nonempty"]],
-        ["rm", ["-r", "nonempty"]],
-        ["rm", ["nonexistent"]],
-        ["rm", ["-f", "nonexistent"]],
-        ["rm", ["--help"]],
-        ["rm", ["--version"]],
-    ]
-
-    for cmd, args in tests:
-        parsed = build_parsed(cmd, args)
-        rm = RM(fs, parsed)
-        result = rm.run()
-        print(f"Command: {' '.join(args)}")
-        if result:
-            print(result)
-        else:
-            print("Success with no output.")
-        print("-" * 40)
