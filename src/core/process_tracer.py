@@ -239,7 +239,7 @@ class ProcessTracer(Logger):
         self._detach(pid)
 
         # Kills the process
-        os.kill(pid, signal.SIGTERM)
+        os.kill(pid, signal.SIGKILL)
 
     def _resume(self, pid):
 
