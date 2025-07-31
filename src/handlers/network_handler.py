@@ -1,6 +1,7 @@
 from utils import helper
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.terminals import Terminal
 
 from commands.network.arp import ARP
 from commands.network.ifconfig import IFCONFIG
@@ -40,7 +41,7 @@ class NetworkHandler(Logger):
             "arp": ["-i", "-H", "-A", "-s", "-d"],
         }
 
-    def handle(self, command: str, full_command: str):
+    def handle(self, command: str, full_command: str, terminal: Terminal):
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:

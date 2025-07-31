@@ -1,5 +1,7 @@
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.user_manager import UserManager
+from models.terminals import Terminal
 
 from commands.system.df import DF
 from commands.system.history import HISTORY
@@ -13,24 +15,39 @@ from commands.system.whoami import WHOAMI
 
 
 class SystemHandler(Logger):
-    def __init__(self) -> None:
+    def __init__(self, user_manager: UserManager) -> None:
         super().__init__()
         self.parser = CommandParser()
+        self.user_manager = user_manager
         self.command_options_map = {
             "df": ["-T", "--type", "--output"],
             "history": [],
             "id": [],
             "last": ["-n", "--limit"],
-            "php": ["-f", "-r", "--define", "--php-ini", "--syntax-check", "--file", "--run"],
+            "php": [
+                "-f",
+                "-r",
+                "--define",
+                "--php-ini",
+                "--syntax-check",
+                "--file",
+                "--run",
+            ],
             "uname": [],
             "uptime": [],
             "w": [],
-            "whoami": []
+            "whoami": [],
         }
 
-    def handle(self, command: str, full_command: str):
+    def handle(self, command: str, full_command: str, terminal: Terminal, gid: int):
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
+        user = self.user_manager.get_user(terminal.uid)
+        group = self.user_manager.get_group(gid)
+
+        if not user:
+            raise Exception("Can't find the user!")
+
         match command:
             case "df":
                 df = DF(parsed)
@@ -49,7 +66,7 @@ class SystemHandler(Logger):
                 return uname.run()
 
             case "whoami":
-                whoami = WHOAMI(parsed)
+                whoami = WHOAMI(user, parsed)
                 return whoami.run()
 
             case "w":
@@ -57,7 +74,7 @@ class SystemHandler(Logger):
                 return w.run()
 
             case "id":
-                id = ID(parsed)
+                id = ID(parsed, user.uid, group.gid, self.user_manager)
                 return id.run()
 
             case "last":
@@ -69,5 +86,7 @@ class SystemHandler(Logger):
                 return uptime.run()
 
             case _:
-                print(f"Command '{command}' not recognized by SystemHandler.")
+                self.logger.error(
+                    f"Command '{command}' not recognized by SystemHandler."
+                )
                 return None

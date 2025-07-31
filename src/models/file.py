@@ -8,11 +8,13 @@ class File(FileSystemEntryProperties):
         name: str,
         file_type: str = "",
         content: str = "",
+        link: int = 2,
         **kwargs: Optional[dict[str, str]],
     ) -> None:
 
         super().__init__(name=name, **kwargs)
         self.content = content
+        self.link = link
         self.file_type = file_type
 
     def write(self, content: str) -> None:
@@ -26,3 +28,6 @@ class File(FileSystemEntryProperties):
 
     def rename(self, new_name: str) -> None:
         self.name = new_name
+
+    def __repr__(self) -> str:
+        return f"File(name={self.name!r}, file_type={self.file_type!r}, content={self.content!r})"

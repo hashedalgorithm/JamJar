@@ -13,6 +13,7 @@ class Process(Logger):
         ) = None,  # current working directory where the process is initiated
         uid: int | None = None,  # user id
         ppid: int | None = None,  # parent process id
+        gid: int | None = None,  # parent gid
     ) -> None:
         super().__init__()
         self.pid = pid
@@ -21,6 +22,7 @@ class Process(Logger):
         self.cwd = cwd if cwd is not None else self.get_current_working_directory(pid)
         self.uid = uid if uid is not None else self.get_uid(pid)
         self.ppid = ppid if ppid is not None else self.get_ppid(pid)
+        self.gid = gid if gid is not None else self.get_gid(pid)
 
     def read_file(self, path: str) -> str | None:
         try:
@@ -96,6 +98,17 @@ class Process(Logger):
         if content:
             args = content.split("\x00")
             return " ".join(arg for arg in args if arg)
+        return None
+
+    def get_gid(self, pid: int) -> int:
+
+        content = self.read_file(f"/proc/{pid}/status")
+
+        if content:
+            for line in content.splitlines():
+                if line.startswith("Gid:"):
+                    return int(line.split()[1])  # Extract the GID
+
         return None
 
 

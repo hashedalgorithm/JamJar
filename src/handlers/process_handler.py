@@ -1,6 +1,7 @@
 from utils.logger import Logger
 from utils.parser import CommandParser
 from models.process_group import ProcessGroup
+from models.terminals import Terminal
 
 from commands.process.kill import KILL
 from commands.process.killall import KILLALL
@@ -42,18 +43,18 @@ class ProcessHandler(Logger):
             ],
         }
 
-    def handle(self, command: str, full_command: str, tty: str, pid: int):
+    def handle(self, command: str, full_command: str, terminal: Terminal, pid: int):
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
 
         match command:
             case "ps":
                 ps = PS(self.process_group.processes, parsed)
-                return ps.run(tty, pid)
+                return ps.run(terminal.tty, pid)
 
             case "kill":
                 kill = KILL(self.process_group.processes, parsed)
-                return kill.run(tty, pid)
+                return kill.run(terminal.tty, pid)
 
             case "killall":
                 killall = KILLALL(self.process_group.processes, parsed)

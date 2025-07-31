@@ -1,6 +1,7 @@
 from models.file_system import FileSystem
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.terminals import Terminal
 
 from commands.directory.cd import CD
 from commands.directory.cp import CP
@@ -66,7 +67,7 @@ class DirectoryHandler(Logger):
             "rmdir": [],
         }
 
-    def handle(self, command: str, full_command: str) -> str | None:
+    def handle(self, command: str, full_command: str, terminal: Terminal) -> str | None:
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:
@@ -79,7 +80,7 @@ class DirectoryHandler(Logger):
                 return cp.run()
 
             case "ls":
-                ls = LS(self.file_system, parsed)
+                ls = LS(file_system=self.file_system, parsed=parsed, terminal=terminal)
                 return ls.run()
 
             case "mkdir":
@@ -91,7 +92,7 @@ class DirectoryHandler(Logger):
                 return mv.run()
 
             case "rm":
-                rm = RM(self.file_system, parsed)
+                rm = RM(file_system=self.file_system, parsed=parsed, terminal=terminal)
                 return rm.run()
 
             case "rmdir":
@@ -99,5 +100,7 @@ class DirectoryHandler(Logger):
                 return rmdir.run()
 
             case _:
-                print(f"Command '{command}' not recognized by DirectoryHandler.")
+                self.logger.error(
+                    f"Command '{command}' not recognized by DirectoryHandler."
+                )
                 return None

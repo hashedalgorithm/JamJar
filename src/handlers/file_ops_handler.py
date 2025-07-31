@@ -1,5 +1,7 @@
 from utils.logger import Logger
 from utils.parser import CommandParser
+from models.file_system import FileSystem
+from models.terminals import Terminal
 
 from commands.file_ops.cat import CAT
 from commands.file_ops.chmod import CHMOD
@@ -14,28 +16,78 @@ from commands.file_ops.vi import VI
 
 
 class FileOpsHandler(Logger):
-    def __init__(self) -> None:
+    def __init__(self, file_system: FileSystem) -> None:
         super().__init__()
         self.parser = CommandParser()
+        self.file_system = file_system
         self.command_options_map = {
             "cat": [],
             "chmod": ["--reference"],
             "crontab": ["-u"],
             "echo": [],
-            "grep": ["-e", "--regexp", "-f", "--file", "-m", "--max-count", "--label", "--binary-files", "-d", "--directories", "-D", "--devices", "--include", "--exclude", "--exclude-from", "--exclude-dir", "-B", "--before-context", "-A", "--after-context", "-C", "--context", "--group-separator", "--color", "--colour"],
+            "grep": [
+                "-e",
+                "--regexp",
+                "-f",
+                "--file",
+                "-m",
+                "--max-count",
+                "--label",
+                "--binary-files",
+                "-d",
+                "--directories",
+                "-D",
+                "--devices",
+                "--include",
+                "--exclude",
+                "--exclude-from",
+                "--exclude-dir",
+                "-B",
+                "--before-context",
+                "-A",
+                "--after-context",
+                "-C",
+                "--context",
+                "--group-separator",
+                "--color",
+                "--colour",
+            ],
             "ln": ["--backup", "-S", "--suffix", "-t", "--target-directory"],
-            "nano": ["-C", "--backupdir", "-J", "--guidestripe", "-Q", "--quotestr", "-T", "--tabsize", "-X", "--wordchars", "-Y", "--syntax", "-f", "--rcfile", "-o", "--operatingdir", "-r", "--fill", "-s", "--speller"],
+            "nano": [
+                "-C",
+                "--backupdir",
+                "-J",
+                "--guidestripe",
+                "-Q",
+                "--quotestr",
+                "-T",
+                "--tabsize",
+                "-X",
+                "--wordchars",
+                "-Y",
+                "--syntax",
+                "-f",
+                "--rcfile",
+                "-o",
+                "--operatingdir",
+                "-r",
+                "--fill",
+                "-s",
+                "--speller",
+            ],
             "touch": ["-d", "--date", "-r", "--reference", "--time"],
             "unzip": ["-O", "-I"],
-            "vi": ["-T", "-u", "--cmd", "-c", "-S", "-s", "-w", "-W"]
+            "vi": ["-T", "-u", "--cmd", "-c", "-S", "-s", "-w", "-W"],
         }
 
-    def handle(self, command: str, full_command: str) -> str | None:
+    def handle(self, command: str, full_command: str, terminal: Terminal) -> str | None:
         self.parser.set_options_with_values(self.command_options_map.get(command, []))
         parsed = self.parser.parse(full_command)
         match command:
             case "touch":
-                touch = TOUCH(parsed)
+                touch = TOUCH(
+                    parsed=parsed, file_system=self.file_system, terminal=terminal
+                )
                 return touch.run()
 
             case "cat":
@@ -75,5 +127,7 @@ class FileOpsHandler(Logger):
                 return crontab.run()
 
             case _:
-                print(f"Command '{command}' not recognized by FileOpsHandler.")
+                self.logger.error(
+                    f"Command '{command}' not recognized by FileOpsHandler."
+                )
                 return None
