@@ -22,8 +22,6 @@ liblzma-dev libdebuginfod-dev arping netperf iperf libpolly-18-dev libcurl4-open
 
 These packages are needed for building BCC and its dependencies.
 
-```
-
 ---
 
 ## **🧹 Cleanup (Start fresh)**
